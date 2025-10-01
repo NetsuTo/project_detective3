@@ -43,7 +43,7 @@ public class TimingBar : MonoBehaviour
             }
         }
 
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetKeyDown(KeyCode.E))
         {
             bool success = IsPointerInTarget();
             onComplete?.Invoke(success);
