@@ -1,5 +1,4 @@
-﻿// ElementMiniGameManager.cs
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,26 +8,49 @@ using UnityEngine.Events;
 public class ElementMiniGameManager : MonoBehaviour
 {
     [Header("UI ของ MiniGame ใน Zone นี้")]
-    public Text displayText;                 // แสดง key ปัจจุบัน (UI Text)
-    public GameObject failSymbol;            // ไอคอน/UI แสดง Fail
+    public Text displayText;                 // ถ้าไม่มีรูป ใช้ Text แสดงแทน
+    public Image displayImage;               // รูปสำหรับแสดงปุ่ม
+    public GameObject failSymbol;            // ไอคอน Fail
     public float failSymbolDuration = 5f;    // เวลาที่ Fail symbol โผล่แล้วหาย
 
-    [Header("Optional: ถ้า StartMiniGame ถูกเรียกด้วย null, จะ fallback มาใช้ inspectorSequence")]
+    [Header("Optional: Sequence เริ่มต้น (fallback ถ้าไม่ได้ส่งจาก TargetZone)")]
     public List<KeyCode> inspectorSequence = new List<KeyCode>();
 
-    [Header("Events (ตั้งใน Inspector)")]
-    public UnityEvent onSuccessEvent;        // เรียกตอนมินิเกมสำเร็จ
-    public UnityEvent onFailEvent;           // เรียกตอนมินิเกมล้มเหลว (นอกเหนือจาก FailSymbol)
+    [Header("Key → Sprite Mapping (ตั้งค่าใน Inspector)")]
+    public List<KeySpritePair> keySpriteMappings = new List<KeySpritePair>();
 
-    // internal
+    [Header("Events (ตั้งใน Inspector)")]
+    public UnityEvent onSuccessEvent;
+    public UnityEvent onFailEvent;
+
+    private Dictionary<KeyCode, Sprite> keyToSprite = new Dictionary<KeyCode, Sprite>();
     private List<KeyCode> currentSequence = new List<KeyCode>();
     private int currentIndex = 0;
     private bool isActive = false;
     private Action<bool> onCompleteCallback = null;
 
+    [Serializable]
+    public class KeySpritePair
+    {
+        public KeyCode key;
+        public Sprite sprite;
+    }
+
+    void Awake()
+    {
+        // เตรียม dictionary สำหรับ map key -> sprite
+        keyToSprite.Clear();
+        foreach (var pair in keySpriteMappings)
+        {
+            if (!keyToSprite.ContainsKey(pair.key))
+                keyToSprite.Add(pair.key, pair.sprite);
+        }
+    }
+
     void Start()
     {
         if (displayText != null) displayText.gameObject.SetActive(false);
+        if (displayImage != null) displayImage.gameObject.SetActive(false);
         if (failSymbol != null) failSymbol.SetActive(false);
     }
 
@@ -37,10 +59,8 @@ public class ElementMiniGameManager : MonoBehaviour
         if (!isActive) return;
         if (currentSequence == null || currentSequence.Count == 0) return;
 
-        // ตรวจ input: ถ้ามี key กด ให้เช็คว่าตรงกับ key ปัจจุบันหรือไม่
         if (Input.anyKeyDown)
         {
-            // ถ้ key ถูกต้อง
             if (Input.GetKeyDown(currentSequence[currentIndex]))
             {
                 currentIndex++;
@@ -51,28 +71,20 @@ public class ElementMiniGameManager : MonoBehaviour
             }
             else
             {
-                // key ผิด
                 Fail();
             }
         }
     }
 
-    /// <summary>
-    /// เริ่มมินิเกมโดยใช้ sequence ที่ส่งเข้ามา (ถ้า sequence เป็น null หรือว่าง จะ fallback ไปที่ inspectorSequence ถ้ามี)
-    /// callback ถูกเรียกเมื่อมินิเกมจบ (true=success, false=fail)
-    /// </summary>
     public void StartMiniGame(List<KeyCode> sequence, Action<bool> callback)
     {
-        // ถ้า sequence ที่เรียกว่าง ให้ fallback ไปใช้ inspectorSequence (ถ้ามี)
         if (sequence == null || sequence.Count == 0)
         {
             if (inspectorSequence != null && inspectorSequence.Count > 0)
-            {
                 currentSequence = new List<KeyCode>(inspectorSequence);
-            }
             else
             {
-                Debug.LogWarning("[ElementMiniGameManager] StartMiniGame called with empty sequence AND no inspectorSequence to fallback.");
+                Debug.LogWarning("[MiniGame] ไม่มี Sequence ให้เล่น!");
                 callback?.Invoke(false);
                 return;
             }
@@ -86,65 +98,66 @@ public class ElementMiniGameManager : MonoBehaviour
         currentIndex = 0;
         isActive = true;
 
-        if (displayText != null)
-        {
-            displayText.gameObject.SetActive(true);
-            UpdateDisplay();
-        }
+        if (failSymbol != null) failSymbol.SetActive(false);
+        UpdateDisplay();
 
-        if (failSymbol != null)
-            failSymbol.SetActive(false);
-
-        Debug.Log($"[ElementMiniGameManager:{gameObject.name}] StartMiniGame - seq: {SeqToString(currentSequence)}");
+        Debug.Log($"[MiniGame] StartMiniGame - seq: {SeqToString(currentSequence)}");
     }
 
     private void UpdateDisplay()
     {
-        if (displayText == null) return;
+        if (currentIndex >= currentSequence.Count)
+        {
+            HideDisplay();
+            return;
+        }
 
-        if (currentIndex < currentSequence.Count)
-            displayText.text = "Next: " + KeyToSymbol(currentSequence[currentIndex]);
+        KeyCode key = currentSequence[currentIndex];
+
+        // ถ้ามีรูป
+        if (displayImage != null && keyToSprite.ContainsKey(key) && keyToSprite[key] != null)
+        {
+            displayImage.sprite = keyToSprite[key];
+            displayImage.gameObject.SetActive(true);
+            if (displayText != null) displayText.gameObject.SetActive(false);
+        }
         else
-            displayText.text = "Done!";
+        {
+            // ไม่มีรูป → ใช้ text
+            if (displayText != null)
+            {
+                displayText.text = "Next: " + key.ToString();
+                displayText.gameObject.SetActive(true);
+            }
+            if (displayImage != null) displayImage.gameObject.SetActive(false);
+        }
+    }
+
+    private void HideDisplay()
+    {
+        if (displayText != null) displayText.gameObject.SetActive(false);
+        if (displayImage != null) displayImage.gameObject.SetActive(false);
     }
 
     private void Success()
     {
         isActive = false;
-        if (displayText != null) displayText.gameObject.SetActive(false);
-
-        Debug.Log("[ElementMiniGameManager] MiniGame Success in " + gameObject.name);
-
-        // เรียก UnityEvent ที่ตั้งไว้ใน Inspector
-        try { onSuccessEvent?.Invoke(); } catch (Exception ex) { Debug.LogWarning("onSuccessEvent invoke failed: " + ex); }
-
-        // callback ให้ caller (เช่น TargetZone / SkillInventory)
+        HideDisplay();
+        onSuccessEvent?.Invoke();
         onCompleteCallback?.Invoke(true);
-
-        // reset callback (ป้องกันการเรียกซ้ำ)
         onCompleteCallback = null;
     }
 
     private void Fail()
     {
         isActive = false;
-        if (displayText != null) displayText.gameObject.SetActive(false);
-
-        Debug.Log("[ElementMiniGameManager] MiniGame Fail in " + gameObject.name);
-
-        // แสดง Fail symbol และ hide อัตโนมัติ
+        HideDisplay();
         ShowFailSymbolSafe();
-
-        // เรียก UnityEvent สำหรับ Fail (optional)
-        try { onFailEvent?.Invoke(); } catch (Exception ex) { Debug.LogWarning("onFailEvent invoke failed: " + ex); }
-
+        onFailEvent?.Invoke();
         onCompleteCallback?.Invoke(false);
         onCompleteCallback = null;
     }
 
-    /// <summary>
-    /// แสดง Fail symbol (ปลอดภัย เรียกซ้ำได้) — จะซ่อนอัตโนมัติหลัง failSymbolDuration
-    /// </summary>
     public void ShowFailSymbolSafe()
     {
         if (failSymbol == null) return;
@@ -157,20 +170,6 @@ public class ElementMiniGameManager : MonoBehaviour
         failSymbol.SetActive(true);
         yield return new WaitForSeconds(failSymbolDuration);
         failSymbol.SetActive(false);
-    }
-
-    // แปลง KeyCode เป็นตัวอักษร/สัญลักษณ์สำหรับแสดง (customize ได้)
-    private string KeyToSymbol(KeyCode key)
-    {
-        switch (key)
-        {
-            case KeyCode.UpArrow: return "↑";
-            case KeyCode.DownArrow: return "↓";
-            case KeyCode.LeftArrow: return "←";
-            case KeyCode.RightArrow: return "→";
-            case KeyCode.Space: return "Space";
-            default: return key.ToString(); // e.g. A, H, O ...
-        }
     }
 
     private string SeqToString(List<KeyCode> seq)

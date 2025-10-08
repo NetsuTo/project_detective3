@@ -5003,9 +5003,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   displayText: {fileID: 0}
+  displayImage: {fileID: 0}
   failSymbol: {fileID: 0}
   failSymbolDuration: 5
   inspectorSequence: 110100001201000013010000
+  keySpriteMappings: []
   onSuccessEvent:
     m_PersistentCalls:
       m_Calls:
