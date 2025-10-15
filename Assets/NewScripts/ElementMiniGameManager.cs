@@ -29,6 +29,8 @@ public class ElementMiniGameManager : MonoBehaviour
     private bool isActive = false;
     private Action<bool> onCompleteCallback = null;
 
+    [SerializeField] public UITutorial itemScc;
+
     [Serializable]
     public class KeySpritePair
     {
@@ -146,6 +148,7 @@ public class ElementMiniGameManager : MonoBehaviour
         onSuccessEvent?.Invoke();
         onCompleteCallback?.Invoke(true);
         onCompleteCallback = null;
+        itemScc.uiPressR.SetActive(false);
     }
 
     private void Fail()

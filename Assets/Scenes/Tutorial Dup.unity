@@ -1540,12 +1540,12 @@ GameObject:
   - component: {fileID: 122682554}
   - component: {fileID: 122682553}
   m_Layer: 5
-  m_Name: Use Item 2
+  m_Name: PressR
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &122682552
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1562,7 +1562,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -502, y: -71}
+  m_AnchoredPosition: {x: -182, y: -68.1}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &122682553
@@ -1737,6 +1737,7 @@ MonoBehaviour:
   onFailEvent:
     m_PersistentCalls:
       m_Calls: []
+  itemScc: {fileID: 0}
 --- !u!4 &123453441
 Transform:
   m_ObjectHideFlags: 0
@@ -3120,6 +3121,7 @@ MonoBehaviour:
   onFailEvent:
     m_PersistentCalls:
       m_Calls: []
+  itemScc: {fileID: 1876815159}
 --- !u!4 &235292687
 Transform:
   m_ObjectHideFlags: 0
@@ -8104,6 +8106,7 @@ MonoBehaviour:
   onFailEvent:
     m_PersistentCalls:
       m_Calls: []
+  itemScc: {fileID: 0}
 --- !u!4 &599622496
 Transform:
   m_ObjectHideFlags: 0
@@ -11448,6 +11451,7 @@ MonoBehaviour:
   onFailEvent:
     m_PersistentCalls:
       m_Calls: []
+  itemScc: {fileID: 0}
 --- !u!4 &901537164
 Transform:
   m_ObjectHideFlags: 0
@@ -12642,12 +12646,12 @@ GameObject:
   - component: {fileID: 974151129}
   - component: {fileID: 974151128}
   m_Layer: 5
-  m_Name: Use Item
+  m_Name: PKSCC
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &974151127
 RectTransform:
   m_ObjectHideFlags: 0
@@ -12664,7 +12668,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -320.8, y: 196.3}
+  m_AnchoredPosition: {x: -295, y: 316}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &974151128
@@ -16872,6 +16876,7 @@ MonoBehaviour:
   onFailEvent:
     m_PersistentCalls:
       m_Calls: []
+  itemScc: {fileID: 0}
 --- !u!4 &1257205032
 Transform:
   m_ObjectHideFlags: 0
@@ -20143,6 +20148,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2526624769335434657, guid: 8a7e7f6601b72774cb5e7b8a3f382286, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1876815151}
+    - targetCorrespondingSourceObject: {fileID: 2526624769335434657, guid: 8a7e7f6601b72774cb5e7b8a3f382286, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1876815159}
   m_SourcePrefab: {fileID: 100100000, guid: 8a7e7f6601b72774cb5e7b8a3f382286, type: 3}
 --- !u!1 &1453150676
 GameObject:
@@ -21728,7 +21736,7 @@ GameObject:
   - component: {fileID: 1564931225}
   m_Layer: 0
   m_Name: TargetZone Dup (1)
-  m_TagString: Untagged
+  m_TagString: PressR
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -21766,8 +21774,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.1899815, y: 1.9171865, z: 2.2621543}
-  m_Center: {x: -0.16822116, y: 0.45859346, z: -0.1436911}
+  m_Size: {x: 1.7608721, y: 1.9171865, z: 2.2621543}
+  m_Center: {x: 0.04633364, y: 0.45859346, z: -0.1436911}
 --- !u!23 &1564931227
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -25547,12 +25555,12 @@ GameObject:
   - component: {fileID: 1801678647}
   - component: {fileID: 1801678646}
   m_Layer: 5
-  m_Name: Item
+  m_Name: PK
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1801678645
 RectTransform:
   m_ObjectHideFlags: 0
@@ -25560,7 +25568,7 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1801678644}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -25569,7 +25577,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -796, y: 47}
+  m_AnchoredPosition: {x: -470, y: -30}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1801678646
@@ -25744,6 +25752,7 @@ MonoBehaviour:
   onFailEvent:
     m_PersistentCalls:
       m_Calls: []
+  itemScc: {fileID: 0}
 --- !u!4 &1810878823
 Transform:
   m_ObjectHideFlags: 0
@@ -27155,6 +27164,23 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2908075746234812187, guid: 8a7e7f6601b72774cb5e7b8a3f382286, type: 3}
   m_PrefabInstance: {fileID: 1440659751}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1876815159
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1876815150}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c7b53662db0f8d349a1c181b9e2fde46, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerSkillManager: {fileID: 1876815154}
+  uiWalk: {fileID: 2087535068}
+  uiPK: {fileID: 1801678644}
+  uiPKScc: {fileID: 974151126}
+  uiPressR: {fileID: 122682551}
 --- !u!1 &1882319838
 GameObject:
   m_ObjectHideFlags: 0
@@ -30494,7 +30520,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -566, y: 169}
+  m_AnchoredPosition: {x: -25.5, y: 169}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2087535070

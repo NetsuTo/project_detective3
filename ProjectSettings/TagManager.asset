@@ -8,6 +8,7 @@ TagManager:
   - Ladder
   - Trap
   - InventoryPanel
+  - PressR
   layers:
   - Default
   - TransparentFX
