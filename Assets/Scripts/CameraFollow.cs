@@ -1,19 +1,23 @@
 using UnityEngine;
 
-public class CameraFollow : MonoBehaviour
+public class FixedAngleFollowCamera : MonoBehaviour
 {
-    public Transform target;          // Player ที่จะตาม
-    public Vector3 offset = new Vector3(0, 5, -10); // ระยะห่างจาก Player
-    public float smoothSpeed = 5f;    // ความเร็วในการตาม
+    public Transform target;                // ตัวละคร
+    public Vector3 offset = new Vector3(0, 2, -8); // ระยะห่างกล้อง
+    public float smoothSpeed = 5f;
+
+    [Header("Fixed Camera Rotation")]
+    public Vector3 fixedRotation = new Vector3(14.786f, -10.611f, 0f); // มุมกล้องที่ต้องการคงไว้
 
     void LateUpdate()
     {
         if (target == null) return;
 
-        Vector3 desiredPosition = target.position + offset;
-        Vector3 smoothedPosition = Vector3.Lerp(transform.position, desiredPosition, smoothSpeed * Time.deltaTime);
-        transform.position = smoothedPosition;
+        // คำนวณตำแหน่งกล้องตามตำแหน่งตัวละคร
+        Vector3 desiredPosition = target.position + Quaternion.Euler(fixedRotation) * offset;
+        transform.position = Vector3.Lerp(transform.position, desiredPosition, smoothSpeed * Time.deltaTime);
 
-        transform.LookAt(target); // มองไปที่ Player
+        // ตั้งมุมกล้องตายตัว ไม่เปลี่ยนตาม Player
+        transform.rotation = Quaternion.Euler(fixedRotation);
     }
 }
