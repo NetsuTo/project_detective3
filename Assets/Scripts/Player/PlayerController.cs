@@ -62,7 +62,8 @@ public class PlayerController : MonoBehaviour
         if (isGrounded && velocity.y < 0f)
         {
             velocity.y = -2f;
-            animator.SetBool("isJumping", false);
+            animator.SetBool("isLanding", false);
+            //animator.SetTrigger("onGround");
         }
 
         // Horizontal movement (แกน X)
@@ -79,8 +80,19 @@ public class PlayerController : MonoBehaviour
         if (Input.GetButtonDown("Jump") && isGrounded)
         {
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
-            animator.SetBool("isJumping", true);
+            animator.SetTrigger("isJumping");
         }
+
+        /*if (isGrounded)
+        {
+            animator.SetBool("isLanding", false);
+
+            if (Input.GetButtonDown("Jump"))
+            {
+                velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+                animator.SetBool("isLanding", true);
+            }
+        }*/
 
         // Gravity
         velocity.y += gravity * Time.deltaTime;
