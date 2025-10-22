@@ -13,25 +13,11 @@ public class TimingBar : MonoBehaviour
     private Action<bool> onComplete;
     private bool isActive = false;
 
-    [SerializeField] private UITutorial uITutorial;
     public void StartTiming(Action<bool> callback)
     {
         onComplete = callback;
         isActive = true;
         pointer.anchoredPosition = Vector2.zero; // เริ่มตรงกลาง bar
-    }
-
-    void Start()
-    {
-        if (uITutorial == null)
-        {
-            uITutorial = FindObjectOfType<UITutorial>();
-        }
-        
-        if (uITutorial == null)
-        {
-            Debug.LogError("UITutorial component not found in the scene.");
-        }
     }
 
     void Update()
@@ -62,7 +48,6 @@ public class TimingBar : MonoBehaviour
             bool success = IsPointerInTarget();
             onComplete?.Invoke(success);
             isActive = false;
-            uITutorial.uiPKScc.SetActive(false);
         }
 
     }

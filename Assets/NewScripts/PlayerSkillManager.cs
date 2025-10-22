@@ -6,7 +6,6 @@ public class PlayerSkillManager : MonoBehaviour
     public List<string> skills = new List<string>(); // สกิลที่เก็บมา
     private int selectedSkillIndex = -1;
 
-    public bool pickUpSCC = false;
     public delegate void OnSkillUpdate();
     public event OnSkillUpdate onSkillUpdate;
 
@@ -23,7 +22,6 @@ public class PlayerSkillManager : MonoBehaviour
             skills.Add(skillID);
             if (selectedSkillIndex == -1) selectedSkillIndex = 0; // ถ้ายังไม่มี ให้เลือกอันแรกเลย
             onSkillUpdate?.Invoke();
-            pickUpSCC = true;
             Debug.Log("Picked up skill: " + skillID);
         }
     }
