@@ -93,7 +93,7 @@ ModelImporter:
       takeName: rig|magic
       internalID: 8305393985281346174
       firstFrame: 0
-      lastFrame: 51
+      lastFrame: 50
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -204,7 +204,7 @@ ModelImporter:
     armStretch: 0.05
     legStretch: 0.05
     feetSpacing: 0
-    globalScale: 0.03
+    globalScale: 3
     rootMotionBoneName: 
     hasTranslationDoF: 0
     hasExtraRoot: 0
