@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(CharacterController))]
@@ -30,6 +32,8 @@ public class PlayerController : MonoBehaviour
     private float currentSpeed;
     private bool isGrounded;
     private bool wasGroundedLastFrame;
+    private bool isPickingUp = false;
+    private Action pickupCallback; // ✅ เก็บ callback ชั่วคราวไว้ใช้ทีหลัง
 
     void Start()
     {
@@ -104,6 +108,25 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    public void PlayPickupAnimation(Action onPickupComplete)
+    {
+        if (isPickingUp) return;
+        isPickingUp = true;
+
+        pickupCallback = onPickupComplete;
+        animator.SetTrigger("Pickup");
+
+        // รอเวลาเท่าความยาว animation
+        Invoke(nameof(CompletePickup), 1f);
+    }
+
+    private void CompletePickup()
+    {
+        isPickingUp = false;
+        pickupCallback?.Invoke();
+        pickupCallback = null;
+    }
+
     // ========== เลือกโซนที่ดีที่สุด เมื่อมีหลายโซน ==========
     private void RecomputeCurrentZone()
     {
@@ -175,5 +198,20 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    public void PlayCastingAnimation()
+    {
+        if (animator != null)
+        {
+            animator.SetBool("IsCasting", true);
+            animator.SetTrigger("Cast"); // Trigger สั้นเพื่อเข้า animation
+        }
+    }
 
+    public void StopCastingAnimation()
+    {
+        if (animator != null)
+        {
+            animator.SetBool("IsCasting", false);
+        }
+    }
 }

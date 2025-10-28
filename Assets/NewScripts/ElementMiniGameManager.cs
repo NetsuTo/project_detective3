@@ -23,6 +23,10 @@ public class ElementMiniGameManager : MonoBehaviour
     public UnityEvent onSuccessEvent;
     public UnityEvent onFailEvent;
 
+    [Header("Player References")]
+    public PlayerController playerController;  // อ้างถึง PlayerController เพื่อเรียก animation
+    public float successSymbolDuration = 3f;   // ระยะเวลาโชว์
+
     private Dictionary<KeyCode, Sprite> keyToSprite = new Dictionary<KeyCode, Sprite>();
     private List<KeyCode> currentSequence = new List<KeyCode>();
     private int currentIndex = 0;
@@ -78,6 +82,11 @@ public class ElementMiniGameManager : MonoBehaviour
 
     public void StartMiniGame(List<KeyCode> sequence, Action<bool> callback)
     {
+        if (playerController != null)
+        {
+            playerController.PlayCastingAnimation();
+        }
+
         if (sequence == null || sequence.Count == 0)
         {
             if (inspectorSequence != null && inspectorSequence.Count > 0)
@@ -146,6 +155,13 @@ public class ElementMiniGameManager : MonoBehaviour
         onSuccessEvent?.Invoke();
         onCompleteCallback?.Invoke(true);
         onCompleteCallback = null;
+
+        if (playerController != null)
+        {
+            playerController.StopCastingAnimation();
+        }
+
+        Debug.Log("✅ MiniGame Success Completed!");
     }
 
     private void Fail()
