@@ -129,6 +129,11 @@ public class QTEManager : MonoBehaviour
                     inv.AddMixedSkill(new List<KeyCode>(sequence));
                 }
 
+                // ✅ แสดง success symbol บนหัวผู้เล่น
+                PlayerController player = FindObjectOfType<PlayerController>();
+                if (player != null)
+                    player.ShowSuccessSymbol();
+
                 EndQTE();
             }
             else

@@ -26,6 +26,10 @@ public class PlayerController : MonoBehaviour
     public UseZone currentUseZone;                 // โซนที่ใช้งานอยู่
     private readonly HashSet<UseZone> zonesIn = new HashSet<UseZone>(); // โซนทั้งหมดที่กำลังยืนอยู่
 
+    // ====== Success Symbol Management ======
+    [Header("Success Symbol")]
+    public GameObject successSymbol; // ลาก GameObject ไอคอนเหนือหัวมาวางใน Inspector
+
     private CharacterController controller;
     private Animator animator;
     private Vector3 velocity;
@@ -72,8 +76,14 @@ public class PlayerController : MonoBehaviour
         if (isGrounded && velocity.y < 0)
             velocity.y = -2f; // รีเซ็ตแรงโน้มถ่วงเล็กน้อยเมื่อแตะพื้น
 
-        // --- การเคลื่อนที่แนวนอน ---
-        float x = Input.GetAxisRaw("Horizontal");
+        // --- การเคลื่อนที่แนวนอน (ใช้แค่ปุ่ม A / D) ---
+        float x = 0f;
+
+        if (Input.GetKey(KeyCode.A))
+            x = -1f;
+        else if (Input.GetKey(KeyCode.D))
+            x = 1f;
+
         float targetSpeed = x * moveSpeed;
         currentSpeed = Mathf.Lerp(currentSpeed, targetSpeed, Time.deltaTime * acceleration);
 
@@ -214,4 +224,27 @@ public class PlayerController : MonoBehaviour
             animator.SetBool("IsCasting", false);
         }
     }
+
+    public void ShowSuccessSymbol()
+    {
+        if (successSymbol != null)
+        {
+            successSymbol.SetActive(true);
+            Debug.Log("✨ แสดง Success Symbol บนหัวผู้เล่น");
+        }
+        else
+        {
+            Debug.LogWarning("⚠️ successSymbol ยังไม่ได้ assign ใน PlayerController");
+        }
+    }
+
+    public void HideSuccessSymbol()
+    {
+        if (successSymbol != null && successSymbol.activeSelf)
+        {
+            successSymbol.SetActive(false);
+            Debug.Log("💨 ซ่อน Success Symbol บนหัวผู้เล่น");
+        }
+    }
+
 }
