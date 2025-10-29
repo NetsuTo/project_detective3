@@ -84,6 +84,7 @@ public class ElementMiniGameManager : MonoBehaviour
     {
         if (playerController != null)
         {
+            playerController.HideSuccessSymbol();
             playerController.PlayCastingAnimation();
         }
 
