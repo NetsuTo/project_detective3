@@ -12,6 +12,7 @@ public class PlayerController : MonoBehaviour
     public float acceleration = 10f; // ✅ เพิ่มความลื่นในการเปลี่ยนทิศทาง
 
     [Header("Jump / Gravity")]
+    public float jumpForce = 5f;
     public float jumpHeight = 2f;
     public float gravity = -9.81f;
     public float fallMultiplier = 2.5f; // ✅ ตกเร็วขึ้นแบบเกม platformer ทั่วไป
@@ -99,7 +100,7 @@ public class PlayerController : MonoBehaviour
         // --- กระโดด ---
         if (Input.GetButtonDown("Jump") && isGrounded)
         {
-            velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+            velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity) * jumpForce;
             animator.SetTrigger("Jump");
         }
 
