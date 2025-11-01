@@ -52929,6 +52929,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4975268087712184080, guid: 8a7e7f6601b72774cb5e7b8a3f382286, type: 3}
+      propertyPath: gravity
+      value: -25
+      objectReference: {fileID: 0}
+    - target: {fileID: 4975268087712184080, guid: 8a7e7f6601b72774cb5e7b8a3f382286, type: 3}
       propertyPath: jumpForce
       value: 1.5
       objectReference: {fileID: 0}
@@ -52942,7 +52946,7 @@ PrefabInstance:
       objectReference: {fileID: 570091109}
     - target: {fileID: 4975268087712184080, guid: 8a7e7f6601b72774cb5e7b8a3f382286, type: 3}
       propertyPath: fallMultiplier
-      value: 10
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 6135002647141168709, guid: 8a7e7f6601b72774cb5e7b8a3f382286, type: 3}
       propertyPath: m_LocalPosition.x
