@@ -63,7 +63,7 @@ ModelImporter:
       name: rig|newjump_up
       takeName: rig|newjump
       internalID: 4677635401277798749
-      firstFrame: 4
+      firstFrame: 0
       lastFrame: 18
       wrapMode: 0
       orientationOffsetY: 0
