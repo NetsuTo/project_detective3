@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening;
 
 [RequireComponent(typeof(CharacterController))]
 [RequireComponent(typeof(Animator))]
@@ -187,7 +188,7 @@ public class PlayerController : MonoBehaviour
         }
 
 
-        
+
     }
 
     // ========== Trigger: เข้า/ออกหลายโซนได้พร้อมกัน ==========
@@ -228,15 +229,120 @@ public class PlayerController : MonoBehaviour
 
     public void ShowSuccessSymbol()
     {
-        if (successSymbol != null)
+        if (successSymbol == null)
         {
-            successSymbol.SetActive(true);
-            Debug.Log("✨ แสดง Success Symbol บนหัวผู้เล่น");
+            Debug.LogWarning("⚠️ successSymbol ยังไม่ได้ assign ใน PlayerController");
+            return;
+        }
+
+        // เปิด symbol ให้แน่ใจว่าโชว์
+        successSymbol.SetActive(true);
+        Debug.Log("✨ แสดง Success Symbol บนหัวผู้เล่น");
+
+        // ยกเลิก tween เก่าที่อาจยังค้างอยู่บน object เดิม
+        DOTween.Kill(successSymbol);
+
+        // เราจะรองรับทั้งกรณีเป็น UI (RectTransform ใน Canvas)
+        // และกรณีเป็นวัตถุ 3D/World space (Transform ปกติ เหนือหัวตัวละคร)
+        RectTransform rt = successSymbol.GetComponent<RectTransform>();
+
+        // เก็บสถานะเริ่มต้นจริงของ object
+        Vector2 originalAnchoredPos2D = Vector2.zero;
+        Vector3 originalLocalPos3D = Vector3.zero;
+        Vector3 originalScale = successSymbol.transform.localScale;
+
+        if (rt != null)
+        {
+            // ถ้าเป็น UI
+            originalAnchoredPos2D = rt.anchoredPosition;
         }
         else
         {
-            Debug.LogWarning("⚠️ successSymbol ยังไม่ได้ assign ใน PlayerController");
+            // ถ้าเป็น world/object ธรรมดา
+            originalLocalPos3D = successSymbol.transform.localPosition;
         }
+
+        // เตรียม CanvasGroup สำหรับ fade
+        CanvasGroup cg = successSymbol.GetComponent<CanvasGroup>();
+        if (cg == null)
+        {
+            cg = successSymbol.AddComponent<CanvasGroup>();
+        }
+        cg.alpha = 0f; // เริ่มใสเพื่อให้สามารถ fade in
+
+        // ระยะที่อยากให้มันลอยขึ้นตอนเกิด
+        float riseAmount = 25f;
+
+        // เซ็ตตำแหน่งเริ่มต้นให้ต่ำลงเล็กน้อย เพื่อจะได้ tween ขึ้น
+        if (rt != null)
+        {
+            rt.anchoredPosition = originalAnchoredPos2D - new Vector2(0f, riseAmount);
+        }
+        else
+        {
+            successSymbol.transform.localPosition = originalLocalPos3D - new Vector3(0f, riseAmount, 0f);
+        }
+
+        // รีเซ็ต scale ให้เป็น scale เดิมของ prefab (สำคัญมาก ไม่งั้นจะบวม)
+        successSymbol.transform.localScale = originalScale;
+
+        // สร้าง sequence แอนิเมชัน
+        Sequence seq = DOTween.Sequence();
+
+        // 1) ลอยขึ้นจากต่ำ → กลับมาตำแหน่งจริง
+        if (rt != null)
+        {
+            seq.Append(
+                rt.DOAnchorPos(originalAnchoredPos2D, 0.4f)
+                  .SetEase(Ease.OutCubic)
+            );
+        }
+        else
+        {
+            seq.Append(
+                successSymbol.transform.DOLocalMove(originalLocalPos3D, 0.4f)
+                    .SetEase(Ease.OutCubic)
+            );
+        }
+
+        // 2) fade in ระหว่างลอยขึ้น
+        seq.Join(
+            cg.DOFade(1f, 0.4f)
+              .SetEase(Ease.OutCubic)
+        );
+
+        // 3) เด้งเบาๆ โดยไม่ทำให้มันตัวใหญ่ถาวร
+        //    เราจะขยายขึ้นเล็กน้อยจาก originalScale แล้วกลับมาที่ originalScale เอง
+        seq.Append(
+            successSymbol.transform
+                .DOScale(originalScale * 1.05f, 0.2f)   // ขยายขึ้น 5% นิดเดียว
+                .SetEase(Ease.OutQuad)
+        );
+        seq.Append(
+            successSymbol.transform
+                .DOScale(originalScale, 0.15f)          // คืนสเกลเดิม
+                .SetEase(Ease.InQuad)
+        );
+
+        // 4) หลังจบอนิเมชัน (symbol จะยังค้างอยู่ ไม่ปิดเอง)
+        seq.OnComplete(() =>
+        {
+            // กัน side-effect: ยืนยันค่าทุกอย่างกลับสู่ base ของ prefab
+            cg.alpha = 1f;
+            successSymbol.transform.localScale = originalScale;
+
+            if (rt != null)
+            {
+                rt.anchoredPosition = originalAnchoredPos2D;
+            }
+            else
+            {
+                successSymbol.transform.localPosition = originalLocalPos3D;
+            }
+        });
+
+        // ผูก sequence เข้ากับ successSymbol เพื่อให้ Kill() รอบหน้าทำงานถูกตัว
+        seq.SetTarget(successSymbol);
     }
 
     public void HideSuccessSymbol()

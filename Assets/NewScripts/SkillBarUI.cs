@@ -4,10 +4,15 @@ using System.Collections.Generic;
 
 public class SkillBarUI : MonoBehaviour
 {
-    public Transform skillSlotParent; // ช่องสกิลใน Canvas
-    public GameObject skillSlotPrefab; // Prefab แต่ละช่อง (มี Text/Image)
-    private List<GameObject> slots = new List<GameObject>();
+    [Header("Skill Slot Settings")]
+    public Transform skillSlotParent;       // ช่องสกิลใน Canvas
+    public GameObject skillSlotPrefab;      // Prefab แต่ละช่อง (มี Text/Image)
 
+    [Header("Selection Highlight")]
+    public GameObject selectionCirclePrefab; // Prefab วงกลม highlight (เช่นวงสีทอง)
+    private GameObject currentSelectionCircle; // ตัววงกลมปัจจุบัน
+
+    private List<GameObject> slots = new List<GameObject>();
     private PlayerSkillManager manager;
 
     private void Start()
@@ -31,8 +36,13 @@ public class SkillBarUI : MonoBehaviour
         }
 
         // ล้างของเก่า
-        foreach (var slot in slots) Destroy(slot);
+        foreach (var slot in slots)
+            Destroy(slot);
         slots.Clear();
+
+        // ลบวงกลมเก่าออก (ถ้ามี)
+        if (currentSelectionCircle != null)
+            Destroy(currentSelectionCircle);
 
         List<string> skills = manager.GetSkills();
         for (int i = 0; i < skills.Count; i++)
@@ -40,10 +50,19 @@ public class SkillBarUI : MonoBehaviour
             GameObject slot = Instantiate(skillSlotPrefab, skillSlotParent);
             slot.GetComponentInChildren<Text>().text = skills[i];
 
-            if (i == manager.GetSelectedIndex())
-                slot.GetComponent<Image>().color = Color.yellow; // highlight
-            else
-                slot.GetComponent<Image>().color = Color.white;
+            // ตั้งสีพื้นเป็นขาวทุกช่อง
+            Image img = slot.GetComponent<Image>();
+            if (img != null) img.color = Color.white;
+
+            // ✅ ถ้าเป็นสกิลที่เลือก — วางวงกลม highlight
+            if (i == manager.GetSelectedIndex() && selectionCirclePrefab != null)
+            {
+                GameObject circle = Instantiate(selectionCirclePrefab, slot.transform);
+                circle.transform.SetAsLastSibling(); // ให้อยู่บนสุด
+                circle.transform.localPosition = Vector3.zero; // ให้อยู่ตรงกลางช่อง
+                circle.transform.localScale = Vector3.one;
+                currentSelectionCircle = circle;
+            }
 
             slots.Add(slot);
         }
@@ -57,10 +76,8 @@ public class SkillBarUI : MonoBehaviour
             // ลบออกจาก PlayerSkillManager ด้วย
             manager.RemoveSkillAt(selectedIndex);
 
-            // อัปเดต UI
+            // อัปเดต UI ใหม่
             UpdateUI();
         }
     }
-
-
 }

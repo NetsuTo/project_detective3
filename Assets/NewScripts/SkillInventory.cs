@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using DG.Tweening; // ✅ เพิ่มที่บนสุด
 
 public class SkillInventory : MonoBehaviour
 {
@@ -34,11 +35,26 @@ public class SkillInventory : MonoBehaviour
         storedSkills.Add(sequence);
 
         GameObject go = Instantiate(bottlePrefab, bottleParent);
+        go.name = "Bottle_" + string.Join("", sequence);
+
         Text t = go.GetComponentInChildren<Text>();
         if (t != null)
-        {
-            t.text = string.Join("", sequence); // เช่น HHO
-        }
+            t.text = string.Join("", sequence);
+
+        // ✅ ขนาดคงเดิม (ไม่ใช้ DOScale)
+        Vector3 startPos = go.transform.localPosition;
+        go.transform.localPosition = startPos - new Vector3(0, 25f, 0); // เริ่มต่ำลงนิดหน่อย
+
+        // ✅ ตรวจ CanvasGroup สำหรับ fade
+        CanvasGroup cg = go.GetComponent<CanvasGroup>();
+        if (cg == null)
+            cg = go.AddComponent<CanvasGroup>();
+        cg.alpha = 0;
+
+        // ✅ แอนิเมชันแบบ fade + ลอยขึ้น
+        Sequence seq = DOTween.Sequence();
+        seq.Append(go.transform.DOLocalMoveY(startPos.y, 0.4f).SetEase(Ease.OutCubic));
+        seq.Join(cg.DOFade(1, 0.4f));
     }
 
     // ตรวจว่ามี skill ตรงกับ seq หรือไม่

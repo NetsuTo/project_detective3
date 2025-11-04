@@ -1,49 +1,52 @@
 using UnityEngine;
+using DG.Tweening;
 
 public class TutorialTrigger : MonoBehaviour
 {
-    [Header("UI ที่จะควบคุม")]
-    [Tooltip("ลาก GameObject ที่เป็น UI (เช่น Panel, Image, Text) มาใส่ในช่องนี้")]
-    [SerializeField]
-    private GameObject uiObjectToShow; // ตัวแปรสำหรับเก็บ UI ที่เราจะเปิด/ปิด
+    [Header("Sprite ที่จะ Fade")]
+    [SerializeField] private SpriteRenderer spriteToShow;
 
     [Header("ตั้งค่าการตรวจจับ")]
-    [SerializeField]
-    private string playerTag = "Player"; // Tag ของผู้เล่น
+    [SerializeField] private string playerTag = "Player";
 
-    // ฟังก์ชันนี้จะทำงานครั้งเดียวเมื่อเริ่มเกม
+    [Header("ตั้งค่า Fade")]
+    [SerializeField] private float fadeDuration = 0.8f;
+    [SerializeField] private Ease fadeEase = Ease.OutQuad;
+
+    private Vector3 originalScale;
+
     private void Start()
     {
-        // ตรวจสอบให้แน่ใจว่า UI ของเราปิดอยู่ตอนเริ่มเกม
-        if (uiObjectToShow != null)
+        if (spriteToShow != null)
         {
-            uiObjectToShow.SetActive(false);
-        }
-        else
-        {
-            Debug.LogWarning("ยังไม่ได้กำหนด UI Object ให้กับ Trigger นี้!", this.gameObject);
+            originalScale = spriteToShow.transform.localScale;
+            Color c = spriteToShow.color;
+            c.a = 0f;
+            spriteToShow.color = c;
         }
     }
 
-    // ทำงานเมื่อมี Collider อื่น 'เข้ามา' ใน Trigger
     private void OnTriggerEnter(Collider other)
     {
-        // ตรวจสอบว่าเป็นผู้เล่น และเราได้ตั้งค่า UI ไว้แล้ว
-        if (other.CompareTag(playerTag) && uiObjectToShow != null)
+        if (other.CompareTag(playerTag))
         {
-            // เปิดการแสดงผล UI
-            uiObjectToShow.SetActive(true);
+            spriteToShow.DOKill();
+
+            Sequence seq = DOTween.Sequence();
+            seq.Append(spriteToShow.DOFade(1f, fadeDuration).SetEase(fadeEase));
+            seq.Join(spriteToShow.transform.DOScale(originalScale * 1.1f, fadeDuration * 0.8f));
+            seq.Append(spriteToShow.transform.DOScale(originalScale, 0.3f));
         }
     }
 
-    // ทำงานเมื่อ Collider อื่น 'ออกไป' จาก Trigger
     private void OnTriggerExit(Collider other)
     {
-        // ตรวจสอบว่าเป็นผู้เล่น และเราได้ตั้งค่า UI ไว้แล้ว
-        if (other.CompareTag(playerTag) && uiObjectToShow != null)
+        if (other.CompareTag(playerTag) && spriteToShow != null)
         {
-            // ปิดการแสดงผล UI
-            uiObjectToShow.SetActive(false);
+            spriteToShow.DOKill();
+
+            // Fade out แบบ smooth
+            spriteToShow.DOFade(0f, fadeDuration * 0.7f).SetEase(Ease.InQuad);
         }
     }
 }

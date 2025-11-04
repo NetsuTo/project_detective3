@@ -15563,8 +15563,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 373ee226161dece4cacf9eee5ad3d4d5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  uiObjectToShow: {fileID: 1491208844}
+  spriteToShow: {fileID: 1491208845}
   playerTag: Player
+  fadeDuration: 0.8
+  fadeEase: 6
 --- !u!65 &334497841
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -16651,8 +16653,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 373ee226161dece4cacf9eee5ad3d4d5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  uiObjectToShow: {fileID: 1868418972}
+  spriteToShow: {fileID: 1868418973}
   playerTag: Player
+  fadeDuration: 0.8
+  fadeEase: 6
 --- !u!65 &369474046
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -22093,7 +22097,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!212 &534128888
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -30078,8 +30082,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 373ee226161dece4cacf9eee5ad3d4d5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  uiObjectToShow: {fileID: 621257359}
+  spriteToShow: {fileID: 621257360}
   playerTag: Player
+  fadeDuration: 0.8
+  fadeEase: 6
 --- !u!65 &614971562
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -30456,7 +30462,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!212 &621257360
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -32417,7 +32423,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!212 &668158126
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -33955,8 +33961,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 373ee226161dece4cacf9eee5ad3d4d5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  uiObjectToShow: {fileID: 534128887}
+  spriteToShow: {fileID: 534128888}
   playerTag: Player
+  fadeDuration: 0.8
+  fadeEase: 6
 --- !u!65 &711709898
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -66284,15 +66292,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2908075746234812187, guid: 8a7e7f6601b72774cb5e7b8a3f382286, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 266.94
+      value: -59
       objectReference: {fileID: 0}
     - target: {fileID: 2908075746234812187, guid: 8a7e7f6601b72774cb5e7b8a3f382286, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 6.08
+      value: -23.86
       objectReference: {fileID: 0}
     - target: {fileID: 2908075746234812187, guid: 8a7e7f6601b72774cb5e7b8a3f382286, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 27.21
+      value: 27.2
       objectReference: {fileID: 0}
     - target: {fileID: 2908075746234812187, guid: 8a7e7f6601b72774cb5e7b8a3f382286, type: 3}
       propertyPath: m_LocalRotation.w
@@ -66324,7 +66332,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4975268087712184080, guid: 8a7e7f6601b72774cb5e7b8a3f382286, type: 3}
       propertyPath: gravity
-      value: -16.3
+      value: -20
       objectReference: {fileID: 0}
     - target: {fileID: 4975268087712184080, guid: 8a7e7f6601b72774cb5e7b8a3f382286, type: 3}
       propertyPath: jumpForce
@@ -67051,8 +67059,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 373ee226161dece4cacf9eee5ad3d4d5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  uiObjectToShow: {fileID: 668158125}
+  spriteToShow: {fileID: 668158126}
   playerTag: Player
+  fadeDuration: 0.8
+  fadeEase: 6
 --- !u!65 &1456165912
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -68481,7 +68491,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!212 &1491208845
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -86805,7 +86815,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!212 &1868418973
 SpriteRenderer:
   m_ObjectHideFlags: 0

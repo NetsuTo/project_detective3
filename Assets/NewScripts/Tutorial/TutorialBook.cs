@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using DG.Tweening;
 
 [RequireComponent(typeof(AudioSource))]
 public class TutorialBook : MonoBehaviour
@@ -119,8 +120,39 @@ public class TutorialBook : MonoBehaviour
         {
             currentRightPageIndex = 0;
             UpdatePageDisplay();
+
+            // ? เพิ่ม DOTween ตอนเปิดเท่านั้น
+            CanvasGroup cg = tutorialBookPanelObject.GetComponent<CanvasGroup>();
+            if (cg == null)
+                cg = tutorialBookPanelObject.AddComponent<CanvasGroup>();
+
+            RectTransform rt = tutorialBookPanelObject.GetComponent<RectTransform>();
+
+            // รีเซ็ตค่าก่อนเริ่ม
+            cg.alpha = 0f;
+            Vector2 startPos = rt.anchoredPosition;
+            rt.anchoredPosition = startPos - new Vector2(0, 40f); // ล่างลงนิดหน่อย
+
+            // ลบ tween เก่าถ้ามี
+            DOTween.Kill(tutorialBookPanelObject);
+
+            // ?? Animation: fade in + slide up (เล่นแม้เวลาเกมหยุด)
+            Sequence seq = DOTween.Sequence();
+            seq.Append(rt.DOAnchorPos(startPos, 0.5f).SetEase(Ease.OutCubic));
+            seq.Join(cg.DOFade(1f, 0.5f).SetEase(Ease.OutCubic));
+            seq.OnComplete(() =>
+            {
+                // จบแล้วค้างไว้ ไม่ปิด ไม่เปลี่ยนขนาด
+                rt.anchoredPosition = startPos;
+                cg.alpha = 1f;
+            });
+
+            // ? บรรทัดสำคัญ! ให้ tween เล่นใน real-time แม้เกม pause
+            seq.SetUpdate(true);
+            seq.SetTarget(tutorialBookPanelObject);
         }
     }
+
 
     // ฟังก์ชัน GoToNextPage() เหมือนเดิม (ไม่ต้องแก้)
     public void GoToNextPage()
