@@ -64,7 +64,7 @@ ModelImporter:
       takeName: rig|magic
       internalID: -658213033215102606
       firstFrame: 0
-      lastFrame: 100
+      lastFrame: 50
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -92,7 +92,7 @@ ModelImporter:
       name: rig|magic_end
       takeName: rig|magic
       internalID: 8305393985281346174
-      firstFrame: 100
+      firstFrame: 102
       lastFrame: 119
       wrapMode: 0
       orientationOffsetY: 0
