@@ -43410,9 +43410,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 1876815158}
-  offset: {x: 2.5, y: 3.5, z: -18}
+  offset: {x: 2.5, y: 3.5, z: -20}
   smoothSpeed: 5
-  fixedRotation: {x: 10, y: -11, z: 0}
+  fixedRotation: {x: 10, y: -13, z: 0}
 --- !u!1 &976320508
 GameObject:
   m_ObjectHideFlags: 0
@@ -66345,7 +66345,7 @@ PrefabInstance:
     - target: {fileID: 4975268087712184080, guid: 8a7e7f6601b72774cb5e7b8a3f382286, type: 3}
       propertyPath: jumpSound
       value: 
-      objectReference: {fileID: 8300000, guid: 2b1652c6f9d579349b4526e988597d40, type: 3}
+      objectReference: {fileID: 8300000, guid: 91c5397e4ed1c0142b10b83b5ee9025a, type: 3}
     - target: {fileID: 4975268087712184080, guid: 8a7e7f6601b72774cb5e7b8a3f382286, type: 3}
       propertyPath: landSound
       value: 
