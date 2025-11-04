@@ -10,27 +10,39 @@ public class PlayerController : MonoBehaviour
 {
     [Header("Movement")]
     public float moveSpeed = 5f;
-    public float acceleration = 10f; // ✅ เพิ่มความลื่นในการเปลี่ยนทิศทาง
+    public float acceleration = 10f;
 
     [Header("Jump / Gravity")]
     public float jumpForce = 5f;
     public float jumpHeight = 2f;
     public float gravity = -9.81f;
-    public float fallMultiplier = 2.5f; // ✅ ตกเร็วขึ้นแบบเกม platformer ทั่วไป
+    public float fallMultiplier = 2.5f;
 
     [Header("Ground Check")]
     public Transform groundCheck;
     public float groundDistance = 0.2f;
     public LayerMask groundMask;
 
-    // ===== Use Zone (รองรับหลายโซน) =====
     [Header("Use Zone")]
-    public UseZone currentUseZone;                 // โซนที่ใช้งานอยู่
-    private readonly HashSet<UseZone> zonesIn = new HashSet<UseZone>(); // โซนทั้งหมดที่กำลังยืนอยู่
+    public UseZone currentUseZone;
+    private readonly HashSet<UseZone> zonesIn = new HashSet<UseZone>();
 
     // ====== Success Symbol Management ======
     [Header("Success Symbol")]
     public GameObject successSymbol; // ลาก GameObject ไอคอนเหนือหัวมาวางใน Inspector
+
+    // ====== Sound Effects ======
+    [Header("Sound Effects")]
+    public AudioClip[] footstepSounds; // ใส่เสียงก้าวเท้าหลายไฟล์เพื่อความหลากหลาย
+    public AudioClip jumpSound;
+    public AudioClip landSound;
+    [Range(0f, 1f)] public float footstepVolume = 0.5f;
+    [Range(0f, 1f)] public float jumpVolume = 0.7f;
+    [Range(0f, 1f)] public float landVolume = 0.6f;
+    public float footstepInterval = 0.4f; // ระยะห่างระหว่างเสียงเท้า (วินาที)
+
+    private AudioSource audioSource;
+    private float footstepTimer = 0f;
 
     private CharacterController controller;
     private Animator animator;
@@ -39,14 +51,23 @@ public class PlayerController : MonoBehaviour
     private bool isGrounded;
     private bool wasGroundedLastFrame;
     private bool isPickingUp = false;
-    private Action pickupCallback; // ✅ เก็บ callback ชั่วคราวไว้ใช้ทีหลัง
+    private Action pickupCallback;
 
     void Start()
     {
         controller = GetComponent<CharacterController>();
         animator = GetComponent<Animator>();
 
-        // ✅ สแกนว่าตอน spawn ยืนคร่อมโซนใดอยู่หรือไม่
+        // สร้าง AudioSource component
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
+        audioSource.playOnAwake = false;
+        audioSource.spatialBlend = 0f; // 2D sound (ปรับเป็น 1f ถ้าต้องการ 3D sound)
+
+        // สแกนว่าตอน spawn ยืนคร่อมโซนใดอยู่หรือไม่
         ScanZonesAtStart();
     }
 
@@ -61,24 +82,22 @@ public class PlayerController : MonoBehaviour
             var col = z.GetComponent<Collider>();
             if (col == null) continue;
 
-            // ถ้า player อยู่ใน bounds ของโซนตั้งแต่เริ่ม → เพิ่มเข้าชุด
             if (col.bounds.Contains(p))
                 zonesIn.Add(z);
         }
 
-        RecomputeCurrentZone(); // จะเป็นคนเปิด/ปิด canUseItems และ UI ให้เอง
+        RecomputeCurrentZone();
     }
 
     void Update()
     {
-        // --- ตรวจสอบพื้น ---
         wasGroundedLastFrame = isGrounded;
         isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
 
         if (isGrounded && velocity.y < 0)
-            velocity.y = -2f; // รีเซ็ตแรงโน้มถ่วงเล็กน้อยเมื่อแตะพื้น
+            velocity.y = -2f;
 
-        // --- การเคลื่อนที่แนวนอน (ใช้แค่ปุ่ม A / D) ---
+        // การเคลื่อนที่
         float x = 0f;
 
         if (Input.GetKey(KeyCode.A))
@@ -94,6 +113,9 @@ public class PlayerController : MonoBehaviour
 
         animator.SetFloat("Speed", Mathf.Abs(currentSpeed));
 
+        // เสียงเดิน
+        HandleFootstepSounds();
+
         // --- หันตัว ---
         if (x > 0.05f) transform.rotation = Quaternion.Euler(0f, 90f, 0f);
         else if (x < -0.05f) transform.rotation = Quaternion.Euler(0f, -90f, 0f);
@@ -103,9 +125,10 @@ public class PlayerController : MonoBehaviour
         {
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity) * jumpForce;
             animator.SetTrigger("Jump");
+            PlayJumpSound(); // เสียงกระโดด
         }
 
-        // --- แรงโน้มถ่วง + ตกไวขึ้น ---
+        // แรงโน้มถ่วง
         if (velocity.y < 0)
             velocity.y += gravity * fallMultiplier * Time.deltaTime;
         else
@@ -113,10 +136,60 @@ public class PlayerController : MonoBehaviour
 
         controller.Move(velocity * Time.deltaTime);
 
-        // --- ลงพื้นนุ่มนวล ---
+        // ลงพื้น
         if (isGrounded && !wasGroundedLastFrame)
         {
             animator.SetTrigger("Land");
+            PlayLandSound();
+        }
+    }
+
+    private void HandleFootstepSounds()
+    {
+        // เล่นเสียงก้าวเท้าถ้ากำลังเดินอยู่บนพื้น
+        if (isGrounded && Mathf.Abs(currentSpeed) > 0.1f)
+        {
+            footstepTimer += Time.deltaTime;
+
+            if (footstepTimer >= footstepInterval)
+            {
+                PlayFootstepSound();
+                footstepTimer = 0f;
+            }
+        }
+        else
+        {
+            footstepTimer = 0f;
+        }
+    }
+
+    private void PlayFootstepSound()
+    {
+        if (footstepSounds == null || footstepSounds.Length == 0 || audioSource == null)
+            return;
+
+        // สุ่มเสียงก้าวเท้าจากอาร์เรย์
+        AudioClip clip = footstepSounds[UnityEngine.Random.Range(0, footstepSounds.Length)];
+
+        if (clip != null)
+        {
+            audioSource.PlayOneShot(clip, footstepVolume);
+        }
+    }
+
+    private void PlayJumpSound()
+    {
+        if (jumpSound != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(jumpSound, jumpVolume);
+        }
+    }
+
+    private void PlayLandSound()
+    {
+        if (landSound != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(landSound, landVolume);
         }
     }
 
@@ -128,7 +201,6 @@ public class PlayerController : MonoBehaviour
         pickupCallback = onPickupComplete;
         animator.SetTrigger("Pickup");
 
-        // รอเวลาเท่าความยาว animation
         Invoke(nameof(CompletePickup), 1f);
     }
 
@@ -139,7 +211,6 @@ public class PlayerController : MonoBehaviour
         pickupCallback = null;
     }
 
-    // ========== เลือกโซนที่ดีที่สุด เมื่อมีหลายโซน ==========
     private void RecomputeCurrentZone()
     {
         UseZone best = null;
@@ -154,7 +225,6 @@ public class PlayerController : MonoBehaviour
             var col = z.GetComponent<Collider>();
             if (col == null) continue;
 
-            // เลือกตาม priority ก่อน
             if (z.priority > bestPriority)
             {
                 best = z;
@@ -164,7 +234,6 @@ public class PlayerController : MonoBehaviour
             }
             if (z.priority < bestPriority) continue;
 
-            // priority เท่ากัน → เลือกอันที่ใกล้กว่า
             float d = Vector3.SqrMagnitude(col.bounds.ClosestPoint(p) - p);
             if (d < bestDist)
             {
@@ -178,7 +247,6 @@ public class PlayerController : MonoBehaviour
         bool inAnyZone = currentUseZone != null;
     }
 
-    // ========== ใช้ไอเท็มกับโซนปัจจุบัน ==========
     public void TryUseSelectedInZone()
     {
         if (currentUseZone == null)
@@ -186,12 +254,8 @@ public class PlayerController : MonoBehaviour
             Debug.Log("ยังไม่ได้ยืนอยู่ในโซนใช้งาน");
             return;
         }
-
-
-
     }
 
-    // ========== Trigger: เข้า/ออกหลายโซนได้พร้อมกัน ==========
     private void OnTriggerEnter(Collider other)
     {
         if (other.TryGetComponent(out UseZone zone))
@@ -215,7 +279,7 @@ public class PlayerController : MonoBehaviour
         if (animator != null)
         {
             animator.SetBool("IsCasting", true);
-            animator.SetTrigger("Cast"); // Trigger สั้นเพื่อเข้า animation
+            animator.SetTrigger("Cast");
         }
     }
 
@@ -235,45 +299,35 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        // เปิด symbol ให้แน่ใจว่าโชว์
         successSymbol.SetActive(true);
         Debug.Log("✨ แสดง Success Symbol บนหัวผู้เล่น");
 
-        // ยกเลิก tween เก่าที่อาจยังค้างอยู่บน object เดิม
         DOTween.Kill(successSymbol);
 
-        // เราจะรองรับทั้งกรณีเป็น UI (RectTransform ใน Canvas)
-        // และกรณีเป็นวัตถุ 3D/World space (Transform ปกติ เหนือหัวตัวละคร)
         RectTransform rt = successSymbol.GetComponent<RectTransform>();
 
-        // เก็บสถานะเริ่มต้นจริงของ object
         Vector2 originalAnchoredPos2D = Vector2.zero;
         Vector3 originalLocalPos3D = Vector3.zero;
         Vector3 originalScale = successSymbol.transform.localScale;
 
         if (rt != null)
         {
-            // ถ้าเป็น UI
             originalAnchoredPos2D = rt.anchoredPosition;
         }
         else
         {
-            // ถ้าเป็น world/object ธรรมดา
             originalLocalPos3D = successSymbol.transform.localPosition;
         }
 
-        // เตรียม CanvasGroup สำหรับ fade
         CanvasGroup cg = successSymbol.GetComponent<CanvasGroup>();
         if (cg == null)
         {
             cg = successSymbol.AddComponent<CanvasGroup>();
         }
-        cg.alpha = 0f; // เริ่มใสเพื่อให้สามารถ fade in
+        cg.alpha = 0f;
 
-        // ระยะที่อยากให้มันลอยขึ้นตอนเกิด
         float riseAmount = 25f;
 
-        // เซ็ตตำแหน่งเริ่มต้นให้ต่ำลงเล็กน้อย เพื่อจะได้ tween ขึ้น
         if (rt != null)
         {
             rt.anchoredPosition = originalAnchoredPos2D - new Vector2(0f, riseAmount);
@@ -283,13 +337,10 @@ public class PlayerController : MonoBehaviour
             successSymbol.transform.localPosition = originalLocalPos3D - new Vector3(0f, riseAmount, 0f);
         }
 
-        // รีเซ็ต scale ให้เป็น scale เดิมของ prefab (สำคัญมาก ไม่งั้นจะบวม)
         successSymbol.transform.localScale = originalScale;
 
-        // สร้าง sequence แอนิเมชัน
         Sequence seq = DOTween.Sequence();
 
-        // 1) ลอยขึ้นจากต่ำ → กลับมาตำแหน่งจริง
         if (rt != null)
         {
             seq.Append(
@@ -305,29 +356,24 @@ public class PlayerController : MonoBehaviour
             );
         }
 
-        // 2) fade in ระหว่างลอยขึ้น
         seq.Join(
             cg.DOFade(1f, 0.4f)
               .SetEase(Ease.OutCubic)
         );
 
-        // 3) เด้งเบาๆ โดยไม่ทำให้มันตัวใหญ่ถาวร
-        //    เราจะขยายขึ้นเล็กน้อยจาก originalScale แล้วกลับมาที่ originalScale เอง
         seq.Append(
             successSymbol.transform
-                .DOScale(originalScale * 1.05f, 0.2f)   // ขยายขึ้น 5% นิดเดียว
+                .DOScale(originalScale * 1.05f, 0.2f)
                 .SetEase(Ease.OutQuad)
         );
         seq.Append(
             successSymbol.transform
-                .DOScale(originalScale, 0.15f)          // คืนสเกลเดิม
+                .DOScale(originalScale, 0.15f)
                 .SetEase(Ease.InQuad)
         );
 
-        // 4) หลังจบอนิเมชัน (symbol จะยังค้างอยู่ ไม่ปิดเอง)
         seq.OnComplete(() =>
         {
-            // กัน side-effect: ยืนยันค่าทุกอย่างกลับสู่ base ของ prefab
             cg.alpha = 1f;
             successSymbol.transform.localScale = originalScale;
 
@@ -341,7 +387,6 @@ public class PlayerController : MonoBehaviour
             }
         });
 
-        // ผูก sequence เข้ากับ successSymbol เพื่อให้ Kill() รอบหน้าทำงานถูกตัว
         seq.SetTarget(successSymbol);
     }
 
@@ -353,5 +398,4 @@ public class PlayerController : MonoBehaviour
             Debug.Log("💨 ซ่อน Success Symbol บนหัวผู้เล่น");
         }
     }
-
 }
