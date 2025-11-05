@@ -46,7 +46,7 @@ public class SkillLetterSelector : MonoBehaviour
         }
 
         // เริ่ม QTE ทันทีหลังจากกด O ครั้งแรก
-        if (Input.GetKeyDown(KeyCode.O) && remaining.Count > 0)
+        if (Input.GetKeyDown(KeyCode.F) && remaining.Count > 0)
         {
             if (!qteStarted)
             {

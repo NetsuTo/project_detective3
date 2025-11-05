@@ -17,10 +17,23 @@ public class QTEManager : MonoBehaviour
     [Header("Settings")]
     public float timePerSlot = 1f;
 
+    [Header("เสียงประกอบ QTE")]
+    public AudioClip keyPressSound;
+    public AudioClip keyFailSound;
+    private AudioSource sfxSource;
+    [Range(0f, 1f)] public float passVolume = 0.5f;
+    [Range(0f, 1f)] public float failVolume = 0.5f;
+
     private List<KeyCode> sequence = new List<KeyCode>();
     private List<GameObject> slotUIs = new List<GameObject>();
     private int currentIndex = 0;
     private bool isActive = false;
+
+    void Start()
+    {
+        sfxSource = gameObject.AddComponent<AudioSource>();
+        sfxSource.playOnAwake = false;
+    }
 
     // 🔹 เริ่ม QTE
     public void StartQTE(List<KeyCode> keySequence)
@@ -97,12 +110,23 @@ public class QTEManager : MonoBehaviour
     {
         if (!isActive) return;
 
+        // ✅ เล่นเสียงตามผล
+        if (success)
+        {
+            if (keyPressSound != null)
+                sfxSource.PlayOneShot(keyPressSound, passVolume);
+        }
+        else
+        {
+            if (keyFailSound != null)
+                sfxSource.PlayOneShot(keyFailSound, failVolume);
+        }
+
         if (success)
         {
             if (currentIndex < slotUIs.Count)
                 slotUIs[currentIndex].SetActive(true);
 
-            // แจ้งให้ SkillLetterSelector ลบตัวอักษรด้านบนหัว
             SkillLetterSelector selector = FindObjectOfType<SkillLetterSelector>();
             if (selector != null)
             {
@@ -115,21 +139,14 @@ public class QTEManager : MonoBehaviour
             {
                 Debug.Log("All QTE Success!");
 
-                // ✅ ลบสกิลจาก SkillBar
                 SkillBarUI skillBar = FindObjectOfType<SkillBarUI>();
                 if (skillBar != null)
-                {
                     skillBar.ConsumeSelectedSkill();
-                }
 
-                // ✅ เพิ่มไปยัง SkillInventory (ขวด)
                 SkillInventory inv = FindObjectOfType<SkillInventory>();
                 if (inv != null)
-                {
                     inv.AddMixedSkill(new List<KeyCode>(sequence));
-                }
 
-                // ✅ แสดง success symbol บนหัวผู้เล่น
                 PlayerController player = FindObjectOfType<PlayerController>();
                 if (player != null)
                     player.ShowSuccessSymbol();
@@ -147,6 +164,7 @@ public class QTEManager : MonoBehaviour
             EndQTE();
         }
     }
+
 
     void EndQTE()
     {

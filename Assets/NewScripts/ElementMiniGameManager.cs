@@ -27,6 +27,13 @@ public class ElementMiniGameManager : MonoBehaviour
     public PlayerController playerController;  // อ้างถึง PlayerController เพื่อเรียก animation
     public float successSymbolDuration = 3f;   // ระยะเวลาโชว์
 
+    [Header("เสียงตอนกดคีย์")]
+    public AudioClip keyPressSound;     // เสียงเมื่อกดคีย์ถูก
+    public AudioClip keyFailSound;      // เสียงเมื่อกดผิด
+    private AudioSource sfxSource;      // ใช้เล่นเสียงสั้นๆ
+    [Range(0f, 1f)] public float passVolume = 0.5f;
+    [Range(0f, 1f)] public float failVolume = 0.5f;
+
     private Dictionary<KeyCode, Sprite> keyToSprite = new Dictionary<KeyCode, Sprite>();
     private List<KeyCode> currentSequence = new List<KeyCode>();
     private int currentIndex = 0;
@@ -56,6 +63,10 @@ public class ElementMiniGameManager : MonoBehaviour
         if (displayText != null) displayText.gameObject.SetActive(false);
         if (displayImage != null) displayImage.gameObject.SetActive(false);
         if (failSymbol != null) failSymbol.SetActive(false);
+
+        // ✅ เพิ่ม AudioSource สำหรับ SFX
+        sfxSource = gameObject.AddComponent<AudioSource>();
+        sfxSource.playOnAwake = false;
     }
 
     void Update()
@@ -67,6 +78,10 @@ public class ElementMiniGameManager : MonoBehaviour
         {
             if (Input.GetKeyDown(currentSequence[currentIndex]))
             {
+                // ✅ เล่นเสียงเมื่อกดคีย์ถูก
+                if (keyPressSound != null)
+                    sfxSource.PlayOneShot(keyPressSound, passVolume);
+
                 currentIndex++;
                 UpdateDisplay();
 
@@ -75,9 +90,14 @@ public class ElementMiniGameManager : MonoBehaviour
             }
             else
             {
+                // ✅ เล่นเสียงเมื่อกดผิด
+                if (keyFailSound != null)
+                    sfxSource.PlayOneShot(keyFailSound, failVolume);
+
                 Fail();
             }
         }
+
     }
 
     public void StartMiniGame(List<KeyCode> sequence, Action<bool> callback)
