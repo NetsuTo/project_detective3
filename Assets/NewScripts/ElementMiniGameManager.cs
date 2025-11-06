@@ -8,10 +8,10 @@ using UnityEngine.Events;
 public class ElementMiniGameManager : MonoBehaviour
 {
     [Header("UI ของ MiniGame ใน Zone นี้")]
-    public Text displayText;                 // ถ้าไม่มีรูป ใช้ Text แสดงแทน
-    public Image displayImage;               // รูปสำหรับแสดงปุ่ม
-    public GameObject failSymbol;            // ไอคอน Fail
-    public float failSymbolDuration = 5f;    // เวลาที่ Fail symbol โผล่แล้วหาย
+    public Text displayText;
+    public Image displayImage;
+    public GameObject failSymbol;
+    public float failSymbolDuration = 5f;
 
     [Header("Optional: Sequence เริ่มต้น (fallback ถ้าไม่ได้ส่งจาก TargetZone)")]
     public List<KeyCode> inspectorSequence = new List<KeyCode>();
@@ -24,15 +24,20 @@ public class ElementMiniGameManager : MonoBehaviour
     public UnityEvent onFailEvent;
 
     [Header("Player References")]
-    public PlayerController playerController;  // อ้างถึง PlayerController เพื่อเรียก animation
-    public float successSymbolDuration = 3f;   // ระยะเวลาโชว์
+    public PlayerController playerController;
+    public float successSymbolDuration = 3f;
 
     [Header("เสียงตอนกดคีย์")]
-    public AudioClip keyPressSound;     // เสียงเมื่อกดคีย์ถูก
-    public AudioClip keyFailSound;      // เสียงเมื่อกดผิด
-    private AudioSource sfxSource;      // ใช้เล่นเสียงสั้นๆ
-    [Range(0f, 1f)] public float passVolume = 0.5f;
-    [Range(0f, 1f)] public float failVolume = 0.5f;
+    public AudioClip keyPressSound;
+    public AudioClip keyFailSound;
+    private AudioSource sfxSource;
+    [Range(0f, 1f)] public float PressVolume = 0.5f;
+    [Range(0f, 1f)] public float FailVolume = 0.5f;
+
+    // 🪶 เพิ่มส่วนหนังสือ
+    [Header("Book Model Settings")]
+    [Tooltip("โมเดลหนังสือที่จะเปิดตอนเริ่มมินิเกม (วางไว้ในตัวผู้เล่น)")]
+    public GameObject bookModel;
 
     private Dictionary<KeyCode, Sprite> keyToSprite = new Dictionary<KeyCode, Sprite>();
     private List<KeyCode> currentSequence = new List<KeyCode>();
@@ -49,7 +54,6 @@ public class ElementMiniGameManager : MonoBehaviour
 
     void Awake()
     {
-        // เตรียม dictionary สำหรับ map key -> sprite
         keyToSprite.Clear();
         foreach (var pair in keySpriteMappings)
         {
@@ -67,6 +71,10 @@ public class ElementMiniGameManager : MonoBehaviour
         // ✅ เพิ่ม AudioSource สำหรับ SFX
         sfxSource = gameObject.AddComponent<AudioSource>();
         sfxSource.playOnAwake = false;
+
+        // 🪶 ปิดโมเดลหนังสือตอนเริ่ม
+        if (bookModel != null)
+            bookModel.SetActive(false);
     }
 
     void Update()
@@ -78,9 +86,8 @@ public class ElementMiniGameManager : MonoBehaviour
         {
             if (Input.GetKeyDown(currentSequence[currentIndex]))
             {
-                // ✅ เล่นเสียงเมื่อกดคีย์ถูก
                 if (keyPressSound != null)
-                    sfxSource.PlayOneShot(keyPressSound, passVolume);
+                    sfxSource.PlayOneShot(keyPressSound, PressVolume);
 
                 currentIndex++;
                 UpdateDisplay();
@@ -90,14 +97,12 @@ public class ElementMiniGameManager : MonoBehaviour
             }
             else
             {
-                // ✅ เล่นเสียงเมื่อกดผิด
                 if (keyFailSound != null)
-                    sfxSource.PlayOneShot(keyFailSound, failVolume);
+                    sfxSource.PlayOneShot(keyFailSound, FailVolume);
 
                 Fail();
             }
         }
-
     }
 
     public void StartMiniGame(List<KeyCode> sequence, Action<bool> callback)
@@ -107,6 +112,10 @@ public class ElementMiniGameManager : MonoBehaviour
             playerController.HideSuccessSymbol();
             playerController.PlayCastingAnimation();
         }
+
+        // 🪶 เปิดโมเดลหนังสือตอนเริ่มเล่นมินิเกม
+        if (bookModel != null)
+            bookModel.SetActive(true);
 
         if (sequence == null || sequence.Count == 0)
         {
@@ -134,6 +143,38 @@ public class ElementMiniGameManager : MonoBehaviour
         Debug.Log($"[MiniGame] StartMiniGame - seq: {SeqToString(currentSequence)}");
     }
 
+    private void Success()
+    {
+        isActive = false;
+        HideDisplay();
+        onSuccessEvent?.Invoke();
+        onCompleteCallback?.Invoke(true);
+        onCompleteCallback = null;
+
+        if (playerController != null)
+            playerController.StopCastingAnimation();
+
+        // 🪶 ปิดโมเดลหนังสือตอนจบมินิเกม
+        if (bookModel != null)
+            bookModel.SetActive(false);
+
+        Debug.Log("✅ MiniGame Success Completed!");
+    }
+
+    private void Fail()
+    {
+        isActive = false;
+        HideDisplay();
+        ShowFailSymbolSafe();
+        onFailEvent?.Invoke();
+        onCompleteCallback?.Invoke(false);
+        onCompleteCallback = null;
+
+        // 🪶 ปิดโมเดลหนังสือตอนจบมินิเกม (แม้จะ fail)
+        if (bookModel != null)
+            bookModel.SetActive(false);
+    }
+
     private void UpdateDisplay()
     {
         if (currentIndex >= currentSequence.Count)
@@ -144,7 +185,6 @@ public class ElementMiniGameManager : MonoBehaviour
 
         KeyCode key = currentSequence[currentIndex];
 
-        // ถ้ามีรูป
         if (displayImage != null && keyToSprite.ContainsKey(key) && keyToSprite[key] != null)
         {
             displayImage.sprite = keyToSprite[key];
@@ -153,7 +193,6 @@ public class ElementMiniGameManager : MonoBehaviour
         }
         else
         {
-            // ไม่มีรูป → ใช้ text
             if (displayText != null)
             {
                 displayText.text = "Next: " + key.ToString();
@@ -167,32 +206,6 @@ public class ElementMiniGameManager : MonoBehaviour
     {
         if (displayText != null) displayText.gameObject.SetActive(false);
         if (displayImage != null) displayImage.gameObject.SetActive(false);
-    }
-
-    private void Success()
-    {
-        isActive = false;
-        HideDisplay();
-        onSuccessEvent?.Invoke();
-        onCompleteCallback?.Invoke(true);
-        onCompleteCallback = null;
-
-        if (playerController != null)
-        {
-            playerController.StopCastingAnimation();
-        }
-
-        Debug.Log("✅ MiniGame Success Completed!");
-    }
-
-    private void Fail()
-    {
-        isActive = false;
-        HideDisplay();
-        ShowFailSymbolSafe();
-        onFailEvent?.Invoke();
-        onCompleteCallback?.Invoke(false);
-        onCompleteCallback = null;
     }
 
     public void ShowFailSymbolSafe()
