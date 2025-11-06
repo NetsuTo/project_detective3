@@ -1,10 +1,12 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class PauseMenuArrowOnly : MonoBehaviour
 {
+    [Header("UI References")]
     public GameObject pauseMenuUI;
-    public Button[] buttons; // ใส่ปุ่ม Resume, Quit ตามลำดับ
+    public Button[] buttons; // ใส่ปุ่ม Resume, Restart, Quit ตามลำดับ
 
     private bool isPaused = false;
     private int selectedIndex = 0;
@@ -13,6 +15,16 @@ public class PauseMenuArrowOnly : MonoBehaviour
     {
         pauseMenuUI.SetActive(false);
         UpdateButtonHighlight();
+
+        // Debug ตรวจสอบจำนวนปุ่ม (ใช้ตอนเทส)
+        Debug.Log("Total buttons: " + buttons.Length);
+        for (int i = 0; i < buttons.Length; i++)
+        {
+            if (buttons[i] != null)
+                Debug.Log($"Button {i}: {buttons[i].name}");
+            else
+                Debug.LogWarning($"Button {i} is missing!");
+        }
     }
 
     void Update()
@@ -20,11 +32,13 @@ public class PauseMenuArrowOnly : MonoBehaviour
         // กด ESC เพื่อ Pause/Resume
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            if (isPaused) ResumeGame();
-            else PauseGame();
+            if (isPaused)
+                ResumeGame();
+            else
+                PauseGame();
         }
 
-        // ถ้าอยู่ในโหมด Pause ? ควบคุมด้วยลูกศร
+        // ควบคุมด้วยลูกศรเฉพาะตอน Pause
         if (isPaused)
         {
             HandleArrowInput();
@@ -55,8 +69,23 @@ public class PauseMenuArrowOnly : MonoBehaviour
     {
         for (int i = 0; i < buttons.Length; i++)
         {
+            if (buttons[i] == null) continue;
+
             var colors = buttons[i].colors;
-            colors.normalColor = (i == selectedIndex) ? Color.yellow : Color.white;
+            if (i == selectedIndex)
+            {
+                // สีเทาเมื่อเลือก
+                colors.normalColor = new Color(0.6f, 0.6f, 0.6f, 1f);
+            }
+            else
+            {
+                // โปร่งใสเมื่อไม่ได้เลือก
+                colors.normalColor = new Color(1f, 1f, 1f, 0f);
+            }
+
+            // ปรับทุกสถานะให้เหมือนกัน
+            colors.highlightedColor = colors.normalColor;
+            colors.selectedColor = colors.normalColor;
             buttons[i].colors = colors;
         }
     }
@@ -77,8 +106,16 @@ public class PauseMenuArrowOnly : MonoBehaviour
         isPaused = false;
     }
 
+    public void RestartGame()
+    {
+        Time.timeScale = 1f;
+        Scene currentScene = SceneManager.GetActiveScene();
+        SceneManager.LoadScene(currentScene.name);
+    }
+
     public void QuitGame()
     {
+        Time.timeScale = 1f;
         Application.Quit();
     }
 }
