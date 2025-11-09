@@ -26362,7 +26362,7 @@ Transform:
   m_GameObject: {fileID: 692221977}
   serializedVersion: 2
   m_LocalRotation: {x: -0.7002911, y: -0.056061897, z: -0.004030109, w: 0.71164125}
-  m_LocalPosition: {x: -13.97, y: 9.37, z: 95.25}
+  m_LocalPosition: {x: -13.99, y: 9.64, z: 95.25}
   m_LocalScale: {x: 217.29187, y: 282.81265, z: 14.207006}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -66826,6 +66826,7 @@ GameObject:
   - component: {fileID: 2006805183}
   - component: {fileID: 2006805182}
   - component: {fileID: 2006805181}
+  - component: {fileID: 2006805184}
   m_Layer: 3
   m_Name: Cylinder (2)
   m_TagString: Ground
@@ -66842,7 +66843,7 @@ Transform:
   m_GameObject: {fileID: 2006805179}
   serializedVersion: 2
   m_LocalRotation: {x: -0.5555088, y: 0.4300703, z: 0.4761824, w: 0.5288665}
-  m_LocalPosition: {x: -13.33, y: 9.52, z: 87.7}
+  m_LocalPosition: {x: -13.34, y: 9.64, z: 87.7}
   m_LocalScale: {x: 217.29187, y: 282.81265, z: 14.207006}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -66923,6 +66924,23 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2006805179}
   m_Mesh: {fileID: 2534964839176971238, guid: 7fa24565f70624047b2ce59a43abe73b, type: 3}
+--- !u!114 &2006805184
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2006805179}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b32f94668a23ad45ad43cdcd417acfd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  visibleTime: 1.5
+  invisibleTime: 1.5
+  startDelay: 1
+  showWarning: 1
+  warningTime: 0.5
 --- !u!1001 &2025807666
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -70796,7 +70814,7 @@ Transform:
   m_GameObject: {fileID: 9139367220716953246}
   serializedVersion: 2
   m_LocalRotation: {x: -0.6865775, y: -0.14886905, z: -0.09881333, w: 0.70475906}
-  m_LocalPosition: {x: -14.44, y: 10.13, z: 103.5}
+  m_LocalPosition: {x: -14.22, y: 9.64, z: 103}
   m_LocalScale: {x: 217.29187, y: 282.81265, z: 14.207006}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -84468,6 +84486,7 @@ GameObject:
   - component: {fileID: 438195079914432731}
   - component: {fileID: 3431529831832249921}
   - component: {fileID: 9139367220716953247}
+  - component: {fileID: 9139367220716953248}
   m_Layer: 3
   m_Name: Cylinder
   m_TagString: Ground
@@ -84497,6 +84516,23 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 2534964839176971238, guid: 7fa24565f70624047b2ce59a43abe73b, type: 3}
+--- !u!114 &9139367220716953248
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9139367220716953246}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b32f94668a23ad45ad43cdcd417acfd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  visibleTime: 1.5
+  invisibleTime: 1.5
+  startDelay: 0.5
+  showWarning: 1
+  warningTime: 0.5
 --- !u!33 &9147378006830973200
 MeshFilter:
   m_ObjectHideFlags: 0
