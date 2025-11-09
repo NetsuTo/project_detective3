@@ -13,7 +13,7 @@ public class PlayerController : MonoBehaviour
     public float acceleration = 10f;
 
     [Header("Jump / Gravity")]
-    public float jumpForce = 5f;
+    // public float jumpForce = 5f;
     public float jumpHeight = 2f;
     public float gravity = -9.81f;
     public float fallMultiplier = 2.5f;
@@ -123,7 +123,7 @@ public class PlayerController : MonoBehaviour
         // --- กระโดด ---
         if (Input.GetButtonDown("Jump") && isGrounded)
         {
-            velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity) * jumpForce;
+            velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
             animator.SetTrigger("Jump");
             PlayJumpSound(); // เสียงกระโดด
         }
