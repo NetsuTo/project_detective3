@@ -3108,9 +3108,14 @@ MonoBehaviour:
   successSymbolDuration: 3
   keyPressSound: {fileID: 8300000, guid: 81054ead8bd740648bc33e7815e86f0a, type: 3}
   keyFailSound: {fileID: 8300000, guid: b3c453d54c3613c48b67ff22252e9713, type: 3}
-  PressVolume: 0.3
-  FailVolume: 0.3
+  PressVolume: 0.1
+  FailVolume: 0.1
   bookModel: {fileID: 1371996521}
+  successEffect: {fileID: 0}
+  handEffectSpawnPoint: {fileID: 0}
+  effectDelay: 0.5
+  successSkillSound: {fileID: 0}
+  successSkillVolume: 0.8
 --- !u!4 &123453441
 Transform:
   m_ObjectHideFlags: 0
@@ -5990,9 +5995,14 @@ MonoBehaviour:
   successSymbolDuration: 3
   keyPressSound: {fileID: 8300000, guid: 81054ead8bd740648bc33e7815e86f0a, type: 3}
   keyFailSound: {fileID: 8300000, guid: b3c453d54c3613c48b67ff22252e9713, type: 3}
-  PressVolume: 0.3
-  FailVolume: 0.3
+  PressVolume: 0.1
+  FailVolume: 0.1
   bookModel: {fileID: 1371996521}
+  successEffect: {fileID: 6484756454414123860, guid: f6573a110c1967643a98d0efdba24be8, type: 3}
+  handEffectSpawnPoint: {fileID: 1793744487}
+  effectDelay: 0
+  successSkillSound: {fileID: 0}
+  successSkillVolume: 0.8
 --- !u!4 &235292687
 Transform:
   m_ObjectHideFlags: 0
@@ -6001,12 +6011,14 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 235292685}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 39.13, y: -24.85, z: 26.15}
+  m_LocalScale: {x: 3.3750482, y: 3.3750482, z: 3.3750482}
   m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1564931229}
+  m_Children:
+  - {fileID: 1564931229}
+  - {fileID: 1793744487}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &238800830
 PrefabInstance:
@@ -47351,9 +47363,14 @@ MonoBehaviour:
   successSymbolDuration: 3
   keyPressSound: {fileID: 8300000, guid: 81054ead8bd740648bc33e7815e86f0a, type: 3}
   keyFailSound: {fileID: 8300000, guid: b3c453d54c3613c48b67ff22252e9713, type: 3}
-  PressVolume: 0.3
-  FailVolume: 0.3
+  PressVolume: 0.1
+  FailVolume: 0.1
   bookModel: {fileID: 1371996521}
+  successEffect: {fileID: 0}
+  handEffectSpawnPoint: {fileID: 0}
+  effectDelay: 0.5
+  successSkillSound: {fileID: 0}
+  successSkillVolume: 0.8
 --- !u!4 &1257205032
 Transform:
   m_ObjectHideFlags: 0
@@ -52995,6 +53012,18 @@ PrefabInstance:
       value: 0.2
       objectReference: {fileID: 0}
     - target: {fileID: 4975268087712184080, guid: 8a7e7f6601b72774cb5e7b8a3f382286, type: 3}
+      propertyPath: jumpDustEffect
+      value: 
+      objectReference: {fileID: 833999092141802515, guid: 5831d4dc964245b4d935906496064f8f, type: 3}
+    - target: {fileID: 4975268087712184080, guid: 8a7e7f6601b72774cb5e7b8a3f382286, type: 3}
+      propertyPath: jumpWindEffect
+      value: 
+      objectReference: {fileID: 833999092141802515, guid: 5831d4dc964245b4d935906496064f8f, type: 3}
+    - target: {fileID: 4975268087712184080, guid: 8a7e7f6601b72774cb5e7b8a3f382286, type: 3}
+      propertyPath: landDustEffect
+      value: 
+      objectReference: {fileID: 833999092141802515, guid: 5831d4dc964245b4d935906496064f8f, type: 3}
+    - target: {fileID: 4975268087712184080, guid: 8a7e7f6601b72774cb5e7b8a3f382286, type: 3}
       propertyPath: standingHeight
       value: 2
       objectReference: {fileID: 0}
@@ -56408,13 +56437,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1564931224}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 39.13, y: -24.85, z: 26.15}
-  m_LocalScale: {x: 3.3750482, y: 3.3750482, z: 3.3750482}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 235292687}
-  m_Father: {fileID: 0}
+  m_Children: []
+  m_Father: {fileID: 235292687}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1566741404
 GameObject:
@@ -62284,6 +62312,37 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1791028702}
   m_Mesh: {fileID: 2534964839176971238, guid: 7fa24565f70624047b2ce59a43abe73b, type: 3}
+--- !u!1 &1793744486
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1793744487}
+  m_Layer: 0
+  m_Name: TargetSkill
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1793744487
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1793744486}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: 0.7071068, z: -0, w: 0.7071068}
+  m_LocalPosition: {x: 2.29, y: 0.42666018, z: 0.16}
+  m_LocalScale: {x: 0.29629204, y: 0.29629207, z: 0.29629204}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 235292687}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1794840679
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -90467,7 +90526,7 @@ SceneRoots:
   - {fileID: 489476312}
   - {fileID: 1653647817}
   - {fileID: 2072751844}
-  - {fileID: 1564931229}
+  - {fileID: 235292687}
   - {fileID: 1891877501}
   - {fileID: 1176895161}
   - {fileID: 1086996816}

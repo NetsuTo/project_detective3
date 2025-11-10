@@ -34,10 +34,25 @@ public class ElementMiniGameManager : MonoBehaviour
     [Range(0f, 1f)] public float PressVolume = 0.5f;
     [Range(0f, 1f)] public float FailVolume = 0.5f;
 
-    // 🪶 เพิ่มส่วนหนังสือ
+    // เพิ่มส่วนหนังสือ
     [Header("Book Model Settings")]
     [Tooltip("โมเดลหนังสือที่จะเปิดตอนเริ่มมินิเกม (วางไว้ในตัวผู้เล่น)")]
     public GameObject bookModel;
+
+    // เพิ่มส่วน Success Effect
+    [Header("Success Effect Settings")]
+    [Tooltip("Effect ที่จะเล่นเมื่อทำมินิเกมสำเร็จ (แต่ละ Zone ใส่ Effect ต่างกัน)")]
+    public ParticleSystem successEffect;
+
+    [Tooltip("ตำแหน่งมือที่จะ Spawn Effect (เช่น Hand_R หรือ Hand_L)")]
+    public Transform handEffectSpawnPoint;
+
+    [Tooltip("ดีเลย์ก่อนเล่น Effect (รอให้ Animation เล่นถึงจังหวะที่ต้องการ)")]
+    public float effectDelay = 0.5f;
+
+    [Tooltip("เสียงที่เล่นตอนปล่อยสกิลสำเร็จ")]
+    public AudioClip successSkillSound;
+    [Range(0f, 1f)] public float successSkillVolume = 0.8f;
 
     private Dictionary<KeyCode, Sprite> keyToSprite = new Dictionary<KeyCode, Sprite>();
     private List<KeyCode> currentSequence = new List<KeyCode>();
@@ -150,6 +165,8 @@ public class ElementMiniGameManager : MonoBehaviour
         onSuccessEvent?.Invoke();
         onCompleteCallback?.Invoke(true);
         onCompleteCallback = null;
+        // เริ่ม Coroutine สำหรับเล่น Effect หลังจากดีเลย์
+        StartCoroutine(PlaySuccessEffectSequence());
 
         if (playerController != null)
             playerController.StopCastingAnimation();
@@ -159,6 +176,44 @@ public class ElementMiniGameManager : MonoBehaviour
             bookModel.SetActive(false);
 
         Debug.Log("✅ MiniGame Success Completed!");
+    }
+
+    private IEnumerator PlaySuccessEffectSequence()
+    {
+        // รอให้ Animation เล่นถึงจังหวะที่ต้องการ
+        yield return new WaitForSeconds(effectDelay);
+
+        // เล่น Effect ที่มือ
+        if (successEffect != null)
+        {
+            Vector3 spawnPos = handEffectSpawnPoint != null
+                ? handEffectSpawnPoint.position
+                : transform.position + Vector3.up; // fallback ถ้าไม่มี hand point
+
+            // ✅ เพิ่มบรรทัดนี้ที่หายไป
+            Quaternion spawnRot = handEffectSpawnPoint != null
+                ? handEffectSpawnPoint.rotation
+                : Quaternion.identity;
+
+            ParticleSystem effect = Instantiate(successEffect, spawnPos, spawnRot);
+
+            // ถ้าต้องการให้ Effect ติดตามมือไปด้วย (optional)
+            // effect.transform.SetParent(handEffectSpawnPoint);
+
+            Destroy(effect.gameObject, 5f); // ลบหลังจาก 5 วินาที
+
+            Debug.Log($"🎆 Effect spawned at {spawnPos}");
+        }
+        else
+        {
+            Debug.LogWarning("⚠️ successEffect ไม่ได้ถูกตั้งค่าใน Inspector!");
+        }
+
+        // เล่นเสียงประกอบ
+        if (successSkillSound != null && sfxSource != null)
+        {
+            sfxSource.PlayOneShot(successSkillSound, successSkillVolume);
+        }
     }
 
     private void Fail()

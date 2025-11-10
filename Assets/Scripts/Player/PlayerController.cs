@@ -23,6 +23,10 @@ public class PlayerController : MonoBehaviour
     public float groundDistance = 0.2f;
     public LayerMask groundMask;
 
+    [Header("Visual Effects")]
+    public GameObject jumpDustEffectPrefab; // ใส่ Prefab ตรงนี้
+    public Transform effectSpawnPoint; // ตำแหน่งที่จะ spawn (เช่น groundCheck)
+
     [Header("Use Zone")]
     public UseZone currentUseZone;
     private readonly HashSet<UseZone> zonesIn = new HashSet<UseZone>();
@@ -126,6 +130,7 @@ public class PlayerController : MonoBehaviour
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
             animator.SetTrigger("Jump");
             PlayJumpSound(); // เสียงกระโดด
+            PlayJumpEffect(); // เพิ่มบรรทัดนี้
         }
 
         // แรงโน้มถ่วง
@@ -141,6 +146,22 @@ public class PlayerController : MonoBehaviour
         {
             animator.SetTrigger("Land");
             PlayLandSound();
+        }
+    }
+
+    private void PlayJumpEffect()
+    {
+        if (jumpDustEffectPrefab != null)
+        {
+            Vector3 spawnPos = effectSpawnPoint != null ? effectSpawnPoint.position : transform.position;
+
+            // Spawn เอฟเฟค
+            GameObject effect = Instantiate(jumpDustEffectPrefab, spawnPos, Quaternion.identity);
+
+            // ทำลายหลังจาก 2 วินาที (ปรับตามความยาวของเอฟเฟค)
+            Destroy(effect, 2f);
+
+            Debug.Log("✨ Spawn เอฟเฟคกระโดดแล้ว!");
         }
     }
 
