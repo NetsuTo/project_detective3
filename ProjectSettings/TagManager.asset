@@ -9,6 +9,7 @@ TagManager:
   - Trap
   - InventoryPanel
   - PressR
+  - Box
   layers:
   - Default
   - TransparentFX

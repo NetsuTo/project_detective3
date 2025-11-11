@@ -38,6 +38,7 @@ public class TargetZone : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.R))
         {
+            Debug.Log($"[DEBUG] PlayerInside={playerInside}, miniGame={miniGame}, inventory={playerInventory}");
             if (playerInventory == null || playerInventory.IsEmpty())
             {
                 Debug.Log("❌ ไม่มีสกิลในขวดให้ใช้");

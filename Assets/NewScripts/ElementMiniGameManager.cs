@@ -7,6 +7,9 @@ using UnityEngine.Events;
 
 public class ElementMiniGameManager : MonoBehaviour
 {
+    // ระบบกลาง: ป้องกันมินิเกมชนกัน
+    public static ElementMiniGameManager activeMiniGame;
+
     [Header("UI ของ MiniGame ใน Zone นี้")]
     public Text displayText;
     public Image displayImage;
@@ -34,12 +37,12 @@ public class ElementMiniGameManager : MonoBehaviour
     [Range(0f, 1f)] public float PressVolume = 0.5f;
     [Range(0f, 1f)] public float FailVolume = 0.5f;
 
-    // เพิ่มส่วนหนังสือ
+    // หนังสือ
     [Header("Book Model Settings")]
     [Tooltip("โมเดลหนังสือที่จะเปิดตอนเริ่มมินิเกม (วางไว้ในตัวผู้เล่น)")]
     public GameObject bookModel;
 
-    // เพิ่มส่วน Success Effect
+    // เอฟเฟกต์สำเร็จ
     [Header("Success Effect Settings")]
     [Tooltip("Effect ที่จะเล่นเมื่อทำมินิเกมสำเร็จ (แต่ละ Zone ใส่ Effect ต่างกัน)")]
     public ParticleSystem successEffect;
@@ -83,18 +86,19 @@ public class ElementMiniGameManager : MonoBehaviour
         if (displayImage != null) displayImage.gameObject.SetActive(false);
         if (failSymbol != null) failSymbol.SetActive(false);
 
-        // ✅ เพิ่ม AudioSource สำหรับ SFX
         sfxSource = gameObject.AddComponent<AudioSource>();
         sfxSource.playOnAwake = false;
 
-        // 🪶 ปิดโมเดลหนังสือตอนเริ่ม
         if (bookModel != null)
             bookModel.SetActive(false);
     }
 
     void Update()
     {
-        if (!isActive) return;
+        // ทำงานเฉพาะมินิเกมที่ active อยู่เท่านั้น
+        if (!isActive || activeMiniGame != this)
+            return;
+
         if (currentSequence == null || currentSequence.Count == 0) return;
 
         if (Input.anyKeyDown)
@@ -122,13 +126,18 @@ public class ElementMiniGameManager : MonoBehaviour
 
     public void StartMiniGame(List<KeyCode> sequence, Action<bool> callback)
     {
+        // ปิดมินิเกมเก่า (ถ้ามี)
+        if (activeMiniGame != null && activeMiniGame != this)
+            activeMiniGame.ForceStop();
+
+        activeMiniGame = this;
+
         if (playerController != null)
         {
             playerController.HideSuccessSymbol();
             playerController.PlayCastingAnimation();
         }
 
-        // 🪶 เปิดโมเดลหนังสือตอนเริ่มเล่นมินิเกม
         if (bookModel != null)
             bookModel.SetActive(true);
 
@@ -155,79 +164,102 @@ public class ElementMiniGameManager : MonoBehaviour
         if (failSymbol != null) failSymbol.SetActive(false);
         UpdateDisplay();
 
+        // ป้องกัน fail ทันทีจากปุ่ม R
+        StartCoroutine(DelayInputActivation());
         Debug.Log($"[MiniGame] StartMiniGame - seq: {SeqToString(currentSequence)}");
+    }
+
+    public void ForceStop()
+    {
+        if (!isActive) return;
+
+        isActive = false;
+        onCompleteCallback = null;
+
+        HideDisplay();
+        StopAllCoroutines();
+
+        if (sfxSource != null)
+            sfxSource.Stop();
+
+        if (bookModel != null)
+            bookModel.SetActive(false);
+
+        currentIndex = 0;
+        currentSequence.Clear();
+
+        Debug.Log($"[MiniGame] ForceStop called on {name}");
+    }
+
+    private IEnumerator DelayInputActivation()
+    {
+        bool prev = isActive;
+        isActive = false;
+        yield return null; // skip frame ปุ่ม R
+        isActive = prev;
     }
 
     private void Success()
     {
         isActive = false;
+        activeMiniGame = null;
         HideDisplay();
+
         onSuccessEvent?.Invoke();
         onCompleteCallback?.Invoke(true);
         onCompleteCallback = null;
-        // เริ่ม Coroutine สำหรับเล่น Effect หลังจากดีเลย์
+
+        // เล่น effect + sound ของคุณ
         StartCoroutine(PlaySuccessEffectSequence());
 
         if (playerController != null)
             playerController.StopCastingAnimation();
 
-        // 🪶 ปิดโมเดลหนังสือตอนจบมินิเกม
         if (bookModel != null)
             bookModel.SetActive(false);
 
-        Debug.Log("✅ MiniGame Success Completed!");
+        Debug.Log($"✅ MiniGame Success ({name})");
     }
 
     private IEnumerator PlaySuccessEffectSequence()
     {
-        // รอให้ Animation เล่นถึงจังหวะที่ต้องการ
         yield return new WaitForSeconds(effectDelay);
 
-        // เล่น Effect ที่มือ
         if (successEffect != null)
         {
             Vector3 spawnPos = handEffectSpawnPoint != null
                 ? handEffectSpawnPoint.position
-                : transform.position + Vector3.up; // fallback ถ้าไม่มี hand point
+                : transform.position + Vector3.up;
 
-            // ✅ เพิ่มบรรทัดนี้ที่หายไป
             Quaternion spawnRot = handEffectSpawnPoint != null
                 ? handEffectSpawnPoint.rotation
                 : Quaternion.identity;
 
             ParticleSystem effect = Instantiate(successEffect, spawnPos, spawnRot);
-
-            // ถ้าต้องการให้ Effect ติดตามมือไปด้วย (optional)
-            // effect.transform.SetParent(handEffectSpawnPoint);
-
-            Destroy(effect.gameObject, 5f); // ลบหลังจาก 5 วินาที
+            Destroy(effect.gameObject, 5f);
 
             Debug.Log($"🎆 Effect spawned at {spawnPos}");
         }
-        else
-        {
-            Debug.LogWarning("⚠️ successEffect ไม่ได้ถูกตั้งค่าใน Inspector!");
-        }
 
-        // เล่นเสียงประกอบ
         if (successSkillSound != null && sfxSource != null)
-        {
             sfxSource.PlayOneShot(successSkillSound, successSkillVolume);
-        }
     }
 
     private void Fail()
     {
         isActive = false;
+        activeMiniGame = null;
         HideDisplay();
         ShowFailSymbolSafe();
+
         onFailEvent?.Invoke();
         onCompleteCallback?.Invoke(false);
         onCompleteCallback = null;
 
-        // 🪶 ปิดโมเดลหนังสือตอนจบมินิเกม (แม้จะ fail)
         if (bookModel != null)
             bookModel.SetActive(false);
+
+        Debug.Log($"💥 MiniGame Failed ({name})");
     }
 
     private void UpdateDisplay()
