@@ -11,10 +11,10 @@ public class PlayerInput : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Q))
+        if (Input.GetKeyDown(KeyCode.Z))
             manager.SelectPrev();
 
-        if (Input.GetKeyDown(KeyCode.E))
+        if (Input.GetKeyDown(KeyCode.C))
             manager.SelectNext();
 
         if (Input.GetKeyDown(KeyCode.T))

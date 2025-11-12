@@ -5,6 +5,7 @@ public class PlayerSkillManager : MonoBehaviour
 {
     public List<string> skills = new List<string>(); // สกิลที่เก็บมา
     private int selectedSkillIndex = -1;
+    private int lockedSkillIndex = -1;
 
     public delegate void OnSkillUpdate();
     public event OnSkillUpdate onSkillUpdate;
@@ -28,14 +29,14 @@ public class PlayerSkillManager : MonoBehaviour
 
     public void SelectNext()
     {
-        if (skills.Count == 0) return;
+        if (skills.Count == 0 || lockedSkillIndex != -1) return;
         selectedSkillIndex = (selectedSkillIndex + 1) % skills.Count;
         onSkillUpdate?.Invoke();
     }
 
     public void SelectPrev()
     {
-        if (skills.Count == 0) return;
+        if (skills.Count == 0 || lockedSkillIndex != -1) return;
         selectedSkillIndex = (selectedSkillIndex - 1 + skills.Count) % skills.Count;
         onSkillUpdate?.Invoke();
     }
@@ -47,7 +48,6 @@ public class PlayerSkillManager : MonoBehaviour
         string skill = skills[selectedSkillIndex];
         Debug.Log("Confirmed skill: " + skill);
 
-        // ตรวจสอบ SkillLetterSelector
         SkillLetterSelector selector = GetComponent<SkillLetterSelector>();
         if (selector == null)
         {
@@ -55,10 +55,12 @@ public class PlayerSkillManager : MonoBehaviour
             return skill;
         }
 
-        selector.StartSelection(skill);
+        LockSelectedSkill(); // ✅ ล็อกสกิลนี้ไว้
 
+        selector.StartSelection(skill);
         return skill;
     }
+
 
     // ✅ แก้ให้ใช้ selectedSkillIndex ไม่ใช่ selectedIndex
     public void RemoveSkillAt(int index)
@@ -72,6 +74,21 @@ public class PlayerSkillManager : MonoBehaviour
             selectedSkillIndex = skills.Count - 1;
 
         onSkillUpdate?.Invoke();
+    }
+
+    public void LockSelectedSkill()
+    {
+        lockedSkillIndex = selectedSkillIndex;
+    }
+
+    public void UnlockSelectedSkill()
+    {
+        lockedSkillIndex = -1;
+    }
+
+    public int GetLockedSkillIndex()
+    {
+        return lockedSkillIndex;
     }
 
     public int GetSelectedIndex() => selectedSkillIndex;

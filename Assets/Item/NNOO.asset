@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 631e2a724b5650a46953809d1a3b4c1f, type: 3}
-  m_Name: H2O
+  m_Name: NNOO
   m_EditorClassIdentifier: 
   skillID: 
   displayName: 

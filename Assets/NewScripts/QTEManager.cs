@@ -14,6 +14,7 @@ public class QTEManager : MonoBehaviour
     public GameObject timingBarPrefab;    // Prefab TimingBar
     private TimingBar currentTimingBar;
 
+
     [Header("Settings")]
     public float timePerSlot = 1f;
 
@@ -170,12 +171,15 @@ public class QTEManager : MonoBehaviour
     {
         isActive = false;
 
+        PlayerSkillManager manager = FindObjectOfType<PlayerSkillManager>();
+        if (manager != null)
+            manager.UnlockSelectedSkill(); // ✅ ปลดล็อกเมื่อจบ QTE
+
         if (currentTimingBar != null)
             Destroy(currentTimingBar.gameObject);
 
         currentTimingBar = null;
 
-        // ลบ QTEslot ทุกตัวออกจากจอ
         foreach (var slot in slotUIs)
         {
             if (slot != null)
@@ -188,5 +192,6 @@ public class QTEManager : MonoBehaviour
 
         Debug.Log("QTE Ended → พร้อมเริ่มใหม่ถ้าไม่มีขวดใน Inventory");
     }
+
 
 }
