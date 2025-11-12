@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 631e2a724b5650a46953809d1a3b4c1f, type: 3}
   m_Name: NNOO
   m_EditorClassIdentifier: 
-  skillID: 
-  displayName: 
-  icon: {fileID: 0}
+  skillID: NNOO
+  displayName: NNOO
+  icon: {fileID: 1114068106, guid: 443bb1f07778f7645858a72b43702feb, type: 3}
   description: 
   successSymbolPrefab: {fileID: 0}
