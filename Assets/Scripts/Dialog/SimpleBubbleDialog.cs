@@ -11,6 +11,9 @@ public class SimpleBubbleDialog : MonoBehaviour
     [Header("การตั้งค่าตำแหน่ง")]
     public float bubbleHeight = 2f; // ความสูงของบับเบิ้ลเหนือหัว
     public Vector2 bubbleOffset = Vector2.zero; // เลื่อนตำแหน่งบับเบิล (X, Y)
+    public float floatAmplitude = 0.3f; // ความสูงของการลอย (0 = ไม่ลอย)
+    public float floatSpeed = 2f; // ความเร็วการลอย
+    public bool alwaysInFront = true; // แสดงหน้า Player เสมอ
 
     [Header("ขนาดและสี")]
     public Vector2 bubbleSize = new Vector2(400, 120); // ขนาดกล่องบับเบิล
@@ -19,6 +22,8 @@ public class SimpleBubbleDialog : MonoBehaviour
     public Color bubbleColor = new Color(1f, 1f, 1f, 0.9f); // สีพื้นหลังบับเบิล (ถ้าไม่มีรูป)
     public Sprite bubbleSprite; // รูปกรอบบับเบิล (ลากรูปมาใส่ตรงนี้)
     public float padding = 15f; // ระยะขอบข้อความ
+    public TextAnchor textAlignment = TextAnchor.MiddleCenter; // ตำแหน่งข้อความ
+    public float textVerticalOffset = 0f; // ขยับข้อความขึ้น(+) ลง(-) ภายในกล่อง
 
     [Header("การแสดงผล")]
     public float displayDuration = 3f; // ระยะเวลาแสดงแต่ละข้อความ (วินาที)
@@ -35,6 +40,9 @@ public class SimpleBubbleDialog : MonoBehaviour
     private bool isShowingDialog = false;
     private int currentLineIndex = 0;
     private Canvas mainCanvas;
+    private float floatTimer = 0f;
+    private PlayerController playerController;
+    private Animator playerAnimator;
 
     void Start()
     {
@@ -88,14 +96,57 @@ public class SimpleBubbleDialog : MonoBehaviour
         // อัพเดทตำแหน่งบับเบิ้ลให้ติดตัวตลอด
         if (bubbleInstance != null && Camera.main != null)
         {
-            Vector3 worldPos = transform.position + Vector3.up * bubbleHeight;
+            // เพิ่มการลอยขึ้นลง
+            floatTimer += Time.deltaTime * floatSpeed;
+            float floatOffset = Mathf.Sin(floatTimer) * floatAmplitude;
+
+            Vector3 worldPos = transform.position + Vector3.up * (bubbleHeight + floatOffset);
             Vector3 screenPos = Camera.main.WorldToScreenPoint(worldPos);
 
-            // เพิ่ม offset
-            screenPos.x += bubbleOffset.x;
-            screenPos.y += bubbleOffset.y;
+            // เช็คว่า NPC อยู่หลังกล้องหรือไม่
+            bool isBehindCamera = screenPos.z < 0;
 
-            bubbleInstance.transform.position = screenPos;
+            // เช็คว่าบับเบิลจะทับ Player หรือไม่
+            bool isBlockingPlayer = false;
+            if (!isBehindCamera)
+            {
+                GameObject player = GameObject.FindGameObjectWithTag("Player");
+                if (player != null && Camera.main != null)
+                {
+                    Vector3 playerScreenPos = Camera.main.WorldToScreenPoint(player.transform.position);
+
+                    // ถ้า Player อยู่ระหว่างกล้องกับ NPC
+                    if (playerScreenPos.z > 0 && playerScreenPos.z < screenPos.z)
+                    {
+                        // เช็คว่าตำแหน่งบนจอใกล้กันไหม
+                        float distance = Vector2.Distance(
+                            new Vector2(screenPos.x, screenPos.y),
+                            new Vector2(playerScreenPos.x, playerScreenPos.y)
+                        );
+
+                        if (distance < 150f) // ถ้าใกล้เกินไป
+                        {
+                            isBlockingPlayer = true;
+                        }
+                    }
+                }
+            }
+
+            if (isBehindCamera || isBlockingPlayer)
+            {
+                // ซ่อนบับเบิลถ้าอยู่หลังกล้องหรือทับ Player
+                bubbleInstance.SetActive(false);
+            }
+            else
+            {
+                bubbleInstance.SetActive(true);
+
+                // เพิ่ม offset
+                screenPos.x += bubbleOffset.x;
+                screenPos.y += bubbleOffset.y;
+
+                bubbleInstance.transform.position = screenPos;
+            }
         }
     }
 
@@ -109,6 +160,20 @@ public class SimpleBubbleDialog : MonoBehaviour
 
         isShowingDialog = true;
         currentLineIndex = 0;
+
+        // ล็อค Player
+        if (playerController != null)
+        {
+            playerController.enabled = false;
+            Debug.Log("🔒 ล็อค Player ไม่ให้เดิน");
+        }
+
+        // หยุดอนิเมชั่น
+        if (playerAnimator != null)
+        {
+            playerAnimator.SetFloat("Speed", 0f);
+            Debug.Log("⏸️ หยุดอนิเมชั่น Player");
+        }
 
         // ซ่อน Press E
         if (pressEIndicator != null)
@@ -174,8 +239,8 @@ public class SimpleBubbleDialog : MonoBehaviour
             RectTransform textRect = textObj.AddComponent<RectTransform>();
             textRect.anchorMin = Vector2.zero;
             textRect.anchorMax = Vector2.one;
-            textRect.offsetMin = new Vector2(padding, padding);
-            textRect.offsetMax = new Vector2(-padding, -padding);
+            textRect.offsetMin = new Vector2(padding, padding + textVerticalOffset);
+            textRect.offsetMax = new Vector2(-padding, -padding + textVerticalOffset);
 
             bubbleText = textObj.AddComponent<Text>();
 
@@ -189,7 +254,7 @@ public class SimpleBubbleDialog : MonoBehaviour
             bubbleText.font = font;
             bubbleText.fontSize = fontSize;
             bubbleText.color = textColor;
-            bubbleText.alignment = TextAnchor.MiddleCenter;
+            bubbleText.alignment = textAlignment; // ใช้ค่าที่ตั้งได้
             bubbleText.horizontalOverflow = HorizontalWrapMode.Wrap;
             bubbleText.verticalOverflow = VerticalWrapMode.Overflow;
         }
@@ -245,6 +310,15 @@ public class SimpleBubbleDialog : MonoBehaviour
     {
         isShowingDialog = false;
 
+        // ปลดล็อค Player
+        if (playerController != null)
+        {
+            playerController.enabled = true;
+            Debug.Log("🔓 ปลดล็อค Player ให้เดินได้แล้ว");
+        }
+
+        // ไม่ต้องรีเซ็ตอนิเมชั่น เพราะ PlayerController จะจัดการเอง
+
         if (bubbleInstance != null)
         {
             Destroy(bubbleInstance);
@@ -264,6 +338,16 @@ public class SimpleBubbleDialog : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             playerInRange = true;
+
+            // เก็บ reference ของ PlayerController และ Animator
+            if (playerController == null)
+            {
+                playerController = other.GetComponent<PlayerController>();
+            }
+            if (playerAnimator == null)
+            {
+                playerAnimator = other.GetComponent<Animator>();
+            }
 
             if (pressEIndicator != null && !isShowingDialog)
                 pressEIndicator.SetActive(true);

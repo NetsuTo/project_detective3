@@ -14,7 +14,7 @@ public class ElementMiniGameManager : MonoBehaviour
     public Text displayText;
     public Image displayImage;
     public GameObject failSymbol;
-    public float failSymbolDuration = 5f;
+    public float failSymbolDuration = 2f; // ลดเวลาให้เร็วขึ้น
 
     [Header("Optional: Sequence เริ่มต้น (fallback ถ้าไม่ได้ส่งจาก TargetZone)")]
     public List<KeyCode> inspectorSequence = new List<KeyCode>();
@@ -57,11 +57,19 @@ public class ElementMiniGameManager : MonoBehaviour
     public AudioClip successSkillSound;
     [Range(0f, 1f)] public float successSkillVolume = 0.8f;
 
+    [Header("⭐ Retry Settings")]
+    [Tooltip("อนุญาตให้ลองใหม่ได้เมื่อกดพลาด")]
+    public bool allowRetry = true;
+
+    [Tooltip("ระยะเวลาหน่วงก่อนเริ่มใหม่ (วินาที)")]
+    public float retryDelay = 0.5f;
+
     private Dictionary<KeyCode, Sprite> keyToSprite = new Dictionary<KeyCode, Sprite>();
     private List<KeyCode> currentSequence = new List<KeyCode>();
     private int currentIndex = 0;
     private bool isActive = false;
     private Action<bool> onCompleteCallback = null;
+    private bool isRetrying = false; // ป้องกันการกดซ้ำตอน retry
 
     [Serializable]
     public class KeySpritePair
@@ -96,7 +104,7 @@ public class ElementMiniGameManager : MonoBehaviour
     void Update()
     {
         // ทำงานเฉพาะมินิเกมที่ active อยู่เท่านั้น
-        if (!isActive || activeMiniGame != this)
+        if (!isActive || activeMiniGame != this || isRetrying)
             return;
 
         if (currentSequence == null || currentSequence.Count == 0) return;
@@ -119,7 +127,10 @@ public class ElementMiniGameManager : MonoBehaviour
                 if (keyFailSound != null)
                     sfxSource.PlayOneShot(keyFailSound, FailVolume);
 
-                Fail();
+                if (allowRetry)
+                    Retry(); // ลองใหม่แทนที่จะ Fail
+                else
+                    Fail(); // Fail แบบเดิม
             }
         }
     }
@@ -160,6 +171,7 @@ public class ElementMiniGameManager : MonoBehaviour
         onCompleteCallback = callback;
         currentIndex = 0;
         isActive = true;
+        isRetrying = false;
 
         if (failSymbol != null) failSymbol.SetActive(false);
         UpdateDisplay();
@@ -245,6 +257,35 @@ public class ElementMiniGameManager : MonoBehaviour
             sfxSource.PlayOneShot(successSkillSound, successSkillVolume);
     }
 
+    // ⭐ ฟังก์ชันใหม่: Retry แทน Fail
+    private void Retry()
+    {
+        Debug.Log($"🔄 กดผิด! รีเซ็ตลำดับ...");
+
+        // แสดงสัญลักษณ์ Fail ชั่วคราว
+        ShowFailSymbolSafe();
+
+        // รีเซ็ตลำดับกลับไปเริ่มต้น
+        StartCoroutine(RetrySequence());
+    }
+
+    private IEnumerator RetrySequence()
+    {
+        isRetrying = true;
+
+        // รอสักครู่
+        yield return new WaitForSeconds(retryDelay);
+
+        // รีเซ็ตกลับไปเริ่มต้น
+        currentIndex = 0;
+        isRetrying = false;
+
+        // แสดงคีย์แรกใหม่
+        UpdateDisplay();
+
+        Debug.Log($"🔄 เริ่มใหม่! คีย์ที่ต้องกด: {currentSequence[currentIndex]}");
+    }
+
     private void Fail()
     {
         isActive = false;
@@ -298,7 +339,7 @@ public class ElementMiniGameManager : MonoBehaviour
     public void ShowFailSymbolSafe()
     {
         if (failSymbol == null) return;
-        StopAllCoroutines();
+        StopCoroutine(nameof(ShowFailSymbolCoroutine));
         StartCoroutine(ShowFailSymbolCoroutine());
     }
 

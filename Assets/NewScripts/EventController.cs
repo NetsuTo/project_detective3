@@ -10,8 +10,18 @@ public class EventController : MonoBehaviour
     [Header("Settings")]
     public float moveSpeed = 3f;
 
+    [Header("Effects & Sounds")]
+    public GameObject collisionEffect;   // Prefab เอฟเฟคตอนชน (เช่น ParticeSystem)
+    public AudioClip collisionSound;     // เสียงตอนชน
+    [Range(0f, 1f)]
+    public float soundVolume = 0.8f;     // ความดังเสียง
+    public bool shakeOnCollision = true; // เขย่ากล้องตอนชน
+    public float shakeIntensity = 0.3f;  // ความแรงการเขย่า
+    public float shakeDuration = 0.3f;   // ระยะเวลาเขย่า
+
     private bool isMoving = false;
     private Rigidbody rb;
+    private AudioSource audioSource;
 
     private void Start()
     {
@@ -24,6 +34,11 @@ public class EventController : MonoBehaviour
                 Debug.LogError("[EventController] ObjectA ต้องมี Rigidbody!");
             }
         }
+
+        // สร้าง AudioSource สำหรับเล่นเสียง
+        audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.playOnAwake = false;
+        audioSource.spatialBlend = 0f; // 2D sound
     }
 
     public void StartObjectMovement()
@@ -44,7 +59,7 @@ public class EventController : MonoBehaviour
         Debug.Log("[EventController] เริ่มเคลื่อนที่ ObjectA...");
     }
 
-    private void FixedUpdate() // เปลี่ยนจาก Update เป็น FixedUpdate
+    private void FixedUpdate()
     {
         if (!isMoving || objectA == null || targetPoint == null || rb == null)
             return;
@@ -71,10 +86,72 @@ public class EventController : MonoBehaviour
     {
         Debug.Log("[EventController] ObjectA ถึงจุดเป้าหมายแล้ว!");
 
+        // เล่นเอฟเฟค
+        PlayCollisionEffect();
+
+        // เล่นเสียง
+        PlayCollisionSound();
+
+        // เขย่ากล้อง
+        if (shakeOnCollision && Camera.main != null)
+        {
+            StartCoroutine(ShakeCamera());
+        }
+
+        // ซ่อน ObjectB
         if (objectB != null)
         {
             objectB.SetActive(false);
             Debug.Log("[EventController] ObjectB ถูกปิดการแสดงผล");
         }
+    }
+
+    private void PlayCollisionEffect()
+    {
+        if (collisionEffect != null && targetPoint != null)
+        {
+            // สร้างเอฟเฟคที่ตำแหน่งชน
+            GameObject fx = Instantiate(collisionEffect, targetPoint.position, Quaternion.identity);
+
+            // ลบเอฟเฟคอัตโนมัติหลัง 3 วินาที
+            Destroy(fx, 3f);
+
+            Debug.Log("[EventController] เล่นเอฟเฟคชน!");
+        }
+    }
+
+    private void PlayCollisionSound()
+    {
+        if (collisionSound != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(collisionSound, soundVolume);
+            Debug.Log("[EventController] เล่นเสียงชน!");
+        }
+    }
+
+    private System.Collections.IEnumerator ShakeCamera()
+    {
+        Camera cam = Camera.main;
+        if (cam == null) yield break;
+
+        Vector3 originalPos = cam.transform.localPosition;
+        float elapsed = 0f;
+
+        Debug.Log("[EventController] เขย่ากล้อง!");
+
+        while (elapsed < shakeDuration)
+        {
+            // สุ่มตำแหน่งเขย่า
+            float x = Random.Range(-1f, 1f) * shakeIntensity;
+            float y = Random.Range(-1f, 1f) * shakeIntensity;
+
+            cam.transform.localPosition = originalPos + new Vector3(x, y, 0f);
+
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        // คืนตำแหน่งเดิม
+        cam.transform.localPosition = originalPos;
     }
 }

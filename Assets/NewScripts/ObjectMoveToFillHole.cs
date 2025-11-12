@@ -15,7 +15,12 @@ public class ObjectMoveToFillHole : MonoBehaviour
     [Header("ระยะที่จะถือว่าถึงจุดหมายแล้ว")]
     public float arriveDistance = 0.05f;
 
-    [Header("Effect ตอนกลบหลุม (ถ้ามี)")]
+    [Header("Effect ตอนเคลื่อนที่ (ติดตามวัตถุ)")]
+    public ParticleSystem movingEffect;
+    [Tooltip("ตำแหน่ง Offset ของเอฟเฟคจากตัววัตถุ")]
+    public Vector3 effectOffset = Vector3.zero;
+
+    [Header("Effect ตอนกลบหลุม (แสดงครั้งเดียว)")]
     public ParticleSystem fillEffect;
 
     [Header("เสียงตอนวาง (ถ้ามี)")]
@@ -27,14 +32,23 @@ public class ObjectMoveToFillHole : MonoBehaviour
 
     private bool isMoving = false;
     private AudioSource audioSource;
+    private ParticleSystem activeMovingEffect; // เอฟเฟคที่กำลังเล่นอยู่
 
     void Start()
     {
         audioSource = gameObject.AddComponent<AudioSource>();
         audioSource.playOnAwake = false;
 
+        // ตรวจสอบว่ามี movingEffect หรือไม่
+        if (movingEffect != null)
+        {
+            movingEffect.Stop();
+        }
+
         if (fillEffect != null)
+        {
             fillEffect.Stop();
+        }
     }
 
     /// <summary>
@@ -58,6 +72,9 @@ public class ObjectMoveToFillHole : MonoBehaviour
     {
         isMoving = true;
 
+        // เริ่มเล่นเอฟเฟคตอนเคลื่อนที่
+        StartMovingEffect();
+
         while (isMoving && objectA != null)
         {
             objectA.transform.position = Vector3.MoveTowards(
@@ -65,6 +82,12 @@ public class ObjectMoveToFillHole : MonoBehaviour
                 targetHole.position,
                 moveSpeed * Time.deltaTime
             );
+
+            // อัปเดตตำแหน่งเอฟเฟคให้ติดตามวัตถุ
+            if (activeMovingEffect != null)
+            {
+                activeMovingEffect.transform.position = objectA.transform.position + effectOffset;
+            }
 
             if (Vector3.Distance(objectA.transform.position, targetHole.position) <= arriveDistance)
             {
@@ -76,16 +99,45 @@ public class ObjectMoveToFillHole : MonoBehaviour
         }
     }
 
+    private void StartMovingEffect()
+    {
+        if (movingEffect == null) return;
+
+        // สร้างเอฟเฟคใหม่ที่ติดกับวัตถุ
+        Vector3 spawnPos = objectA.transform.position + effectOffset;
+        activeMovingEffect = Instantiate(movingEffect, spawnPos, Quaternion.identity);
+
+        // ทำให้เอฟเฟคเป็นลูกของวัตถุ (จะติดตามอัตโนมัติ)
+        // แต่เราจะใช้วิธี manual update ใน MoveObject() แทน เพื่อความแม่นยำ
+
+        activeMovingEffect.Play();
+        Debug.Log("[ObjectMoveToFillHole] เริ่มเล่นเอฟเฟคการเคลื่อนที่");
+    }
+
+    private void StopMovingEffect()
+    {
+        if (activeMovingEffect != null)
+        {
+            activeMovingEffect.Stop();
+            Destroy(activeMovingEffect.gameObject, 2f); // ให้เวลา particle ที่เหลืออยู่จางหาย
+            activeMovingEffect = null;
+            Debug.Log("[ObjectMoveToFillHole] หยุดเอฟเฟคการเคลื่อนที่");
+        }
+    }
+
     private void OnArriveHole()
     {
         isMoving = false;
         if (objectA == null) return;
 
+        // หยุดเอฟเฟคการเคลื่อนที่
+        StopMovingEffect();
+
         // snap ให้ตรงพอดี
         objectA.transform.position = targetHole.position;
         objectA.transform.rotation = targetHole.rotation;
 
-        // เล่น Effect
+        // เล่น Effect ตอนกลบหลุม
         if (fillEffect != null)
         {
             ParticleSystem fx = Instantiate(fillEffect, targetHole.position, Quaternion.identity);
@@ -102,5 +154,14 @@ public class ObjectMoveToFillHole : MonoBehaviour
             pathColliderToEnable.enabled = true;
 
         Debug.Log("[ObjectMoveToFillHole] กลบหลุมเสร็จแล้ว! ผู้เล่นสามารถเดินต่อได้");
+    }
+
+    // เผื่อต้องการหยุดกลางคัน
+    void OnDestroy()
+    {
+        if (activeMovingEffect != null)
+        {
+            Destroy(activeMovingEffect.gameObject);
+        }
     }
 }
