@@ -23,9 +23,13 @@ public class ObjectMoveToFillHole : MonoBehaviour
     [Header("Effect ตอนกลบหลุม (แสดงครั้งเดียว)")]
     public ParticleSystem fillEffect;
 
-    [Header("เสียงตอนวาง (ถ้ามี)")]
+    [Header("เสียงตอนขยับ (เล่นตลอดตอนเคลื่อนที่)")]
+    public AudioClip movingSound;
+    [Range(0f, 1f)] public float movingSoundVolume = 0.6f;
+
+    [Header("เสียงตอนวาง (เล่นครั้งเดียวตอนถึง)")]
     public AudioClip impactSound;
-    [Range(0f, 1f)] public float soundVolume = 0.8f;
+    [Range(0f, 1f)] public float impactSoundVolume = 0.8f;
 
     [Header("Collider ที่จะเปิดหลังกลบหลุม (เช่น ทางเดิน)")]
     public Collider pathColliderToEnable;
@@ -38,6 +42,7 @@ public class ObjectMoveToFillHole : MonoBehaviour
     {
         audioSource = gameObject.AddComponent<AudioSource>();
         audioSource.playOnAwake = false;
+        audioSource.loop = true; // ตั้งให้เล่นวนตอนขยับ
 
         // ตรวจสอบว่ามี movingEffect หรือไม่
         if (movingEffect != null)
@@ -74,6 +79,9 @@ public class ObjectMoveToFillHole : MonoBehaviour
 
         // เริ่มเล่นเอฟเฟคตอนเคลื่อนที่
         StartMovingEffect();
+
+        // เริ่มเล่นเสียงตอนขยับ
+        StartMovingSound();
 
         while (isMoving && objectA != null)
         {
@@ -125,6 +133,27 @@ public class ObjectMoveToFillHole : MonoBehaviour
         }
     }
 
+    private void StartMovingSound()
+    {
+        if (movingSound != null && audioSource != null)
+        {
+            audioSource.clip = movingSound;
+            audioSource.volume = movingSoundVolume;
+            audioSource.loop = true;
+            audioSource.Play();
+            Debug.Log("[ObjectMoveToFillHole] เริ่มเล่นเสียงขยับ");
+        }
+    }
+
+    private void StopMovingSound()
+    {
+        if (audioSource != null && audioSource.isPlaying)
+        {
+            audioSource.Stop();
+            Debug.Log("[ObjectMoveToFillHole] หยุดเสียงขยับ");
+        }
+    }
+
     private void OnArriveHole()
     {
         isMoving = false;
@@ -132,6 +161,9 @@ public class ObjectMoveToFillHole : MonoBehaviour
 
         // หยุดเอฟเฟคการเคลื่อนที่
         StopMovingEffect();
+
+        // หยุดเสียงขยับ
+        StopMovingSound();
 
         // snap ให้ตรงพอดี
         objectA.transform.position = targetHole.position;
@@ -145,9 +177,12 @@ public class ObjectMoveToFillHole : MonoBehaviour
             Destroy(fx.gameObject, 3f);
         }
 
-        // เล่นเสียง
+        // เล่นเสียงตอนวาง (PlayOneShot)
         if (impactSound != null && audioSource != null)
-            audioSource.PlayOneShot(impactSound, soundVolume);
+        {
+            audioSource.PlayOneShot(impactSound, impactSoundVolume);
+            Debug.Log("[ObjectMoveToFillHole] เล่นเสียงตอนวาง");
+        }
 
         // เปิดทางเดิน (เช่น สะพาน)
         if (pathColliderToEnable != null)
@@ -163,5 +198,8 @@ public class ObjectMoveToFillHole : MonoBehaviour
         {
             Destroy(activeMovingEffect.gameObject);
         }
+
+        // หยุดเสียงถ้ายังเล่นอยู่
+        StopMovingSound();
     }
 }

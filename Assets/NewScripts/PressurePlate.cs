@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine.UIElements;
 
 /// <summary>
 /// จุดกด/จุดเหยียบที่เมื่อมีผู้เล่นหรือวัตถุเหยียบจะเปิดใช้งานแพล็ตฟอร์ม
@@ -39,6 +40,9 @@ public class PressurePlate : MonoBehaviour
     [Header("Audio")]
     [SerializeField] private AudioClip activationSound;
     [SerializeField] private AudioClip deactivationSound;
+
+    [SerializeField] private Animator animator;
+    [SerializeField] private bool isPressed = false;
 
     private Renderer plateRenderer;
     private AudioSource audioSource;
@@ -117,6 +121,11 @@ public class PressurePlate : MonoBehaviour
         {
             objectsOnPlate++;
             CheckActivation();
+            animator.SetTrigger("Push");
+            if (other.CompareTag("Box"))
+            {
+                isPressed = true;
+            }
         }
     }
 
@@ -130,6 +139,11 @@ public class PressurePlate : MonoBehaviour
             if (!stayActive)
             {
                 CheckActivation();
+
+                if (other.CompareTag("Player") && isPressed == false)
+                {
+                    animator.SetTrigger("Out");
+                }
             }
         }
     }
