@@ -204,7 +204,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 220057738}
         m_TargetAssemblyTypeName: SceneLoader, Assembly-CSharp
-        m_MethodName: LoadGame
+        m_MethodName: LoadOpenGame
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

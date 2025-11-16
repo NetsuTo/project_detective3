@@ -15405,19 +15405,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   dialogLines:
-  - Mushroom A - (whispering) Hey, look over there. Something wandered in again.
-  - "Mushroom B - (whispering) Weird... It doesn\u2019t look like the ones that live
-    around here."
-  - "Mushroom A - (whispering) Yeah, right? Let\u2019s go play with that thing a
-    bit."
-  - "Mushroom B - (whispering) Or maybe... it\u2019s one of those wizards?"
-  - "Mushroom A - (whispering) Hey, don\u2019t talk about them..."
+  - 'Mushroom A - Hey, look over there. Something wandered in again.
+
+    Mushroom
+    B - Ohhh Wowwww!'
   bubbleHeight: 10
   bubbleOffset: {x: 60, y: 0}
   floatAmplitude: 0.3
   floatSpeed: 2
-  bubbleSize: {x: 400, y: 150}
-  fontSize: 24
+  bubbleSize: {x: 300, y: 120}
+  fontSize: 15
   textColor: {r: 0, g: 0, b: 0, a: 1}
   bubbleColor: {r: 1, g: 1, b: 1, a: 0.9}
   bubbleSprite: {fileID: -2012805110, guid: 4f2a0174e62c3dd4493c3f13544de860, type: 3}
@@ -82962,7 +82959,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2908075746234812187, guid: 8a7e7f6601b72774cb5e7b8a3f382286, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -62.69
+      value: -62.38
       objectReference: {fileID: 0}
     - target: {fileID: 2908075746234812187, guid: 8a7e7f6601b72774cb5e7b8a3f382286, type: 3}
       propertyPath: m_LocalPosition.y
@@ -110021,7 +110018,6 @@ GameObject:
   - component: {fileID: 2006805183}
   - component: {fileID: 2006805182}
   - component: {fileID: 2006805181}
-  - component: {fileID: 2006805184}
   m_Layer: 3
   m_Name: Cylinder (2)
   m_TagString: Ground
@@ -110119,23 +110115,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2006805179}
   m_Mesh: {fileID: 2534964839176971238, guid: 7fa24565f70624047b2ce59a43abe73b, type: 3}
---- !u!114 &2006805184
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2006805179}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6b32f94668a23ad45ad43cdcd417acfd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  visibleTime: 2
-  invisibleTime: 2
-  startDelay: 0.5
-  showWarning: 1
-  warningTime: 0.5
 --- !u!1 &2007927854 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -5568371526223589888, guid: 70640473a04b8994bb0872396b5b25d4, type: 3}
