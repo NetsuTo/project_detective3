@@ -1,16 +1,29 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
+using UnityEngine.Events;
 
 public class TargetZone : MonoBehaviour
 {
-    [Header("MiniGame ของ Zone นี้ (Drag Component ที่เป็นลูกมาใส่)")]
-    public ElementMiniGameManager miniGame;   // ใส่จาก Inspector
+    [Header("MiniGame ของ Zone นี้")]
+    public ElementMiniGameManager miniGame;
 
-    [Header("Sequence ที่ต้องการจากขวด (เช่น HHO, O2, HOH)")]
-    public List<KeyCode> requiredSequence = new List<KeyCode>();
+    [Header("ธาตุที่ต้องการ (แต่ละธาตุคือ 1 sequence)")]
+    public List<ElementRequirement> requiredElements = new List<ElementRequirement>();
+
+    [Header("🎯 Events เมื่อครบทุกธาตุ")]
+    public UnityEvent onAllElementsCompleted;
 
     private bool playerInside = false;
     private SkillInventory playerInventory;
+    private HashSet<int> completedElements = new HashSet<int>(); // เก็บ index ของธาตุที่เสร็จแล้ว
+
+    [System.Serializable]
+    public class ElementRequirement
+    {
+        public string elementName; // ชื่อธาตุ (สำหรับ debug)
+        public List<KeyCode> sequence = new List<KeyCode>();
+    }
 
     private void OnTriggerEnter(Collider other)
     {
@@ -18,7 +31,7 @@ public class TargetZone : MonoBehaviour
         {
             playerInside = true;
             playerInventory = other.GetComponent<SkillInventory>();
-            Debug.Log("Player entered TargetZone (need: " + SeqToString(requiredSequence) + ")");
+            Debug.Log($"Player entered TargetZone ({completedElements.Count}/{requiredElements.Count} completed)");
         }
     }
 
@@ -38,47 +51,101 @@ public class TargetZone : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.R))
         {
-            Debug.Log($"[DEBUG] PlayerInside={playerInside}, miniGame={miniGame}, inventory={playerInventory}");
             if (playerInventory == null || playerInventory.IsEmpty())
             {
                 Debug.Log("❌ ไม่มีสกิลในขวดให้ใช้");
                 return;
             }
 
-            if (playerInventory.HasSkill(requiredSequence))
+            // เช็คว่าธาตุในขวดตรงกับธาตุใดที่ยังไม่เสร็จ
+            int matchedIndex = -1;
+            for (int i = 0; i < requiredElements.Count; i++)
             {
-                Debug.Log("🎯 พบสกิลตรงกับ Zone, เริ่ม MiniGame (ใช้ inspectorSequence)");
+                if (completedElements.Contains(i)) continue; // ข้ามถ้าเสร็จแล้ว
 
-                // ลบขวดออกไปก่อนเริ่มมินิเกม
-                playerInventory.ConsumeSkill(requiredSequence);
+                if (playerInventory.HasSkill(requiredElements[i].sequence))
+                {
+                    matchedIndex = i;
+                    break;
+                }
+            }
 
-                // ✅ เรียก MiniGame โดยไม่ส่ง sequence → จะใช้ inspectorSequence ของ Zone
+            if (matchedIndex >= 0)
+            {
+                ElementRequirement matched = requiredElements[matchedIndex];
+                Debug.Log($"🎯 พบธาตุที่ {matchedIndex + 1}: {matched.elementName}");
+
+                // ลบขวดออก
+                playerInventory.ConsumeSkill(matched.sequence);
+
+                // เริ่มมินิเกม
                 miniGame.StartMiniGame(null, (success) =>
                 {
                     if (success)
                     {
-                        Debug.Log("🎉 Success MiniGame in Zone: " + SeqToString(requiredSequence));
-                        // trigger event ของ Zone ได้ที่นี่
+                        Debug.Log($"✅ ผ่านมินิเกมของ {matched.elementName}");
+                        completedElements.Add(matchedIndex);
+
+                        // เช็คว่าครบทุกธาตุหรือยัง
+                        if (completedElements.Count >= requiredElements.Count)
+                        {
+                            Debug.Log("🎉 เสร็จสมบูรณ์! ครบทุกธาตุแล้ว");
+                            OnAllElementsCompleted();
+                        }
+                        else
+                        {
+                            Debug.Log($"📋 เหลืออีก {requiredElements.Count - completedElements.Count} ธาตุ");
+                        }
                     }
                     else
                     {
-                        Debug.Log("💥 Fail MiniGame in Zone: " + SeqToString(requiredSequence));
+                        Debug.Log($"💥 ล้มเหลวในมินิเกมของ {matched.elementName}");
                         miniGame.ShowFailSymbolSafe();
                     }
                 });
             }
             else
             {
-                Debug.Log("❌ ไม่มี skill ที่ถูกต้องสำหรับ Zone นี้");
+                Debug.Log("❌ ธาตุในขวดไม่ตรงกับที่ต้องการ หรือเสร็จไปแล้ว");
                 miniGame.ShowFailSymbolSafe();
-                playerInventory.ConsumeFirstSkill(); // ขวดที่กดผิดก็หาย
+                playerInventory.ConsumeFirstSkill();
             }
         }
     }
 
-    private string SeqToString(List<KeyCode> seq)
+    // เรียกเมื่อครบทุกธาตุ
+    private void OnAllElementsCompleted()
     {
-        if (seq == null) return "";
-        return string.Join("", seq);
+        Debug.Log("🏆 Zone Complete! ครบทุกธาตุแล้ว");
+
+        // เรียก UnityEvent ที่ตั้งค่าใน Inspector
+        onAllElementsCompleted?.Invoke();
+    }
+
+    // สำหรับ reset (ถ้าต้องการ)
+    public void ResetZone()
+    {
+        completedElements.Clear();
+        Debug.Log("🔄 Reset Zone");
+    }
+
+    // ตรวจสอบว่าครบหรือยัง (เรียกจากที่อื่นได้)
+    public bool IsCompleted()
+    {
+        return completedElements.Count >= requiredElements.Count;
+    }
+
+    // ดูว่าเหลืออะไรบ้าง
+    public List<string> GetRemainingElements()
+    {
+        List<string> remaining = new List<string>();
+        for (int i = 0; i < requiredElements.Count; i++)
+        {
+            if (!completedElements.Contains(i))
+            {
+                remaining.Add(requiredElements[i].elementName);
+            }
+        }
+        return remaining;
     }
 }
