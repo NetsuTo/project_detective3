@@ -194,7 +194,7 @@ public class PlayerController : MonoBehaviour
 
         if (clip != null)
         {
-            audioSource.PlayOneShot(clip, footstepVolume);
+            AudioManager.Instance.PlaySFX(clip, footstepVolume); // ✅ เปลี่ยนบรรทัดนี้
         }
     }
 
@@ -202,7 +202,7 @@ public class PlayerController : MonoBehaviour
     {
         if (jumpSound != null && audioSource != null)
         {
-            audioSource.PlayOneShot(jumpSound, jumpVolume);
+            AudioManager.Instance.PlaySFX(jumpSound, jumpVolume); // ✅ เปลี่ยนบรรทัดนี้
         }
     }
 
@@ -210,7 +210,7 @@ public class PlayerController : MonoBehaviour
     {
         if (landSound != null && audioSource != null)
         {
-            audioSource.PlayOneShot(landSound, landVolume);
+            AudioManager.Instance.PlaySFX(landSound, landVolume); // ✅ เปลี่ยนบรรทัดนี้
         }
     }
 

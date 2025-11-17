@@ -11,35 +11,24 @@ public class SkillPickup : MonoBehaviour
     private bool playerInRange = false;
     private PlayerController playerController;
     private PlayerSkillManager manager;
-    private AudioSource audioSource;
-
-    void Start()
-    {
-        // สร้าง AudioSource component
-        audioSource = GetComponent<AudioSource>();
-        if (audioSource == null)
-        {
-            audioSource = gameObject.AddComponent<AudioSource>();
-        }
-        audioSource.playOnAwake = false;
-        audioSource.spatialBlend = 0f; // 2D sound
-    }
 
     void Update()
     {
         if (playerInRange && Input.GetKeyDown(KeyCode.E))
         {
             Debug.Log("?? กด E ขณะอยู่ในระยะ pickup");
+
             if (playerController != null)
             {
                 Debug.Log("?? เรียก animation pickup");
+
                 playerController.PlayPickupAnimation(() =>
                 {
                     if (manager != null && manager.CanPickupSkill(skillID))
                     {
                         Debug.Log("? เก็บสกิลสำเร็จ: " + skillID);
 
-                        // เล่นเสียงเก็บไอเทม
+                        // เล่นเสียงเก็บไอเทมผ่าน AudioManager
                         PlayPickupSound();
 
                         manager.PickupSkill(skillID);
@@ -61,10 +50,15 @@ public class SkillPickup : MonoBehaviour
 
     private void PlayPickupSound()
     {
-        if (pickupSound != null && audioSource != null)
+        if (pickupSound != null && AudioManager.Instance != null)
         {
-            audioSource.PlayOneShot(pickupSound, pickupVolume);
-            Debug.Log("?? เล่นเสียงเก็บไอเทม");
+            // ใช้ AudioManager แทน AudioSource เพื่อให้เชื่อมกับระบบเพิ่ม-ลดเสียง
+            AudioManager.Instance.PlaySFX(pickupSound, pickupVolume);
+            Debug.Log("?? เล่นเสียงเก็บไอเทมผ่าน AudioManager");
+        }
+        else if (AudioManager.Instance == null)
+        {
+            Debug.LogWarning("?? ไม่พบ AudioManager ในฉาก!");
         }
     }
 

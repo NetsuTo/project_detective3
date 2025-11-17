@@ -128,9 +128,9 @@ public class ExplosionController : MonoBehaviour
 
     private void PlayExplosionSound()
     {
-        if (explosionSound != null && audioSource != null)
+        if (explosionSound != null)
         {
-            audioSource.PlayOneShot(explosionSound, explosionVolume);
+            AudioManager.Instance.PlaySFX(explosionSound);
             Debug.Log("?? เล่นเสียงระเบิด");
         }
     }

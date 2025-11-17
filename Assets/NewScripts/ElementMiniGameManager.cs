@@ -14,7 +14,7 @@ public class ElementMiniGameManager : MonoBehaviour
     public Text displayText;
     public Image displayImage;
     public GameObject failSymbol;
-    public float failSymbolDuration = 2f; // ลดเวลาให้เร็วขึ้น
+    public float failSymbolDuration = 2f;
 
     [Header("Optional: Sequence เริ่มต้น (fallback ถ้าไม่ได้ส่งจาก TargetZone)")]
     public List<KeyCode> inspectorSequence = new List<KeyCode>();
@@ -33,24 +33,17 @@ public class ElementMiniGameManager : MonoBehaviour
     [Header("เสียงตอนกดคีย์")]
     public AudioClip keyPressSound;
     public AudioClip keyFailSound;
-    private AudioSource sfxSource;
     [Range(0f, 1f)] public float PressVolume = 0.5f;
     [Range(0f, 1f)] public float FailVolume = 0.5f;
 
     // หนังสือ
     [Header("Book Model Settings")]
-    [Tooltip("โมเดลหนังสือที่จะเปิดตอนเริ่มมินิเกม (วางไว้ในตัวผู้เล่น)")]
     public GameObject bookModel;
 
     // เอฟเฟกต์สำเร็จ
     [Header("Success Effect Settings")]
-    [Tooltip("Effect ที่จะเล่นเมื่อทำมินิเกมสำเร็จ (แต่ละ Zone ใส่ Effect ต่างกัน)")]
     public ParticleSystem successEffect;
-
-    [Tooltip("ตำแหน่งมือที่จะ Spawn Effect (เช่น Hand_R หรือ Hand_L)")]
     public Transform handEffectSpawnPoint;
-
-    [Tooltip("ดีเลย์ก่อนเล่น Effect (รอให้ Animation เล่นถึงจังหวะที่ต้องการ)")]
     public float effectDelay = 0.5f;
 
     [Tooltip("เสียงที่เล่นตอนปล่อยสกิลสำเร็จ")]
@@ -58,10 +51,7 @@ public class ElementMiniGameManager : MonoBehaviour
     [Range(0f, 1f)] public float successSkillVolume = 0.8f;
 
     [Header("⭐ Retry Settings")]
-    [Tooltip("อนุญาตให้ลองใหม่ได้เมื่อกดพลาด")]
     public bool allowRetry = true;
-
-    [Tooltip("ระยะเวลาหน่วงก่อนเริ่มใหม่ (วินาที)")]
     public float retryDelay = 0.5f;
 
     private Dictionary<KeyCode, Sprite> keyToSprite = new Dictionary<KeyCode, Sprite>();
@@ -69,7 +59,7 @@ public class ElementMiniGameManager : MonoBehaviour
     private int currentIndex = 0;
     private bool isActive = false;
     private Action<bool> onCompleteCallback = null;
-    private bool isRetrying = false; // ป้องกันการกดซ้ำตอน retry
+    private bool isRetrying = false;
 
     [Serializable]
     public class KeySpritePair
@@ -94,16 +84,12 @@ public class ElementMiniGameManager : MonoBehaviour
         if (displayImage != null) displayImage.gameObject.SetActive(false);
         if (failSymbol != null) failSymbol.SetActive(false);
 
-        sfxSource = gameObject.AddComponent<AudioSource>();
-        sfxSource.playOnAwake = false;
-
         if (bookModel != null)
             bookModel.SetActive(false);
     }
 
     void Update()
     {
-        // ทำงานเฉพาะมินิเกมที่ active อยู่เท่านั้น
         if (!isActive || activeMiniGame != this || isRetrying)
             return;
 
@@ -114,7 +100,7 @@ public class ElementMiniGameManager : MonoBehaviour
             if (Input.GetKeyDown(currentSequence[currentIndex]))
             {
                 if (keyPressSound != null)
-                    sfxSource.PlayOneShot(keyPressSound, PressVolume);
+                    AudioManager.Instance.PlaySFX(keyPressSound);
 
                 currentIndex++;
                 UpdateDisplay();
@@ -125,19 +111,18 @@ public class ElementMiniGameManager : MonoBehaviour
             else
             {
                 if (keyFailSound != null)
-                    sfxSource.PlayOneShot(keyFailSound, FailVolume);
+                    AudioManager.Instance.PlaySFX(keyFailSound);
 
                 if (allowRetry)
-                    Retry(); // ลองใหม่แทนที่จะ Fail
+                    Retry();
                 else
-                    Fail(); // Fail แบบเดิม
+                    Fail();
             }
         }
     }
 
     public void StartMiniGame(List<KeyCode> sequence, Action<bool> callback)
     {
-        // ปิดมินิเกมเก่า (ถ้ามี)
         if (activeMiniGame != null && activeMiniGame != this)
             activeMiniGame.ForceStop();
 
@@ -176,7 +161,6 @@ public class ElementMiniGameManager : MonoBehaviour
         if (failSymbol != null) failSymbol.SetActive(false);
         UpdateDisplay();
 
-        // ป้องกัน fail ทันทีจากปุ่ม R
         StartCoroutine(DelayInputActivation());
         Debug.Log($"[MiniGame] StartMiniGame - seq: {SeqToString(currentSequence)}");
     }
@@ -191,9 +175,6 @@ public class ElementMiniGameManager : MonoBehaviour
         HideDisplay();
         StopAllCoroutines();
 
-        if (sfxSource != null)
-            sfxSource.Stop();
-
         if (bookModel != null)
             bookModel.SetActive(false);
 
@@ -207,7 +188,7 @@ public class ElementMiniGameManager : MonoBehaviour
     {
         bool prev = isActive;
         isActive = false;
-        yield return null; // skip frame ปุ่ม R
+        yield return null;
         isActive = prev;
     }
 
@@ -221,7 +202,6 @@ public class ElementMiniGameManager : MonoBehaviour
         onCompleteCallback?.Invoke(true);
         onCompleteCallback = null;
 
-        // เล่น effect + sound ของคุณ
         StartCoroutine(PlaySuccessEffectSequence());
 
         if (playerController != null)
@@ -253,34 +233,23 @@ public class ElementMiniGameManager : MonoBehaviour
             Debug.Log($"🎆 Effect spawned at {spawnPos}");
         }
 
-        if (successSkillSound != null && sfxSource != null)
-            sfxSource.PlayOneShot(successSkillSound, successSkillVolume);
+        if (successSkillSound != null)
+            AudioManager.Instance.PlaySFX(successSkillSound);
     }
 
-    // ⭐ ฟังก์ชันใหม่: Retry แทน Fail
     private void Retry()
     {
         Debug.Log($"🔄 กดผิด! รีเซ็ตลำดับ...");
-
-        // แสดงสัญลักษณ์ Fail ชั่วคราว
         ShowFailSymbolSafe();
-
-        // รีเซ็ตลำดับกลับไปเริ่มต้น
         StartCoroutine(RetrySequence());
     }
 
     private IEnumerator RetrySequence()
     {
         isRetrying = true;
-
-        // รอสักครู่
         yield return new WaitForSeconds(retryDelay);
-
-        // รีเซ็ตกลับไปเริ่มต้น
         currentIndex = 0;
         isRetrying = false;
-
-        // แสดงคีย์แรกใหม่
         UpdateDisplay();
 
         Debug.Log($"🔄 เริ่มใหม่! คีย์ที่ต้องกด: {currentSequence[currentIndex]}");
@@ -326,7 +295,7 @@ public class ElementMiniGameManager : MonoBehaviour
                 displayText.text = "Next: " + key.ToString();
                 displayText.gameObject.SetActive(true);
             }
-            if (displayImage != null) displayImage.gameObject.SetActive(false);
+            if (displayImage != null) gameObject.SetActive(false);
         }
     }
 

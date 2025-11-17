@@ -24,13 +24,9 @@ public class SceneChangerEndGame : MonoBehaviour
 
     private bool playerInRange = false;
     private bool isChanging = false;
-    private AudioSource audioSource;
 
     void Start()
     {
-        // สร้าง AudioSource
-        audioSource = gameObject.AddComponent<AudioSource>();
-        audioSource.playOnAwake = false;
 
         if (pressEIndicator != null)
             pressEIndicator.SetActive(false);
@@ -79,9 +75,9 @@ public class SceneChangerEndGame : MonoBehaviour
             pressEIndicator.SetActive(false);
 
         // เล่นเสียง
-        if (changeSceneSound != null && audioSource != null)
+        if (changeSceneSound != null && AudioManager.Instance != null)
         {
-            audioSource.PlayOneShot(changeSceneSound, soundVolume);
+            AudioManager.Instance.PlaySFX(changeSceneSound, soundVolume);
             Debug.Log("?? เล่นเสียงเปลี่ยน Scene");
         }
 

@@ -11,7 +11,7 @@ public class EventController : MonoBehaviour
     public float moveSpeed = 3f;
 
     [Header("Effects & Sounds")]
-    public GameObject collisionEffect;   // Prefab เอฟเฟคตอนชน (เช่น ParticeSystem)
+    public GameObject collisionEffect;   // Prefab เอฟเฟคตอนชน
     public AudioClip collisionSound;     // เสียงตอนชน
     [Range(0f, 1f)]
     public float soundVolume = 0.8f;     // ความดังเสียง
@@ -21,6 +21,8 @@ public class EventController : MonoBehaviour
 
     private bool isMoving = false;
     private Rigidbody rb;
+
+    // ใช้ AudioSource เดียว เล่นเฉพาะเสียงที่จำเป็น
     private AudioSource audioSource;
 
     private void Start()
@@ -30,15 +32,14 @@ public class EventController : MonoBehaviour
         {
             rb = objectA.GetComponent<Rigidbody>();
             if (rb == null)
-            {
                 Debug.LogError("[EventController] ObjectA ต้องมี Rigidbody!");
-            }
         }
 
-        // สร้าง AudioSource สำหรับเล่นเสียง
+        // สร้าง AudioSource อย่างถูกต้อง
         audioSource = gameObject.AddComponent<AudioSource>();
         audioSource.playOnAwake = false;
-        audioSource.spatialBlend = 0f; // 2D sound
+        audioSource.spatialBlend = 0f; // เล่นเป็น 2D
+        audioSource.loop = false;      // ไม่ลูป
     }
 
     public void StartObjectMovement()
@@ -64,17 +65,15 @@ public class EventController : MonoBehaviour
         if (!isMoving || objectA == null || targetPoint == null || rb == null)
             return;
 
-        // คำนวณตำแหน่งใหม่
+        // เคลื่อนที่แบบ Smooth ไม่ชนฟิสิกส์
         Vector3 newPosition = Vector3.MoveTowards(
             rb.position,
             targetPoint.position,
             moveSpeed * Time.fixedDeltaTime
         );
 
-        // ใช้ Rigidbody.MovePosition แทนการเปลี่ยน transform โดยตรง
         rb.MovePosition(newPosition);
 
-        // เช็คว่าถึงเป้าหมายหรือยัง
         if (Vector3.Distance(rb.position, targetPoint.position) < 0.05f)
         {
             isMoving = false;
@@ -86,19 +85,12 @@ public class EventController : MonoBehaviour
     {
         Debug.Log("[EventController] ObjectA ถึงจุดเป้าหมายแล้ว!");
 
-        // เล่นเอฟเฟค
         PlayCollisionEffect();
-
-        // เล่นเสียง
         PlayCollisionSound();
 
-        // เขย่ากล้อง
         if (shakeOnCollision && Camera.main != null)
-        {
             StartCoroutine(ShakeCamera());
-        }
 
-        // ซ่อน ObjectB
         if (objectB != null)
         {
             objectB.SetActive(false);
@@ -110,12 +102,8 @@ public class EventController : MonoBehaviour
     {
         if (collisionEffect != null && targetPoint != null)
         {
-            // สร้างเอฟเฟคที่ตำแหน่งชน
             GameObject fx = Instantiate(collisionEffect, targetPoint.position, Quaternion.identity);
-
-            // ลบเอฟเฟคอัตโนมัติหลัง 3 วินาที
             Destroy(fx, 3f);
-
             Debug.Log("[EventController] เล่นเอฟเฟคชน!");
         }
     }
@@ -141,7 +129,6 @@ public class EventController : MonoBehaviour
 
         while (elapsed < shakeDuration)
         {
-            // สุ่มตำแหน่งเขย่า
             float x = Random.Range(-1f, 1f) * shakeIntensity;
             float y = Random.Range(-1f, 1f) * shakeIntensity;
 
@@ -151,7 +138,6 @@ public class EventController : MonoBehaviour
             yield return null;
         }
 
-        // คืนตำแหน่งเดิม
         cam.transform.localPosition = originalPos;
     }
 }
