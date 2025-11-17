@@ -24,9 +24,14 @@ public class SceneChangerEndGame : MonoBehaviour
 
     private bool playerInRange = false;
     private bool isChanging = false;
+    private AudioSource audioSource;
 
     void Start()
     {
+        // สร้าง AudioSource สำรอง
+        audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.playOnAwake = false;
+        audioSource.spatialBlend = 0f;
 
         if (pressEIndicator != null)
             pressEIndicator.SetActive(false);
@@ -75,9 +80,13 @@ public class SceneChangerEndGame : MonoBehaviour
             pressEIndicator.SetActive(false);
 
         // เล่นเสียง
-        if (changeSceneSound != null && AudioManager.Instance != null)
+        if (changeSceneSound != null)
         {
-            AudioManager.Instance.PlaySFX(changeSceneSound, soundVolume);
+            if (AudioManager.Instance != null)
+                AudioManager.Instance.PlaySFX(changeSceneSound, soundVolume);
+            else if (audioSource != null)
+                audioSource.PlayOneShot(changeSceneSound, soundVolume);
+
             Debug.Log("?? เล่นเสียงเปลี่ยน Scene");
         }
 
@@ -94,7 +103,7 @@ public class SceneChangerEndGame : MonoBehaviour
         yield return new WaitForSeconds(delayBeforeChange);
 
         // เปลี่ยน Scene
-        Debug.Log($"? เปลี่ยนไป Scene '{endGameSceneName}' เรียบร้อย!");
+        Debug.Log($"?? เปลี่ยนไป Scene '{endGameSceneName}' เรียบร้อย!");
         SceneManager.LoadScene(endGameSceneName);
     }
 

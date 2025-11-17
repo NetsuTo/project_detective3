@@ -11,7 +11,7 @@ public class ExplosionController : MonoBehaviour
     [Tooltip("วัตถุที่จะหายไปเมื่อระเบิด (เช่น กำแพง, หิน)")]
     public List<GameObject> objectsToDestroy = new List<GameObject>();
 
-    [Header("?? Particle Effect")]
+    [Header("? Particle Effect")]
     [Tooltip("เอฟเฟกต์การระเบิด (Particle System)")]
     public ParticleSystem explosionEffect;
 
@@ -48,7 +48,7 @@ public class ExplosionController : MonoBehaviour
     [Tooltip("ดีเลย์ก่อนทำลาย Object (วินาที) - ให้เวลา Effect เล่นก่อน")]
     public float destroyDelay = 0.3f;
 
-    [Header("? Visual Effects")]
+    [Header("?? Visual Effects")]
     [Tooltip("Flash สีขาวตอนระเบิด")]
     public bool enableFlash = true;
 
@@ -130,7 +130,11 @@ public class ExplosionController : MonoBehaviour
     {
         if (explosionSound != null)
         {
-            AudioManager.Instance.PlaySFX(explosionSound);
+            if (AudioManager.Instance != null)
+                AudioManager.Instance.PlaySFX(explosionSound, explosionVolume);
+            else if (audioSource != null)
+                audioSource.PlayOneShot(explosionSound, explosionVolume);
+
             Debug.Log("?? เล่นเสียงระเบิด");
         }
     }
@@ -164,7 +168,7 @@ public class ExplosionController : MonoBehaviour
             Destroy(effect.gameObject, effect.main.duration + effect.main.startLifetime.constantMax);
         }
 
-        Debug.Log($"?? Spawn Effect จำนวน {effectCount} ตัว");
+        Debug.Log($"? Spawn Effect จำนวน {effectCount} ตัว");
     }
 
     private IEnumerator ShakeCamera()
@@ -228,7 +232,7 @@ public class ExplosionController : MonoBehaviour
         {
             if (obj != null)
             {
-                Debug.Log($"?? ทำลาย: {obj.name}");
+                Debug.Log($"??? ทำลาย: {obj.name}");
 
                 // เลือกว่าจะ Destroy หรือแค่ Disable
                 // แบบที่ 1: ทำลายทิ้งเลย

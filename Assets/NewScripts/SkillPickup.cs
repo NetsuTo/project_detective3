@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class SkillPickup : MonoBehaviour
 {
+    [Header("Skill Settings")]
     public string skillID; // เช่น "HHO", "NNOO" เป็นต้น
 
     [Header("Sound Effects")]
@@ -11,28 +12,32 @@ public class SkillPickup : MonoBehaviour
     private bool playerInRange = false;
     private PlayerController playerController;
     private PlayerSkillManager manager;
+    private AudioSource audioSource;
+
+    void Start()
+    {
+        // สร้าง AudioSource สำรอง
+        audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.playOnAwake = false;
+        audioSource.spatialBlend = 0f;
+    }
 
     void Update()
     {
         if (playerInRange && Input.GetKeyDown(KeyCode.E))
         {
             Debug.Log("?? กด E ขณะอยู่ในระยะ pickup");
-
             if (playerController != null)
             {
                 Debug.Log("?? เรียก animation pickup");
-
                 playerController.PlayPickupAnimation(() =>
                 {
                     if (manager != null && manager.CanPickupSkill(skillID))
                     {
                         Debug.Log("? เก็บสกิลสำเร็จ: " + skillID);
-
-                        // เล่นเสียงเก็บไอเทมผ่าน AudioManager
+                        // เล่นเสียงเก็บไอเทม
                         PlayPickupSound();
-
                         manager.PickupSkill(skillID);
-
                         // ทำลาย object หลังจากเสียงเล่นเสร็จ (ถ้ามีเสียง)
                         if (pickupSound != null)
                         {
@@ -50,15 +55,18 @@ public class SkillPickup : MonoBehaviour
 
     private void PlayPickupSound()
     {
-        if (pickupSound != null && AudioManager.Instance != null)
+        if (pickupSound != null)
         {
-            // ใช้ AudioManager แทน AudioSource เพื่อให้เชื่อมกับระบบเพิ่ม-ลดเสียง
-            AudioManager.Instance.PlaySFX(pickupSound, pickupVolume);
-            Debug.Log("?? เล่นเสียงเก็บไอเทมผ่าน AudioManager");
-        }
-        else if (AudioManager.Instance == null)
-        {
-            Debug.LogWarning("?? ไม่พบ AudioManager ในฉาก!");
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlaySFX(pickupSound, pickupVolume);
+                Debug.Log("?? เล่นเสียงเก็บไอเทมผ่าน AudioManager");
+            }
+            else if (audioSource != null)
+            {
+                audioSource.PlayOneShot(pickupSound, pickupVolume);
+                Debug.Log("?? เล่นเสียงเก็บไอเทมผ่าน AudioSource");
+            }
         }
     }
 

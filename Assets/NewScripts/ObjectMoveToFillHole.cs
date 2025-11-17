@@ -3,22 +3,26 @@ using System.Collections;
 
 public class ObjectMoveToFillHole : MonoBehaviour
 {
+    [Header("Objects")]
     public GameObject objectA;
     public Transform targetHole;
+
+    [Header("Movement Settings")]
     public float moveSpeed = 2f;
     public float arriveDistance = 0.05f;
 
+    [Header("Visual Effects")]
     public ParticleSystem movingEffect;
     public Vector3 effectOffset = Vector3.zero;
-
     public ParticleSystem fillEffect;
 
+    [Header("Sound Effects")]
     public AudioClip movingSound;
     [Range(0f, 1f)] public float movingSoundVolume = 0.6f;
-
     public AudioClip impactSound;
     [Range(0f, 1f)] public float impactSoundVolume = 0.8f;
 
+    [Header("Path Collider")]
     public Collider pathColliderToEnable;
 
     private bool isMoving = false;
@@ -27,10 +31,18 @@ public class ObjectMoveToFillHole : MonoBehaviour
     // สำหรับเก็บ id ของเสียง loop ที่ AudioManager เล่นอยู่
     private int movingSoundID = -1;
 
+    // AudioSource สำรองถ้าไม่มี AudioManager
+    private AudioSource audioSource;
+
     void Start()
     {
         if (movingEffect != null) movingEffect.Stop();
         if (fillEffect != null) fillEffect.Stop();
+
+        // สร้าง AudioSource สำรอง
+        audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.playOnAwake = false;
+        audioSource.spatialBlend = 0f;
     }
 
     public void StartMoveToHole()
@@ -40,16 +52,13 @@ public class ObjectMoveToFillHole : MonoBehaviour
             Debug.LogWarning("[ObjectMoveToFillHole] ยังไม่ได้กำหนด objectA หรือ targetHole");
             return;
         }
-
         if (isMoving) return;
-
         StartCoroutine(MoveObject());
     }
 
     private IEnumerator MoveObject()
     {
         isMoving = true;
-
         StartMovingEffect();
         StartMovingSound();
 
@@ -79,7 +88,6 @@ public class ObjectMoveToFillHole : MonoBehaviour
     private void StartMovingEffect()
     {
         if (movingEffect == null) return;
-
         Vector3 spawnPos = objectA.transform.position + effectOffset;
         activeMovingEffect = Instantiate(movingEffect, spawnPos, Quaternion.identity);
         activeMovingEffect.Play();
@@ -99,24 +107,38 @@ public class ObjectMoveToFillHole : MonoBehaviour
     {
         if (movingSound != null)
         {
-            // ถ้า AudioManager คุณมีระบบ Loop
-            movingSoundID = AudioManager.Instance.PlaySFXLoop(movingSound, movingSoundVolume);
+            if (AudioManager.Instance != null)
+            {
+                // ถ้ามี AudioManager และรองรับ Loop
+                movingSoundID = AudioManager.Instance.PlaySFXLoop(movingSound, movingSoundVolume);
+            }
+            else if (audioSource != null)
+            {
+                // ใช้ AudioSource สำรอง
+                audioSource.clip = movingSound;
+                audioSource.volume = movingSoundVolume;
+                audioSource.loop = true;
+                audioSource.Play();
+            }
         }
     }
 
     private void StopMovingSound()
     {
-        if (movingSoundID != -1)
+        if (AudioManager.Instance != null && movingSoundID != -1)
         {
             AudioManager.Instance.StopSFXLoop(movingSoundID);
             movingSoundID = -1;
+        }
+        else if (audioSource != null && audioSource.isPlaying)
+        {
+            audioSource.Stop();
         }
     }
 
     private void OnArriveHole()
     {
         isMoving = false;
-
         StopMovingEffect();
         StopMovingSound();
 
@@ -132,7 +154,10 @@ public class ObjectMoveToFillHole : MonoBehaviour
 
         if (impactSound != null)
         {
-            AudioManager.Instance.PlaySFX(impactSound, impactSoundVolume);
+            if (AudioManager.Instance != null)
+                AudioManager.Instance.PlaySFX(impactSound, impactSoundVolume);
+            else if (audioSource != null)
+                audioSource.PlayOneShot(impactSound, impactSoundVolume);
         }
 
         if (pathColliderToEnable != null)

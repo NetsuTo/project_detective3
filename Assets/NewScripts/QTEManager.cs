@@ -14,17 +14,16 @@ public class QTEManager : MonoBehaviour
     public GameObject timingBarPrefab;    // Prefab TimingBar
     private TimingBar currentTimingBar;
 
-
     [Header("Settings")]
     public float timePerSlot = 1f;
 
     [Header("เสียงประกอบ QTE")]
     public AudioClip keyPressSound;
     public AudioClip keyFailSound;
-    private AudioSource sfxSource;
     [Range(0f, 1f)] public float passVolume = 0.5f;
     [Range(0f, 1f)] public float failVolume = 0.5f;
 
+    private AudioSource sfxSource;
     private List<KeyCode> sequence = new List<KeyCode>();
     private List<GameObject> slotUIs = new List<GameObject>();
     private int currentIndex = 0;
@@ -32,8 +31,10 @@ public class QTEManager : MonoBehaviour
 
     void Start()
     {
+        // สร้าง AudioSource สำรอง
         sfxSource = gameObject.AddComponent<AudioSource>();
         sfxSource.playOnAwake = false;
+        sfxSource.spatialBlend = 0f;
     }
 
     // 🔹 เริ่ม QTE
@@ -66,7 +67,6 @@ public class QTEManager : MonoBehaviour
             SpawnTimingBar();
         }
     }
-
 
     void SpawnQTESlot(KeyCode key)
     {
@@ -115,12 +115,22 @@ public class QTEManager : MonoBehaviour
         if (success)
         {
             if (keyPressSound != null)
-                sfxSource.PlayOneShot(keyPressSound, passVolume);
+            {
+                if (AudioManager.Instance != null)
+                    AudioManager.Instance.PlaySFX(keyPressSound, passVolume);
+                else if (sfxSource != null)
+                    sfxSource.PlayOneShot(keyPressSound, passVolume);
+            }
         }
         else
         {
             if (keyFailSound != null)
-                sfxSource.PlayOneShot(keyFailSound, failVolume);
+            {
+                if (AudioManager.Instance != null)
+                    AudioManager.Instance.PlaySFX(keyFailSound, failVolume);
+                else if (sfxSource != null)
+                    sfxSource.PlayOneShot(keyFailSound, failVolume);
+            }
         }
 
         if (success)
@@ -166,7 +176,6 @@ public class QTEManager : MonoBehaviour
         }
     }
 
-
     void EndQTE()
     {
         isActive = false;
@@ -192,6 +201,4 @@ public class QTEManager : MonoBehaviour
 
         Debug.Log("QTE Ended → พร้อมเริ่มใหม่ถ้าไม่มีขวดใน Inventory");
     }
-
-
 }

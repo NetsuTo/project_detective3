@@ -110,9 +110,13 @@ public class EventController : MonoBehaviour
 
     private void PlayCollisionSound()
     {
-        if (collisionSound != null && audioSource != null)
+        if (collisionSound != null)
         {
-            audioSource.PlayOneShot(collisionSound, soundVolume);
+            if (AudioManager.Instance != null)
+                AudioManager.Instance.PlaySFX(collisionSound, soundVolume);
+            else if (audioSource != null)
+                audioSource.PlayOneShot(collisionSound, soundVolume);
+
             Debug.Log("[EventController] เล่นเสียงชน!");
         }
     }

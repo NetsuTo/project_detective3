@@ -60,6 +60,7 @@ public class ElementMiniGameManager : MonoBehaviour
     private bool isActive = false;
     private Action<bool> onCompleteCallback = null;
     private bool isRetrying = false;
+    private AudioSource audioSource;
 
     [Serializable]
     public class KeySpritePair
@@ -76,6 +77,11 @@ public class ElementMiniGameManager : MonoBehaviour
             if (!keyToSprite.ContainsKey(pair.key))
                 keyToSprite.Add(pair.key, pair.sprite);
         }
+
+        // สร้าง AudioSource สำรอง
+        audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.playOnAwake = false;
+        audioSource.spatialBlend = 0f;
     }
 
     void Start()
@@ -100,7 +106,12 @@ public class ElementMiniGameManager : MonoBehaviour
             if (Input.GetKeyDown(currentSequence[currentIndex]))
             {
                 if (keyPressSound != null)
-                    AudioManager.Instance.PlaySFX(keyPressSound);
+                {
+                    if (AudioManager.Instance != null)
+                        AudioManager.Instance.PlaySFX(keyPressSound, PressVolume);
+                    else if (audioSource != null)
+                        audioSource.PlayOneShot(keyPressSound, PressVolume);
+                }
 
                 currentIndex++;
                 UpdateDisplay();
@@ -111,7 +122,12 @@ public class ElementMiniGameManager : MonoBehaviour
             else
             {
                 if (keyFailSound != null)
-                    AudioManager.Instance.PlaySFX(keyFailSound);
+                {
+                    if (AudioManager.Instance != null)
+                        AudioManager.Instance.PlaySFX(keyFailSound, FailVolume);
+                    else if (audioSource != null)
+                        audioSource.PlayOneShot(keyFailSound, FailVolume);
+                }
 
                 if (allowRetry)
                     Retry();
@@ -234,7 +250,12 @@ public class ElementMiniGameManager : MonoBehaviour
         }
 
         if (successSkillSound != null)
-            AudioManager.Instance.PlaySFX(successSkillSound);
+        {
+            if (AudioManager.Instance != null)
+                AudioManager.Instance.PlaySFX(successSkillSound, successSkillVolume);
+            else if (audioSource != null)
+                audioSource.PlayOneShot(successSkillSound, successSkillVolume);
+        }
     }
 
     private void Retry()
