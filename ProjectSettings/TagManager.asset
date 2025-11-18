@@ -10,6 +10,7 @@ TagManager:
   - InventoryPanel
   - PressR
   - Box
+  - PressureObject
   layers:
   - Default
   - TransparentFX
