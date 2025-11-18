@@ -62,12 +62,45 @@ public class ExplosionController : MonoBehaviour
     [Tooltip("ระยะเวลา Flash")]
     public float flashDuration = 0.2f;
 
+    [Header("?? Falling Debris (หินตก)")]
+    [Tooltip("Prefab ของหินที่จะตกลงมา")]
+    public GameObject debrisPrefab;
+
+    [Tooltip("เปิดใช้การตกหินต่อเนื่อง")]
+    public bool enableContinuousDebris = true;
+
+    [Tooltip("จำนวนหินที่จะตกในช่วงแรก")]
+    public int initialDebrisCount = 10;
+
+    [Tooltip("จำนวนหินที่ตกต่อเนื่องต่อครั้ง")]
+    public int continuousDebrisPerSpawn = 2;
+
+    [Tooltip("ดีเลย์ระหว่างการ Spawn หินต่อเนื่อง (วินาที)")]
+    public float continuousDebrisInterval = 0.5f;
+
+    [Tooltip("ความสูงที่หิน Spawn (เหนือกล้อง)")]
+    public float spawnHeight = 10f;
+
+    [Tooltip("ระยะกว้างของการสุ่มตำแหน่ง X")]
+    public float spawnRangeX = 15f;
+
+    [Tooltip("ระยะห่างด้านหน้ากล้อง (Z)")]
+    public float spawnDistanceInFront = 20f;
+
+    [Tooltip("ดีเลย์ระหว่างการ Spawn แต่ละก้อน (วินาที)")]
+    public float debrisSpawnInterval = 0.05f;
+
+    [Tooltip("ระยะเวลาก่อนหินหายไป (วินาที)")]
+    public float debrisLifetime = 5f;
+
     private AudioSource audioSource;
     private Camera mainCamera;
     private bool hasExploded = false;
     private bool isContinuousShaking = false;
     private Coroutine continuousShakeCoroutine;
     private Vector3 shakeOffset = Vector3.zero;
+    private bool isSpawningDebris = false;
+    private Coroutine continuousDebrisCoroutine;
 
     void Start()
     {
@@ -135,6 +168,18 @@ public class ExplosionController : MonoBehaviour
 
         // เล่น Particle Effect
         SpawnExplosionEffects();
+
+        // Spawn หินตก
+        if (debrisPrefab != null)
+        {
+            StartCoroutine(SpawnInitialDebris());
+
+            // เริ่มสั่นต่อเนื่อง
+            if (enableContinuousDebris)
+            {
+                continuousDebrisCoroutine = StartCoroutine(SpawnContinuousDebris());
+            }
+        }
 
         // รอให้ Effect เล่นสักหน่อย แล้วค่อยทำลาย Object
         yield return new WaitForSeconds(destroyDelay);
@@ -260,6 +305,7 @@ public class ExplosionController : MonoBehaviour
     {
         // หยุดสั่นเมื่อ Object ถูกทำลาย
         StopContinuousShake();
+        StopContinuousDebris();
     }
 
     private IEnumerator FlashEffect()
@@ -293,6 +339,97 @@ public class ExplosionController : MonoBehaviour
         Destroy(flashObj);
     }
 
+    private IEnumerator SpawnInitialDebris()
+    {
+        if (mainCamera == null || debrisPrefab == null) yield break;
+
+        Debug.Log("?? เริ่ม Spawn หินตกช่วงแรก");
+
+        for (int i = 0; i < initialDebrisCount; i++)
+        {
+            SpawnSingleDebris();
+            yield return new WaitForSeconds(debrisSpawnInterval);
+        }
+    }
+
+    private IEnumerator SpawnContinuousDebris()
+    {
+        if (mainCamera == null || debrisPrefab == null) yield break;
+
+        isSpawningDebris = true;
+        Debug.Log("?? เริ่มตกหินต่อเนื่อง");
+
+        while (isSpawningDebris)
+        {
+            // Spawn หลายก้อนพร้อมกัน
+            for (int i = 0; i < continuousDebrisPerSpawn; i++)
+            {
+                SpawnSingleDebris();
+            }
+
+            yield return new WaitForSeconds(continuousDebrisInterval);
+        }
+    }
+
+    private void SpawnSingleDebris()
+    {
+        if (mainCamera == null || debrisPrefab == null) return;
+
+        // ตำแหน่งกล้อง
+        Vector3 cameraPos = mainCamera.transform.position;
+        Vector3 cameraForward = mainCamera.transform.forward;
+
+        // สุ่มตำแหน่ง X (ซ้าย-ขวา) และ Z (หน้ากล้อง)
+        float randomX = Random.Range(-spawnRangeX, spawnRangeX);
+        float randomZ = Random.Range(spawnDistanceInFront * 0.5f, spawnDistanceInFront);
+
+        // คำนวณตำแหน่ง Spawn (ด้านหน้ากล้อง + เหนือขึ้นไป)
+        Vector3 spawnPos = cameraPos
+            + mainCamera.transform.right * randomX
+            + Vector3.up * spawnHeight
+            + cameraForward * randomZ;
+
+        // Spawn หิน
+        GameObject debris = Instantiate(debrisPrefab, spawnPos, Random.rotation);
+
+        // แก้ Mesh Collider ให้เป็น Convex (ถ้ามี)
+        MeshCollider meshCol = debris.GetComponent<MeshCollider>();
+        if (meshCol != null)
+        {
+            meshCol.convex = true;
+        }
+
+        // เพิ่ม Rigidbody (3D)
+        Rigidbody rb = debris.GetComponent<Rigidbody>();
+        if (rb == null)
+        {
+            rb = debris.AddComponent<Rigidbody>();
+        }
+
+        // ตั้งค่า Rigidbody
+        rb.mass = Random.Range(0.5f, 2f);
+        rb.angularVelocity = Random.insideUnitSphere * 5f;
+
+        // เพิ่มแรงเล็กน้อย
+        rb.velocity = new Vector3(Random.Range(-1f, 1f), Random.Range(-2f, 0f), Random.Range(-1f, 1f));
+
+        // ทำลายหินหลังจากเวลาที่กำหนด
+        Destroy(debris, debrisLifetime);
+    }
+
+    /// <summary>
+    /// หยุดการตกหินต่อเนื่อง
+    /// </summary>
+    public void StopContinuousDebris()
+    {
+        isSpawningDebris = false;
+        if (continuousDebrisCoroutine != null)
+        {
+            StopCoroutine(continuousDebrisCoroutine);
+        }
+        Debug.Log("?? หยุดการตกหินต่อเนื่อง");
+    }
+
     private void DestroyObjects()
     {
         foreach (GameObject obj in objectsToDestroy)
@@ -318,6 +455,7 @@ public class ExplosionController : MonoBehaviour
     {
         hasExploded = false;
         StopContinuousShake();
+        StopContinuousDebris();
         Debug.Log("?? รีเซ็ต Explosion");
     }
 
