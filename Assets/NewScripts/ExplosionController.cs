@@ -11,7 +11,7 @@ public class ExplosionController : MonoBehaviour
     [Tooltip("วัตถุที่จะหายไปเมื่อระเบิด (เช่น กำแพง, หิน)")]
     public List<GameObject> objectsToDestroy = new List<GameObject>();
 
-    [Header("? Particle Effect")]
+    [Header("?? Particle Effect")]
     [Tooltip("เอฟเฟกต์การระเบิด (Particle System)")]
     public ParticleSystem explosionEffect;
 
@@ -32,14 +32,21 @@ public class ExplosionController : MonoBehaviour
     public float explosionVolume = 1f;
 
     [Header("?? Camera Shake")]
-    [Tooltip("ระยะเวลาที่สั่น (วินาที)")]
+    [Tooltip("ระยะเวลาที่สั่นแรง (วินาที)")]
     public float shakeDuration = 0.5f;
 
-    [Tooltip("ความแรงของการสั่น")]
+    [Tooltip("ความแรงของการสั่นแรก")]
     public float shakeMagnitude = 0.3f;
 
     [Tooltip("ความถี่ในการสั่น")]
     public float shakeFrequency = 25f;
+
+    [Header("?? Continuous Shake (หลังระเบิด)")]
+    [Tooltip("เปิดใช้การสั่นต่อเนื่องหลังระเบิด")]
+    public bool enableContinuousShake = true;
+
+    [Tooltip("ความแรงการสั่นต่อเนื่อง (เบากว่าการสั่นแรก)")]
+    public float continuousShakeMagnitude = 0.05f;
 
     [Header("?? Timing")]
     [Tooltip("ดีเลย์ก่อนเริ่มระเบิด (วินาที)")]
@@ -48,7 +55,7 @@ public class ExplosionController : MonoBehaviour
     [Tooltip("ดีเลย์ก่อนทำลาย Object (วินาที) - ให้เวลา Effect เล่นก่อน")]
     public float destroyDelay = 0.3f;
 
-    [Header("?? Visual Effects")]
+    [Header("? Visual Effects")]
     [Tooltip("Flash สีขาวตอนระเบิด")]
     public bool enableFlash = true;
 
@@ -58,6 +65,9 @@ public class ExplosionController : MonoBehaviour
     private AudioSource audioSource;
     private Camera mainCamera;
     private bool hasExploded = false;
+    private bool isContinuousShaking = false;
+    private Coroutine continuousShakeCoroutine;
+    private Vector3 shakeOffset = Vector3.zero;
 
     void Start()
     {
@@ -71,6 +81,15 @@ public class ExplosionController : MonoBehaviour
         if (mainCamera == null)
         {
             Debug.LogWarning("[ExplosionController] ไม่พบ Main Camera!");
+        }
+    }
+
+    void LateUpdate()
+    {
+        // ใช้ LateUpdate เพื่อให้กล้องทำงานหลังจาก Camera Follow เสร็จแล้ว
+        if (mainCamera != null && (isContinuousShaking || shakeOffset != Vector3.zero))
+        {
+            mainCamera.transform.position += shakeOffset;
         }
     }
 
@@ -168,14 +187,13 @@ public class ExplosionController : MonoBehaviour
             Destroy(effect.gameObject, effect.main.duration + effect.main.startLifetime.constantMax);
         }
 
-        Debug.Log($"? Spawn Effect จำนวน {effectCount} ตัว");
+        Debug.Log($"?? Spawn Effect จำนวน {effectCount} ตัว");
     }
 
     private IEnumerator ShakeCamera()
     {
         if (mainCamera == null) yield break;
 
-        Vector3 originalPos = mainCamera.transform.localPosition;
         float elapsed = 0f;
 
         while (elapsed < shakeDuration)
@@ -184,15 +202,64 @@ public class ExplosionController : MonoBehaviour
             float x = Random.Range(-1f, 1f) * shakeMagnitude;
             float y = Random.Range(-1f, 1f) * shakeMagnitude;
 
-            mainCamera.transform.localPosition = originalPos + new Vector3(x, y, 0);
+            shakeOffset = new Vector3(x, y, 0);
 
             elapsed += Time.deltaTime;
             yield return null;
         }
 
-        // คืนตำแหน่งเดิม
-        mainCamera.transform.localPosition = originalPos;
-        Debug.Log("?? Camera Shake เสร็จสิ้น");
+        // รีเซ็ต offset
+        shakeOffset = Vector3.zero;
+        Debug.Log("?? Camera Shake แรงเสร็จสิ้น");
+
+        // เริ่มสั่นต่อเนื่องเบาๆ
+        if (enableContinuousShake)
+        {
+            continuousShakeCoroutine = StartCoroutine(ContinuousShake());
+        }
+    }
+
+    private IEnumerator ContinuousShake()
+    {
+        if (mainCamera == null) yield break;
+
+        isContinuousShaking = true;
+
+        Debug.Log("?? เริ่มสั่นจอแบบต่อเนื่อง");
+
+        while (isContinuousShaking)
+        {
+            // สั่นเบาๆแบบสุ่ม
+            float x = Random.Range(-1f, 1f) * continuousShakeMagnitude;
+            float y = Random.Range(-1f, 1f) * continuousShakeMagnitude;
+
+            shakeOffset = new Vector3(x, y, 0);
+
+            yield return null;
+        }
+
+        // รีเซ็ต offset เมื่อหยุด
+        shakeOffset = Vector3.zero;
+    }
+
+    /// <summary>
+    /// หยุดการสั่นต่อเนื่อง (เรียกก่อนเปลี่ยนซีนถ้าต้องการ)
+    /// </summary>
+    public void StopContinuousShake()
+    {
+        isContinuousShaking = false;
+        shakeOffset = Vector3.zero;
+        if (continuousShakeCoroutine != null)
+        {
+            StopCoroutine(continuousShakeCoroutine);
+        }
+        Debug.Log("?? หยุดการสั่นต่อเนื่อง");
+    }
+
+    void OnDestroy()
+    {
+        // หยุดสั่นเมื่อ Object ถูกทำลาย
+        StopContinuousShake();
     }
 
     private IEnumerator FlashEffect()
@@ -232,7 +299,7 @@ public class ExplosionController : MonoBehaviour
         {
             if (obj != null)
             {
-                Debug.Log($"??? ทำลาย: {obj.name}");
+                Debug.Log($"?? ทำลาย: {obj.name}");
 
                 // เลือกว่าจะ Destroy หรือแค่ Disable
                 // แบบที่ 1: ทำลายทิ้งเลย
@@ -250,6 +317,7 @@ public class ExplosionController : MonoBehaviour
     public void ResetExplosion()
     {
         hasExploded = false;
+        StopContinuousShake();
         Debug.Log("?? รีเซ็ต Explosion");
     }
 

@@ -34,6 +34,12 @@ public class SimpleBubbleDialog : MonoBehaviour
     public GameObject bubblePrefab; // Prefab ของบับเบิ้ล (ถ้ามี)
     public GameObject pressEIndicator; // UI บอกให้กด E
 
+    [Header("Object ที่จะโผล่หลังคุยเสร็จ")]
+    public GameObject[] objectsToSpawn; // Object ที่จะโผล่ขึ้นมา
+    public bool activateObjects = true; // เปิดใช้งาน Object (true) หรือสร้างใหม่ (false)
+    public Transform spawnPoint; // ตำแหน่งที่จะโผล่ (ถ้าสร้างใหม่)
+    public bool spawnOnlyOnce = true; // โผล่แค่ครั้งเดียว (true) หรือทุกครั้ง (false)
+
     private GameObject bubbleInstance;
     private Text bubbleText;
     private bool playerInRange = false;
@@ -43,6 +49,8 @@ public class SimpleBubbleDialog : MonoBehaviour
     private float floatTimer = 0f;
     private PlayerController playerController;
     private Animator playerAnimator;
+    private bool isTyping = false; // ตรวจสอบว่ากำลังพิมพ์อยู่หรือไม่
+    private bool hasSpawnedObjects = false; // ตรวจสอบว่าโผล่ Object ไปแล้วหรือยัง
 
     void Start()
     {
@@ -87,10 +95,20 @@ public class SimpleBubbleDialog : MonoBehaviour
             StartDialog();
         }
 
-        // กด Space เพื่อข้ามหรือไปข้อความถัดไป
+        // กด Space เพื่อแสดงข้อความทั้งหมด หรือไปข้อความถัดไป
         if (isShowingDialog && Input.GetKeyDown(KeyCode.Space))
         {
-            NextLine();
+            if (isTyping)
+            {
+                // ถ้ากำลังพิมพ์อยู่ -> แสดงข้อความทั้งหมดทันที
+                StopAllCoroutines();
+                CompleteCurrentText();
+            }
+            else
+            {
+                // ถ้าแสดงครบแล้ว -> ไปข้อความถัดไป
+                NextLine();
+            }
         }
 
         // อัพเดทตำแหน่งบับเบิ้ลให้ติดตัวตลอด
@@ -270,6 +288,7 @@ public class SimpleBubbleDialog : MonoBehaviour
             yield break;
         }
 
+        isTyping = true; // เริ่มพิมพ์
         bubbleText.text = "";
 
         // พิมพ์ทีละตัว
@@ -279,7 +298,32 @@ public class SimpleBubbleDialog : MonoBehaviour
             yield return new WaitForSeconds(typingSpeed);
         }
 
+        isTyping = false; // พิมพ์เสร็จแล้ว
+
         // รอก่อนไปข้อความถัดไป
+        yield return new WaitForSeconds(displayDuration);
+
+        if (isShowingDialog)
+        {
+            NextLine();
+        }
+    }
+
+    void CompleteCurrentText()
+    {
+        // แสดงข้อความทั้งหมดทันที
+        if (currentLineIndex < dialogLines.Length)
+        {
+            bubbleText.text = dialogLines[currentLineIndex];
+            isTyping = false;
+
+            // เริ่มนับเวลารอก่อนไปข้อความถัดไป
+            StartCoroutine(WaitAfterComplete());
+        }
+    }
+
+    IEnumerator WaitAfterComplete()
+    {
         yield return new WaitForSeconds(displayDuration);
 
         if (isShowingDialog)
@@ -330,7 +374,49 @@ public class SimpleBubbleDialog : MonoBehaviour
             pressEIndicator.SetActive(true);
         }
 
+        // ทำให้ Object โผล่ขึ้นมา
+        SpawnObjects();
+
         Debug.Log("✅ จบบทสนทนา");
+    }
+
+    void SpawnObjects()
+    {
+        if (objectsToSpawn == null || objectsToSpawn.Length == 0)
+        {
+            return; // ไม่มี Object ที่จะโผล่
+        }
+
+        // ถ้าตั้งค่าให้โผล่แค่ครั้งเดียว และโผล่ไปแล้ว ก็ไม่ทำอะไร
+        if (spawnOnlyOnce && hasSpawnedObjects)
+        {
+            Debug.Log("⏭️ Object โผล่ไปแล้ว ข้ามการโผล่ครั้งนี้");
+            return;
+        }
+
+        foreach (GameObject obj in objectsToSpawn)
+        {
+            if (obj == null) continue;
+
+            if (activateObjects)
+            {
+                // เปิดใช้งาน Object ที่ซ่อนอยู่
+                obj.SetActive(true);
+                Debug.Log($"✨ เปิด Object: {obj.name}");
+            }
+            else
+            {
+                // สร้าง Object ใหม่
+                Vector3 spawnPos = spawnPoint != null ? spawnPoint.position : transform.position;
+                Quaternion spawnRot = spawnPoint != null ? spawnPoint.rotation : Quaternion.identity;
+
+                GameObject newObj = Instantiate(obj, spawnPos, spawnRot);
+                Debug.Log($"✨ สร้าง Object: {newObj.name}");
+            }
+        }
+
+        hasSpawnedObjects = true; // บันทึกว่าโผล่ไปแล้ว
+        Debug.Log("✅ Object โผล่ครบแล้ว");
     }
 
     void OnTriggerEnter(Collider other)
