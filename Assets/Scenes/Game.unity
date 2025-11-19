@@ -62508,8 +62508,8 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   slideAnimationTrigger: Slide
-  slideSound: {fileID: 0}
-  slideSoundVolume: 0.7
+  slideSound: {fileID: 8300000, guid: 82803f04f04c599488c9c24cb95fc9be, type: 3}
+  slideSoundVolume: 0.5
   slideEffect: {fileID: 6650199810314842004, guid: 9747e8be12e113d4fa369bba6a60a18b, type: 3}
   effectOffset: {x: 0, y: 1, z: -2}
   effectRotation: {x: 0, y: 0, z: -30}

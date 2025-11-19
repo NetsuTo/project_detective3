@@ -43,12 +43,19 @@ public class SlideZone : MonoBehaviour
             zoneCollider.isTrigger = true;
         }
 
-        // เช็ค AudioSource
+        // ? เช็ค AudioSource ถ้าไม่มีก็สร้างให้อัตโนมัติ
         audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+            audioSource.playOnAwake = false;
+            audioSource.spatialBlend = 0f; // 2D sound
+            Debug.Log("? สร้าง AudioSource อัตโนมัติสำหรับ SlideZone");
+        }
 
         isZoneActive = startVisible;
         gameObject.SetActive(startVisible);
-        Debug.Log($"?? SlideZone เริ่มต้น: {(startVisible ? "แสดง ?" : "ซ่อน ?")}");
+        Debug.Log($"? SlideZone เริ่มต้น: {(startVisible ? "แสดง ?" : "ซ่อน ?")}");
     }
 
     private void OnEnable()
