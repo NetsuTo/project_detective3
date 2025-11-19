@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Trigger ที่ทำให้วัตถุตกลงมาเป็น Platform จากหลายจุดที่กำหนด
+/// Trigger ที่ทำให้วัตถุตกลงมาเป็น Platform จากหลายจุดที่กำหนด (ไม่ซ้ำจุด)
 /// เมื่อ Player เหยียบ Trigger ? วัตถุตกมายังตำแหน่งที่ Set ไว้
 /// มีเอฟเฟคและเสียง พร้อมระบบเสียงที่เชื่อมกับ AudioManager
 /// </summary>
@@ -37,7 +37,7 @@ public class FallingPlatformTrigger : MonoBehaviour
     public Vector3 platformRotationOffset = new Vector3(-90, 0, 0);
 
     [Header("?? การสุ่ม")]
-    [Tooltip("จำนวน Platform ที่จะตก (สุ่มจาก Drop Points)")]
+    [Tooltip("จำนวน Platform ที่จะตก (สุ่มจาก Drop Points แบบไม่ซ้ำ)")]
     public int numberOfPlatforms = 1;
 
     [Tooltip("ระยะห่างระหว่างการตกของแต่ละชิ้น (วินาที)")]
@@ -136,11 +136,27 @@ public class FallingPlatformTrigger : MonoBehaviour
         // รอตาม delay
         yield return new WaitForSeconds(dropDelay);
 
-        // ตก Platform ตามจำนวนที่กำหนด
-        for (int i = 0; i < numberOfPlatforms; i++)
+        // สุ่ม Drop Points แบบไม่ซ้ำ
+        List<Transform> shuffledPoints = GetShuffledDropPoints();
+
+        if (shuffledPoints.Count == 0)
         {
-            // สุ่มเลือก Drop Point
-            Transform selectedDropPoint = GetRandomDropPoint();
+            Debug.LogError("? ไม่มี Drop Points ที่ใช้งานได้!");
+            yield break;
+        }
+
+        // จำกัดจำนวน Platform ไม่ให้เกินจำนวน Drop Points
+        int actualPlatformCount = Mathf.Min(numberOfPlatforms, shuffledPoints.Count);
+
+        if (actualPlatformCount < numberOfPlatforms)
+        {
+            Debug.LogWarning($"?? มี Drop Points เพียง {shuffledPoints.Count} จุด แต่ตั้งค่าให้ตก {numberOfPlatforms} ชิ้น - จะตกเพียง {actualPlatformCount} ชิ้น");
+        }
+
+        // ตก Platform ตามจำนวนที่กำหนด (แต่ละจุดไม่ซ้ำ)
+        for (int i = 0; i < actualPlatformCount; i++)
+        {
+            Transform selectedDropPoint = shuffledPoints[i];
 
             if (selectedDropPoint != null)
             {
@@ -148,7 +164,7 @@ public class FallingPlatformTrigger : MonoBehaviour
             }
 
             // รอก่อนตกชิ้นถัดไป (ถ้ามีหลายชิ้น)
-            if (i < numberOfPlatforms - 1)
+            if (i < actualPlatformCount - 1)
             {
                 yield return new WaitForSeconds(platformDropInterval);
             }
@@ -156,12 +172,12 @@ public class FallingPlatformTrigger : MonoBehaviour
     }
 
     /// <summary>
-    /// สุ่มเลือก Drop Point จากรายการ
+    /// สุ่ม Drop Points แบบไม่ซ้ำ (Fisher-Yates Shuffle)
     /// </summary>
-    private Transform GetRandomDropPoint()
+    private List<Transform> GetShuffledDropPoints()
     {
         if (dropPoints == null || dropPoints.Length == 0)
-            return null;
+            return new List<Transform>();
 
         // กรองเอาเฉพาะ Transform ที่ไม่เป็น null
         List<Transform> validPoints = new List<Transform>();
@@ -176,12 +192,19 @@ public class FallingPlatformTrigger : MonoBehaviour
         if (validPoints.Count == 0)
         {
             Debug.LogWarning("?? ไม่มี Drop Point ที่ใช้งานได้!");
-            return null;
+            return new List<Transform>();
         }
 
-        // สุ่มเลือกจุดหนึ่ง
-        int randomIndex = Random.Range(0, validPoints.Count);
-        return validPoints[randomIndex];
+        // สุ่มลำดับแบบ Fisher-Yates Shuffle
+        for (int i = validPoints.Count - 1; i > 0; i--)
+        {
+            int randomIndex = Random.Range(0, i + 1);
+            Transform temp = validPoints[i];
+            validPoints[i] = validPoints[randomIndex];
+            validPoints[randomIndex] = temp;
+        }
+
+        return validPoints;
     }
 
     private void SpawnFallingPlatform(Transform dropPoint)
