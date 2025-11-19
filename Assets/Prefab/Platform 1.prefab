@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 7255579058088907029}
   - component: {fileID: 7504828611916924622}
   m_Layer: 3
-  m_Name: Cylinder (48)
+  m_Name: Platform 1
   m_TagString: Ground
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
