@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -14,27 +15,27 @@ public class QTEManager : MonoBehaviour
     public GameObject timingBarPrefab;    // Prefab TimingBar
     private TimingBar currentTimingBar;
 
+
     [Header("Settings")]
     public float timePerSlot = 1f;
 
     [Header("เสียงประกอบ QTE")]
     public AudioClip keyPressSound;
     public AudioClip keyFailSound;
+    private AudioSource sfxSource;
     [Range(0f, 1f)] public float passVolume = 0.5f;
     [Range(0f, 1f)] public float failVolume = 0.5f;
 
-    private AudioSource sfxSource;
     private List<KeyCode> sequence = new List<KeyCode>();
     private List<GameObject> slotUIs = new List<GameObject>();
     private int currentIndex = 0;
     private bool isActive = false;
+    public LetterIconDatabase iconDB;   // ใส่ ScriptableObject A-Z ใน Inspector
 
     void Start()
     {
-        // สร้าง AudioSource สำรอง
         sfxSource = gameObject.AddComponent<AudioSource>();
         sfxSource.playOnAwake = false;
-        sfxSource.spatialBlend = 0f;
     }
 
     // 🔹 เริ่ม QTE
@@ -68,32 +69,41 @@ public class QTEManager : MonoBehaviour
         }
     }
 
+
     void SpawnQTESlot(KeyCode key)
     {
         Vector2 startPos = Vector2.zero;
+
+        // คำนวณตำแหน่ง
         if (slotUIs.Count > 0)
         {
             RectTransform lastRT = slotUIs[slotUIs.Count - 1].GetComponent<RectTransform>();
             startPos = lastRT.anchoredPosition + new Vector2(slotSpacing, 0f);
         }
 
+        // สร้าง slot
         GameObject slot = Instantiate(qteSlotPrefab, qteParent);
         slot.transform.localScale = Vector3.one;
 
         RectTransform rt = slot.GetComponent<RectTransform>();
         rt.anchoredPosition = startPos;
 
-        Text slotText = slot.GetComponentInChildren<Text>();
-        if (slotText != null)
-            slotText.text = key.ToString();
+        // เซ็ตสีพื้นหลังของ slot
+        Image bg = slot.GetComponent<Image>();
+        if (bg != null)
+            bg.color = Color.white;
 
-        Image img = slot.GetComponent<Image>();
-        if (img != null)
-            img.color = Color.white;
+        // เซ็ตภาพตัวอักษรผ่าน QTESlotUI
+        QTESlotUI ui = slot.GetComponent<QTESlotUI>();
+        if (ui != null)
+        {
+            ui.iconDB = iconDB;       // ส่งฐานข้อมูลรูปตัวอักษร
+            ui.Init(key, timePerSlot); // เซ็ต sprite + timer
+        }
 
-        slot.SetActive(false); // ซ่อน slot ก่อน
-        slotUIs.Add(slot);     // Add ลง list
+        slot.SetActive(false); // ซ่อนก่อนจนกว่าจะกดถูกจังหวะ
 
+        slotUIs.Add(slot);
         sequence.Add(key);
     }
 
@@ -115,22 +125,12 @@ public class QTEManager : MonoBehaviour
         if (success)
         {
             if (keyPressSound != null)
-            {
-                if (AudioManager.Instance != null)
-                    AudioManager.Instance.PlaySFX(keyPressSound, passVolume);
-                else if (sfxSource != null)
-                    sfxSource.PlayOneShot(keyPressSound, passVolume);
-            }
+                sfxSource.PlayOneShot(keyPressSound, passVolume);
         }
         else
         {
             if (keyFailSound != null)
-            {
-                if (AudioManager.Instance != null)
-                    AudioManager.Instance.PlaySFX(keyFailSound, failVolume);
-                else if (sfxSource != null)
-                    sfxSource.PlayOneShot(keyFailSound, failVolume);
-            }
+                sfxSource.PlayOneShot(keyFailSound, failVolume);
         }
 
         if (success)
@@ -176,6 +176,7 @@ public class QTEManager : MonoBehaviour
         }
     }
 
+
     void EndQTE()
     {
         isActive = false;
@@ -201,4 +202,6 @@ public class QTEManager : MonoBehaviour
 
         Debug.Log("QTE Ended → พร้อมเริ่มใหม่ถ้าไม่มีขวดใน Inventory");
     }
+
+
 }

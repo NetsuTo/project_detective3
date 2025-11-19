@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b26bfd1611f5c2a44a86cf2c006db248, type: 3}
+  m_Name: LetterIconDB
+  m_EditorClassIdentifier: 
+  icons:
+  - letter: H
+    sprite: {fileID: -199630246, guid: 7819e359df51c4249a0665090b4a347f, type: 3}
+  - letter: O
+    sprite: {fileID: -1923794571, guid: 13008cfea5d04594eb017f715f9563b6, type: 3}
+  - letter: N
+    sprite: {fileID: 190243281, guid: 44c063778f7e64a41ab2605e9472930c, type: 3}
