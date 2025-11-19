@@ -47,9 +47,12 @@ public class FallingRockTrigger : MonoBehaviour
     public AudioClip rockFallSound;
 
     [Range(0f, 1f)]
-    public float soundVolume = 0.7f;
+    public float warningVolume = 0.7f;
 
-    [Header("?? Tag ของ Player")]
+    [Range(0f, 1f)]
+    public float rockFallVolume = 0.8f;
+
+    [Header("??? Tag ของ Player")]
     [Tooltip("Tag ที่จะทริกเกอร์ (เช่น 'Player')")]
     public string playerTag = "Player";
 
@@ -58,7 +61,7 @@ public class FallingRockTrigger : MonoBehaviour
 
     void Start()
     {
-        // สร้าง AudioSource
+        // สร้าง AudioSource สำรอง
         audioSource = gameObject.AddComponent<AudioSource>();
         audioSource.playOnAwake = false;
         audioSource.spatialBlend = 0f;
@@ -97,7 +100,7 @@ public class FallingRockTrigger : MonoBehaviour
     {
         if (triggerOnce && hasTriggered)
         {
-            Debug.Log("?? Trigger นี้ถูกใช้ไปแล้ว!");
+            Debug.Log("? Trigger นี้ถูกใช้ไปแล้ว!");
             return;
         }
 
@@ -111,10 +114,10 @@ public class FallingRockTrigger : MonoBehaviour
 
         Debug.Log($"?? Player เหยียบ Trigger! หิน {numberOfRocks} ก้อนจะตกในอีก {dropDelay} วินาที!");
 
-        // เล่นเสียงเตือน
+        // เล่นเสียงเตือน (ใช้ระบบเดียวกับ ElementMiniGameManager)
         if (warningSound != null)
         {
-            PlaySound(warningSound);
+            PlaySound(warningSound, warningVolume);
         }
 
         // เริ่ม Coroutine ตกหิน
@@ -215,10 +218,10 @@ public class FallingRockTrigger : MonoBehaviour
             meshCol.convex = true;
         }
 
-        // เล่นเสียงหินตก
+        // เล่นเสียงหินตก (ใช้ระบบเดียวกับ ElementMiniGameManager)
         if (rockFallSound != null)
         {
-            PlaySound(rockFallSound);
+            PlaySound(rockFallSound, rockFallVolume);
         }
 
         Debug.Log($"?? หินก้อนใหญ่ตก! ตำแหน่ง: {targetPos} (จาก {dropPoint.name})");
@@ -227,11 +230,22 @@ public class FallingRockTrigger : MonoBehaviour
         Destroy(rock, rockLifetime);
     }
 
-    private void PlaySound(AudioClip clip)
+    /// <summary>
+    /// เล่นเสียง (รองรับทั้ง AudioManager และ AudioSource สำรอง)
+    /// </summary>
+    private void PlaySound(AudioClip clip, float volume)
     {
-        if (audioSource != null && clip != null)
+        if (clip == null) return;
+
+        // ลองใช้ AudioManager ก่อน (ถ้ามี)
+        if (AudioManager.Instance != null)
         {
-            audioSource.PlayOneShot(clip, soundVolume);
+            AudioManager.Instance.PlaySFX(clip, volume);
+        }
+        // ถ้าไม่มี ใช้ AudioSource สำรอง
+        else if (audioSource != null)
+        {
+            audioSource.PlayOneShot(clip, volume);
         }
     }
 
