@@ -22366,7 +22366,7 @@ MonoBehaviour:
   landingEffect: {fileID: 104829970813648393, guid: d3015b7eea383f64d8b81f965cc466e7, type: 3}
   effectDuration: 2
   landingSound: {fileID: 8300000, guid: 87a4976fa9d80564db5e362347a575e7, type: 3}
-  soundVolume: 0.1
+  soundVolume: 0.05
   playerTag: Player
 --- !u!65 &395091041
 BoxCollider:
@@ -35281,7 +35281,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -90370,11 +90370,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2908075746234812187, guid: 8a7e7f6601b72774cb5e7b8a3f382286, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -64.3
+      value: -61.82
       objectReference: {fileID: 0}
     - target: {fileID: 2908075746234812187, guid: 8a7e7f6601b72774cb5e7b8a3f382286, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -22.3
+      value: -23.97
       objectReference: {fileID: 0}
     - target: {fileID: 2908075746234812187, guid: 8a7e7f6601b72774cb5e7b8a3f382286, type: 3}
       propertyPath: m_LocalPosition.z
@@ -99989,13 +99989,13 @@ AudioSource:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1650330727}
-  m_Enabled: 0
+  m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: -3158190920045532122, guid: 513f49915ee93ca4a89d92f7cf6c619c, type: 2}
   m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 8300000, guid: 085005b85226a9346b4b9680d69c1b91, type: 3}
+  m_Resource: {fileID: 8300000, guid: 62ae386d164355243ac471efacb0b384, type: 3}
   m_PlayOnAwake: 1
-  m_Volume: 0.05
+  m_Volume: 0.02
   m_Pitch: 1
   Loop: 1
   Mute: 0
@@ -103921,9 +103921,10 @@ MonoBehaviour:
   leftPageImage: {fileID: 1389252344}
   rightPageImage: {fileID: 1375750025}
   pageSprites:
-  - {fileID: 21300000, guid: c42e45407e0102e4d8371cedd60a8635, type: 3}
-  - {fileID: 21300000, guid: c3cfc3870ae179d4ba5814a641737027, type: 3}
-  - {fileID: 21300000, guid: 75c5c428596b3d84bb3381385ba9ea4d, type: 3}
+  - {fileID: 1114082287, guid: d234d0b96eb4be948ae67f8aef0121d3, type: 3}
+  - {fileID: 132526571, guid: cb674a9164410e34fb57bc2d278e85ae, type: 3}
+  - {fileID: 1813162480, guid: 77f14bb932d8398469c4870d8afee734, type: 3}
+  - {fileID: -1164021116, guid: 785714d1442681446948e8e1c706678d, type: 3}
   nextButton: {fileID: 651240178}
   prevButton: {fileID: 153173503}
   pauseGameWhenOpen: 1
@@ -115147,7 +115148,7 @@ MonoBehaviour:
   landingEffect: {fileID: 104829970813648393, guid: d3015b7eea383f64d8b81f965cc466e7, type: 3}
   effectDuration: 2
   landingSound: {fileID: 8300000, guid: 87a4976fa9d80564db5e362347a575e7, type: 3}
-  soundVolume: 0.1
+  soundVolume: 0.05
   playerTag: Player
 --- !u!65 &1885174584
 BoxCollider:
