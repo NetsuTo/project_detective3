@@ -16,6 +16,11 @@ public class ElementMiniGameManager : MonoBehaviour
     public GameObject failSymbol;
     public float failSymbolDuration = 2f;
 
+    [Header("⭐ Arrow Display Settings")]
+    [Tooltip("ขนาดของรูปลูกศร (1 = ขนาดปกติ, 0.5 = เล็กลง 50%)")]
+    [Range(0.1f, 2f)]
+    public float arrowScale = 0.6f;
+
     [Header("Optional: Sequence เริ่มต้น (fallback ถ้าไม่ได้ส่งจาก TargetZone)")]
     public List<KeyCode> inspectorSequence = new List<KeyCode>();
 
@@ -61,6 +66,7 @@ public class ElementMiniGameManager : MonoBehaviour
     private Action<bool> onCompleteCallback = null;
     private bool isRetrying = false;
     private AudioSource audioSource;
+    private Vector3 originalImageScale; // เก็บขนาดเดิม
 
     [Serializable]
     public class KeySpritePair
@@ -82,6 +88,10 @@ public class ElementMiniGameManager : MonoBehaviour
         audioSource = gameObject.AddComponent<AudioSource>();
         audioSource.playOnAwake = false;
         audioSource.spatialBlend = 0f;
+
+        // เก็บขนาดเดิมของ Image
+        if (displayImage != null)
+            originalImageScale = displayImage.transform.localScale;
     }
 
     void Start()
@@ -306,6 +316,10 @@ public class ElementMiniGameManager : MonoBehaviour
         if (displayImage != null && keyToSprite.ContainsKey(key) && keyToSprite[key] != null)
         {
             displayImage.sprite = keyToSprite[key];
+
+            // ✨ ปรับขนาดลูกศรตามค่า arrowScale
+            displayImage.transform.localScale = originalImageScale * arrowScale;
+
             displayImage.gameObject.SetActive(true);
             if (displayText != null) displayText.gameObject.SetActive(false);
         }
@@ -316,7 +330,7 @@ public class ElementMiniGameManager : MonoBehaviour
                 displayText.text = "Next: " + key.ToString();
                 displayText.gameObject.SetActive(true);
             }
-            if (displayImage != null) gameObject.SetActive(false);
+            if (displayImage != null) displayImage.gameObject.SetActive(false);
         }
     }
 

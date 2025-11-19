@@ -6,39 +6,44 @@ public class SimpleBubbleDialog : MonoBehaviour
 {
     [Header("บทสนทนา")]
     [TextArea(2, 5)]
-    public string[] dialogLines; // ข้อความที่จะแสดง
+    public string[] dialogLines;
+
+    [Header("🔒 เงื่อนไขการปลดล็อค")]
+    public TargetZone requiredZone; // ลาก TargetZone มาใส่
+    public int requiredCompletedCount = 2; // ต้องใช้ไป 2 สกิล
+    public bool startLocked = true; // เริ่มต้นล็อคไว้
 
     [Header("การตั้งค่าตำแหน่ง")]
-    public float bubbleHeight = 2f; // ความสูงของบับเบิ้ลเหนือหัว
-    public Vector2 bubbleOffset = Vector2.zero; // เลื่อนตำแหน่งบับเบิล (X, Y)
-    public float floatAmplitude = 0.3f; // ความสูงของการลอย (0 = ไม่ลอย)
-    public float floatSpeed = 2f; // ความเร็วการลอย
-    public bool alwaysInFront = true; // แสดงหน้า Player เสมอ
+    public float bubbleHeight = 2f;
+    public Vector2 bubbleOffset = Vector2.zero;
+    public float floatAmplitude = 0.3f;
+    public float floatSpeed = 2f;
+    public bool alwaysInFront = true;
 
     [Header("ขนาดและสี")]
-    public Vector2 bubbleSize = new Vector2(400, 120); // ขนาดกล่องบับเบิล
-    public int fontSize = 24; // ขนาดตัวอักษร
-    public Color textColor = Color.black; // สีตัวอักษร
-    public Color bubbleColor = new Color(1f, 1f, 1f, 0.9f); // สีพื้นหลังบับเบิล (ถ้าไม่มีรูป)
-    public Sprite bubbleSprite; // รูปกรอบบับเบิล (ลากรูปมาใส่ตรงนี้)
-    public float padding = 15f; // ระยะขอบข้อความ
-    public TextAnchor textAlignment = TextAnchor.MiddleCenter; // ตำแหน่งข้อความ
-    public float textVerticalOffset = 0f; // ขยับข้อความขึ้น(+) ลง(-) ภายในกล่อง
+    public Vector2 bubbleSize = new Vector2(400, 120);
+    public int fontSize = 24;
+    public Color textColor = Color.black;
+    public Color bubbleColor = new Color(1f, 1f, 1f, 0.9f);
+    public Sprite bubbleSprite;
+    public float padding = 15f;
+    public TextAnchor textAlignment = TextAnchor.MiddleCenter;
+    public float textVerticalOffset = 0f;
 
     [Header("การแสดงผล")]
-    public float displayDuration = 3f; // ระยะเวลาแสดงแต่ละข้อความ (วินาที)
-    public float typingSpeed = 0.05f; // ความเร็วพิมพ์ตัวอักษร
-    public float detectionRange = 2.5f; // ระยะตรวจจับ Player
+    public float displayDuration = 3f;
+    public float typingSpeed = 0.05f;
+    public float detectionRange = 2.5f;
 
     [Header("UI")]
-    public GameObject bubblePrefab; // Prefab ของบับเบิ้ล (ถ้ามี)
-    public GameObject pressEIndicator; // UI บอกให้กด E
+    public GameObject bubblePrefab;
+    public GameObject pressEIndicator;
 
     [Header("Object ที่จะโผล่หลังคุยเสร็จ")]
-    public GameObject[] objectsToSpawn; // Object ที่จะโผล่ขึ้นมา
-    public bool activateObjects = true; // เปิดใช้งาน Object (true) หรือสร้างใหม่ (false)
-    public Transform spawnPoint; // ตำแหน่งที่จะโผล่ (ถ้าสร้างใหม่)
-    public bool spawnOnlyOnce = true; // โผล่แค่ครั้งเดียว (true) หรือทุกครั้ง (false)
+    public GameObject[] objectsToSpawn;
+    public bool activateObjects = true;
+    public Transform spawnPoint;
+    public bool spawnOnlyOnce = true;
 
     private GameObject bubbleInstance;
     private Text bubbleText;
@@ -49,12 +54,13 @@ public class SimpleBubbleDialog : MonoBehaviour
     private float floatTimer = 0f;
     private PlayerController playerController;
     private Animator playerAnimator;
-    private bool isTyping = false; // ตรวจสอบว่ากำลังพิมพ์อยู่หรือไม่
-    private bool hasSpawnedObjects = false; // ตรวจสอบว่าโผล่ Object ไปแล้วหรือยัง
+    private bool isTyping = false;
+    private bool hasSpawnedObjects = false;
+    private Collider myCollider; // 🔑 เก็บ Collider ของตัวเอง
+    private bool isUnlocked = false; // 🔑 สถานะปลดล็อค
 
     void Start()
     {
-        // หา Canvas
         mainCanvas = FindObjectOfType<Canvas>();
         if (mainCanvas == null)
         {
@@ -64,19 +70,31 @@ public class SimpleBubbleDialog : MonoBehaviour
         if (pressEIndicator != null)
             pressEIndicator.SetActive(false);
 
-        // ตรวจสอบว่ามี Collider หรือไม่
-        Collider col = GetComponent<Collider>();
-        if (col == null)
+        // 🔑 หา Collider ของตัวเอง
+        myCollider = GetComponent<Collider>();
+        if (myCollider == null)
         {
             Debug.LogWarning("⚠️ ไม่พบ Collider! กำลังสร้าง SphereCollider...");
-            SphereCollider sphere = gameObject.AddComponent<SphereCollider>();
-            sphere.isTrigger = true;
-            sphere.radius = detectionRange;
+            myCollider = gameObject.AddComponent<SphereCollider>();
+            myCollider.isTrigger = true;
+            ((SphereCollider)myCollider).radius = detectionRange;
         }
-        else if (!col.isTrigger)
+        else if (!myCollider.isTrigger)
         {
             Debug.LogWarning("⚠️ Collider ต้องเปิด Is Trigger!");
-            col.isTrigger = true;
+            myCollider.isTrigger = true;
+        }
+
+        // 🔒 ล็อค Collider ตอนเริ่มต้น (ถ้าตั้งค่าไว้)
+        if (startLocked && requiredZone != null)
+        {
+            myCollider.enabled = false;
+            isUnlocked = false;
+            Debug.Log($"🔒 เห็ดถูกล็อคไว้ (ต้องใช้ {requiredCompletedCount} สกิลก่อน)");
+        }
+        else
+        {
+            isUnlocked = true;
         }
 
         if (dialogLines.Length == 0)
@@ -89,6 +107,15 @@ public class SimpleBubbleDialog : MonoBehaviour
 
     void Update()
     {
+        // 🔑 เช็คการปลดล็อคทุกเฟรม (ถ้ายังล็อคอยู่)
+        if (!isUnlocked && requiredZone != null)
+        {
+            if (requiredZone.GetCompletedCount() >= requiredCompletedCount)
+            {
+                UnlockDialog();
+            }
+        }
+
         // กด E เพื่อเริ่มบทสนทนา
         if (playerInRange && Input.GetKeyDown(KeyCode.E) && !isShowingDialog)
         {
@@ -100,13 +127,11 @@ public class SimpleBubbleDialog : MonoBehaviour
         {
             if (isTyping)
             {
-                // ถ้ากำลังพิมพ์อยู่ -> แสดงข้อความทั้งหมดทันที
                 StopAllCoroutines();
                 CompleteCurrentText();
             }
             else
             {
-                // ถ้าแสดงครบแล้ว -> ไปข้อความถัดไป
                 NextLine();
             }
         }
@@ -114,17 +139,14 @@ public class SimpleBubbleDialog : MonoBehaviour
         // อัพเดทตำแหน่งบับเบิ้ลให้ติดตัวตลอด
         if (bubbleInstance != null && Camera.main != null)
         {
-            // เพิ่มการลอยขึ้นลง
             floatTimer += Time.deltaTime * floatSpeed;
             float floatOffset = Mathf.Sin(floatTimer) * floatAmplitude;
 
             Vector3 worldPos = transform.position + Vector3.up * (bubbleHeight + floatOffset);
             Vector3 screenPos = Camera.main.WorldToScreenPoint(worldPos);
 
-            // เช็คว่า NPC อยู่หลังกล้องหรือไม่
             bool isBehindCamera = screenPos.z < 0;
 
-            // เช็คว่าบับเบิลจะทับ Player หรือไม่
             bool isBlockingPlayer = false;
             if (!isBehindCamera)
             {
@@ -133,16 +155,14 @@ public class SimpleBubbleDialog : MonoBehaviour
                 {
                     Vector3 playerScreenPos = Camera.main.WorldToScreenPoint(player.transform.position);
 
-                    // ถ้า Player อยู่ระหว่างกล้องกับ NPC
                     if (playerScreenPos.z > 0 && playerScreenPos.z < screenPos.z)
                     {
-                        // เช็คว่าตำแหน่งบนจอใกล้กันไหม
                         float distance = Vector2.Distance(
                             new Vector2(screenPos.x, screenPos.y),
                             new Vector2(playerScreenPos.x, playerScreenPos.y)
                         );
 
-                        if (distance < 150f) // ถ้าใกล้เกินไป
+                        if (distance < 150f)
                         {
                             isBlockingPlayer = true;
                         }
@@ -152,20 +172,27 @@ public class SimpleBubbleDialog : MonoBehaviour
 
             if (isBehindCamera || isBlockingPlayer)
             {
-                // ซ่อนบับเบิลถ้าอยู่หลังกล้องหรือทับ Player
                 bubbleInstance.SetActive(false);
             }
             else
             {
                 bubbleInstance.SetActive(true);
-
-                // เพิ่ม offset
                 screenPos.x += bubbleOffset.x;
                 screenPos.y += bubbleOffset.y;
-
                 bubbleInstance.transform.position = screenPos;
             }
         }
+    }
+
+    // 🔓 ปลดล็อคเห็ด
+    void UnlockDialog()
+    {
+        isUnlocked = true;
+        if (myCollider != null)
+        {
+            myCollider.enabled = true;
+        }
+        Debug.Log($"🔓 ปลดล็อคเห็ดแล้ว! (ใช้สกิลครบ {requiredCompletedCount} ตัว)");
     }
 
     void StartDialog()
@@ -179,28 +206,22 @@ public class SimpleBubbleDialog : MonoBehaviour
         isShowingDialog = true;
         currentLineIndex = 0;
 
-        // ล็อค Player
         if (playerController != null)
         {
             playerController.enabled = false;
             Debug.Log("🔒 ล็อค Player ไม่ให้เดิน");
         }
 
-        // หยุดอนิเมชั่น
         if (playerAnimator != null)
         {
             playerAnimator.SetFloat("Speed", 0f);
             Debug.Log("⏸️ หยุดอนิเมชั่น Player");
         }
 
-        // ซ่อน Press E
         if (pressEIndicator != null)
             pressEIndicator.SetActive(false);
 
-        // สร้างบับเบิ้ล
         CreateBubble();
-
-        // แสดงข้อความแรก
         StartCoroutine(TypeText(dialogLines[currentLineIndex]));
     }
 
@@ -218,39 +239,33 @@ public class SimpleBubbleDialog : MonoBehaviour
 
         if (bubblePrefab != null)
         {
-            // ใช้ Prefab ถ้ามี
             bubbleInstance = Instantiate(bubblePrefab, mainCanvas.transform);
             bubbleText = bubbleInstance.GetComponentInChildren<Text>();
         }
         else
         {
-            // สร้างแบบอัตโนมัติ
             bubbleInstance = new GameObject("SpeechBubble");
             bubbleInstance.transform.SetParent(mainCanvas.transform, false);
 
-            // เพิ่ม RectTransform
             RectTransform rectTransform = bubbleInstance.AddComponent<RectTransform>();
             rectTransform.sizeDelta = bubbleSize;
             rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
             rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
             rectTransform.pivot = new Vector2(0.5f, 0.5f);
 
-            // เพิ่มพื้นหลัง
             Image bg = bubbleInstance.AddComponent<Image>();
 
-            // ใช้รูปที่ลากมาใส่ (ถ้ามี) ไม่งั้นใช้สี
             if (bubbleSprite != null)
             {
                 bg.sprite = bubbleSprite;
-                bg.type = Image.Type.Sliced; // ให้ยืดหดได้สวย
-                bg.color = Color.white; // ไม่เปลี่ยนสีรูป
+                bg.type = Image.Type.Sliced;
+                bg.color = Color.white;
             }
             else
             {
-                bg.color = bubbleColor; // ใช้สีธรรมดา
+                bg.color = bubbleColor;
             }
 
-            // สร้าง Text
             GameObject textObj = new GameObject("Text");
             textObj.transform.SetParent(bubbleInstance.transform, false);
 
@@ -262,7 +277,6 @@ public class SimpleBubbleDialog : MonoBehaviour
 
             bubbleText = textObj.AddComponent<Text>();
 
-            // ลอง Load Font
             Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             if (font == null)
             {
@@ -272,7 +286,7 @@ public class SimpleBubbleDialog : MonoBehaviour
             bubbleText.font = font;
             bubbleText.fontSize = fontSize;
             bubbleText.color = textColor;
-            bubbleText.alignment = textAlignment; // ใช้ค่าที่ตั้งได้
+            bubbleText.alignment = textAlignment;
             bubbleText.horizontalOverflow = HorizontalWrapMode.Wrap;
             bubbleText.verticalOverflow = VerticalWrapMode.Overflow;
         }
@@ -288,19 +302,16 @@ public class SimpleBubbleDialog : MonoBehaviour
             yield break;
         }
 
-        isTyping = true; // เริ่มพิมพ์
+        isTyping = true;
         bubbleText.text = "";
 
-        // พิมพ์ทีละตัว
         foreach (char c in text)
         {
             bubbleText.text += c;
             yield return new WaitForSeconds(typingSpeed);
         }
 
-        isTyping = false; // พิมพ์เสร็จแล้ว
-
-        // รอก่อนไปข้อความถัดไป
+        isTyping = false;
         yield return new WaitForSeconds(displayDuration);
 
         if (isShowingDialog)
@@ -311,13 +322,10 @@ public class SimpleBubbleDialog : MonoBehaviour
 
     void CompleteCurrentText()
     {
-        // แสดงข้อความทั้งหมดทันที
         if (currentLineIndex < dialogLines.Length)
         {
             bubbleText.text = dialogLines[currentLineIndex];
             isTyping = false;
-
-            // เริ่มนับเวลารอก่อนไปข้อความถัดไป
             StartCoroutine(WaitAfterComplete());
         }
     }
@@ -335,17 +343,14 @@ public class SimpleBubbleDialog : MonoBehaviour
     void NextLine()
     {
         StopAllCoroutines();
-
         currentLineIndex++;
 
         if (currentLineIndex < dialogLines.Length)
         {
-            // แสดงข้อความถัดไป
             StartCoroutine(TypeText(dialogLines[currentLineIndex]));
         }
         else
         {
-            // จบบทสนทนา
             EndDialog();
         }
     }
@@ -354,29 +359,23 @@ public class SimpleBubbleDialog : MonoBehaviour
     {
         isShowingDialog = false;
 
-        // ปลดล็อค Player
         if (playerController != null)
         {
             playerController.enabled = true;
             Debug.Log("🔓 ปลดล็อค Player ให้เดินได้แล้ว");
         }
 
-        // ไม่ต้องรีเซ็ตอนิเมชั่น เพราะ PlayerController จะจัดการเอง
-
         if (bubbleInstance != null)
         {
             Destroy(bubbleInstance);
         }
 
-        // แสดง Press E กลับมา
         if (playerInRange && pressEIndicator != null)
         {
             pressEIndicator.SetActive(true);
         }
 
-        // ทำให้ Object โผล่ขึ้นมา
         SpawnObjects();
-
         Debug.Log("✅ จบบทสนทนา");
     }
 
@@ -384,10 +383,9 @@ public class SimpleBubbleDialog : MonoBehaviour
     {
         if (objectsToSpawn == null || objectsToSpawn.Length == 0)
         {
-            return; // ไม่มี Object ที่จะโผล่
+            return;
         }
 
-        // ถ้าตั้งค่าให้โผล่แค่ครั้งเดียว และโผล่ไปแล้ว ก็ไม่ทำอะไร
         if (spawnOnlyOnce && hasSpawnedObjects)
         {
             Debug.Log("⏭️ Object โผล่ไปแล้ว ข้ามการโผล่ครั้งนี้");
@@ -400,13 +398,11 @@ public class SimpleBubbleDialog : MonoBehaviour
 
             if (activateObjects)
             {
-                // เปิดใช้งาน Object ที่ซ่อนอยู่
                 obj.SetActive(true);
                 Debug.Log($"✨ เปิด Object: {obj.name}");
             }
             else
             {
-                // สร้าง Object ใหม่
                 Vector3 spawnPos = spawnPoint != null ? spawnPoint.position : transform.position;
                 Quaternion spawnRot = spawnPoint != null ? spawnPoint.rotation : Quaternion.identity;
 
@@ -415,7 +411,7 @@ public class SimpleBubbleDialog : MonoBehaviour
             }
         }
 
-        hasSpawnedObjects = true; // บันทึกว่าโผล่ไปแล้ว
+        hasSpawnedObjects = true;
         Debug.Log("✅ Object โผล่ครบแล้ว");
     }
 
@@ -425,7 +421,6 @@ public class SimpleBubbleDialog : MonoBehaviour
         {
             playerInRange = true;
 
-            // เก็บ reference ของ PlayerController และ Animator
             if (playerController == null)
             {
                 playerController = other.GetComponent<PlayerController>();
@@ -449,7 +444,6 @@ public class SimpleBubbleDialog : MonoBehaviour
             if (pressEIndicator != null)
                 pressEIndicator.SetActive(false);
 
-            // ปิดบทสนทนาถ้าเดินออกไป
             if (isShowingDialog)
             {
                 EndDialog();
@@ -457,10 +451,9 @@ public class SimpleBubbleDialog : MonoBehaviour
         }
     }
 
-    // แสดงระยะตรวจจับใน Scene View
     void OnDrawGizmosSelected()
     {
-        Gizmos.color = Color.yellow;
+        Gizmos.color = isUnlocked ? Color.green : Color.red;
         Gizmos.DrawWireSphere(transform.position, detectionRange);
     }
 }

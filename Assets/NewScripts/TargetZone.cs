@@ -16,12 +16,12 @@ public class TargetZone : MonoBehaviour
 
     private bool playerInside = false;
     private SkillInventory playerInventory;
-    private HashSet<int> completedElements = new HashSet<int>(); // เก็บ index ของธาตุที่เสร็จแล้ว
+    private HashSet<int> completedElements = new HashSet<int>();
 
     [System.Serializable]
     public class ElementRequirement
     {
-        public string elementName; // ชื่อธาตุ (สำหรับ debug)
+        public string elementName;
         public List<KeyCode> sequence = new List<KeyCode>();
     }
 
@@ -57,11 +57,10 @@ public class TargetZone : MonoBehaviour
                 return;
             }
 
-            // เช็คว่าธาตุในขวดตรงกับธาตุใดที่ยังไม่เสร็จ
             int matchedIndex = -1;
             for (int i = 0; i < requiredElements.Count; i++)
             {
-                if (completedElements.Contains(i)) continue; // ข้ามถ้าเสร็จแล้ว
+                if (completedElements.Contains(i)) continue;
 
                 if (playerInventory.HasSkill(requiredElements[i].sequence))
                 {
@@ -75,10 +74,8 @@ public class TargetZone : MonoBehaviour
                 ElementRequirement matched = requiredElements[matchedIndex];
                 Debug.Log($"🎯 พบธาตุที่ {matchedIndex + 1}: {matched.elementName}");
 
-                // ลบขวดออก
                 playerInventory.ConsumeSkill(matched.sequence);
 
-                // เริ่มมินิเกม
                 miniGame.StartMiniGame(null, (success) =>
                 {
                     if (success)
@@ -86,7 +83,6 @@ public class TargetZone : MonoBehaviour
                         Debug.Log($"✅ ผ่านมินิเกมของ {matched.elementName}");
                         completedElements.Add(matchedIndex);
 
-                        // เช็คว่าครบทุกธาตุหรือยัง
                         if (completedElements.Count >= requiredElements.Count)
                         {
                             Debug.Log("🎉 เสร็จสมบูรณ์! ครบทุกธาตุแล้ว");
@@ -113,29 +109,35 @@ public class TargetZone : MonoBehaviour
         }
     }
 
-    // เรียกเมื่อครบทุกธาตุ
     private void OnAllElementsCompleted()
     {
         Debug.Log("🏆 Zone Complete! ครบทุกธาตุแล้ว");
-
-        // เรียก UnityEvent ที่ตั้งค่าใน Inspector
         onAllElementsCompleted?.Invoke();
     }
 
-    // สำหรับ reset (ถ้าต้องการ)
+    // 🔑 ฟังก์ชันนับจำนวนสกิลที่ใช้ไปแล้ว (สำหรับเช็คปลดล็อค)
+    public int GetCompletedCount()
+    {
+        return completedElements.Count;
+    }
+
+    // เช็คว่าใช้สกิลครบตามจำนวนที่กำหนดหรือยัง
+    public bool HasCompletedAtLeast(int count)
+    {
+        return completedElements.Count >= count;
+    }
+
     public void ResetZone()
     {
         completedElements.Clear();
         Debug.Log("🔄 Reset Zone");
     }
 
-    // ตรวจสอบว่าครบหรือยัง (เรียกจากที่อื่นได้)
     public bool IsCompleted()
     {
         return completedElements.Count >= requiredElements.Count;
     }
 
-    // ดูว่าเหลืออะไรบ้าง
     public List<string> GetRemainingElements()
     {
         List<string> remaining = new List<string>();

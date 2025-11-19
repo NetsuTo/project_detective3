@@ -14,8 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   icons:
   - letter: H
-    sprite: {fileID: -199630246, guid: 7819e359df51c4249a0665090b4a347f, type: 3}
+    sprite: {fileID: -1862667379, guid: d15dae8da3695f74b9c1d0e57ef66ae1, type: 3}
   - letter: O
-    sprite: {fileID: -1923794571, guid: 13008cfea5d04594eb017f715f9563b6, type: 3}
+    sprite: {fileID: -1454883615, guid: d15dae8da3695f74b9c1d0e57ef66ae1, type: 3}
   - letter: N
-    sprite: {fileID: 190243281, guid: 44c063778f7e64a41ab2605e9472930c, type: 3}
+    sprite: {fileID: -1245119408, guid: 6d69b14dbfafa7840bac0ef329922757, type: 3}
+  - letter: S
+    sprite: {fileID: -1681675561, guid: d15dae8da3695f74b9c1d0e57ef66ae1, type: 3}

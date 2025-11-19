@@ -11,7 +11,7 @@ public class ExplosionController : MonoBehaviour
     [Tooltip("วัตถุที่จะหายไปเมื่อระเบิด (เช่น กำแพง, หิน)")]
     public List<GameObject> objectsToDestroy = new List<GameObject>();
 
-    [Header("?? Particle Effect")]
+    [Header("? Particle Effect")]
     [Tooltip("เอฟเฟกต์การระเบิด (Particle System)")]
     public ParticleSystem explosionEffect;
 
@@ -31,6 +31,16 @@ public class ExplosionController : MonoBehaviour
     [Range(0f, 1f)]
     public float explosionVolume = 1f;
 
+    [Header("?? เสียงถ้ำถล่มต่อเนื่อง")]
+    [Tooltip("เสียงถ้ำถล่มหลังระเบิด (เล่นลูปต่อเนื่องยาวๆ จนย้ายซีน)")]
+    public AudioClip caveCollapseSound;
+
+    [Range(0f, 1f)]
+    public float caveCollapseVolume = 0.7f;
+
+    [Tooltip("ดีเลย์ก่อนเล่นเสียงถ้ำถล่ม (วินาที)")]
+    public float caveCollapseDelay = 0.5f;
+
     [Header("?? Camera Shake")]
     [Tooltip("ระยะเวลาที่สั่นแรง (วินาที)")]
     public float shakeDuration = 0.5f;
@@ -48,7 +58,7 @@ public class ExplosionController : MonoBehaviour
     [Tooltip("ความแรงการสั่นต่อเนื่อง (เบากว่าการสั่นแรก)")]
     public float continuousShakeMagnitude = 0.05f;
 
-    [Header("?? Timing")]
+    [Header("? Timing")]
     [Tooltip("ดีเลย์ก่อนเริ่มระเบิด (วินาที)")]
     public float explosionDelay = 0.2f;
 
@@ -94,6 +104,7 @@ public class ExplosionController : MonoBehaviour
     public float debrisLifetime = 5f;
 
     private AudioSource audioSource;
+    private AudioSource caveCollapseAudioSource;
     private Camera mainCamera;
     private bool hasExploded = false;
     private bool isContinuousShaking = false;
@@ -104,10 +115,16 @@ public class ExplosionController : MonoBehaviour
 
     void Start()
     {
-        // สร้าง AudioSource
+        // สร้าง AudioSource สำหรับเสียงระเบิด
         audioSource = gameObject.AddComponent<AudioSource>();
         audioSource.playOnAwake = false;
         audioSource.spatialBlend = 0f; // 2D sound
+
+        // สร้าง AudioSource สำหรับเสียงถ้ำถล่ม (แยกเพื่อเล่นพร้อมกัน)
+        caveCollapseAudioSource = gameObject.AddComponent<AudioSource>();
+        caveCollapseAudioSource.playOnAwake = false;
+        caveCollapseAudioSource.spatialBlend = 0f; // 2D sound
+        caveCollapseAudioSource.loop = true; // ลูปเสียงจนกว่าจะย้ายซีน
 
         // หา Main Camera
         mainCamera = Camera.main;
@@ -153,6 +170,12 @@ public class ExplosionController : MonoBehaviour
 
         // เล่นเสียงระเบิด
         PlayExplosionSound();
+
+        // เล่นเสียงถ้ำถล่ม (หลังจากดีเลย์)
+        if (caveCollapseSound != null)
+        {
+            StartCoroutine(PlayCaveCollapseSound());
+        }
 
         // สั่นกล้อง
         if (mainCamera != null)
@@ -203,11 +226,49 @@ public class ExplosionController : MonoBehaviour
         }
     }
 
+    private IEnumerator PlayCaveCollapseSound()
+    {
+        // รอดีเลย์ก่อนเล่นเสียงถ้ำถล่ม
+        if (caveCollapseDelay > 0)
+        {
+            yield return new WaitForSeconds(caveCollapseDelay);
+        }
+
+        // เล่นเสียงถ้ำถล่มต่อเนื่อง (ลูปจนกว่าจะย้ายซีน)
+        if (AudioManager.Instance != null)
+        {
+            // ถ้าใช้ AudioManager ให้ส่งเสียงไปเล่น
+            AudioManager.Instance.PlaySFX(caveCollapseSound, caveCollapseVolume);
+        }
+        else if (caveCollapseAudioSource != null)
+        {
+            // ถ้าไม่มี AudioManager ให้ใช้ AudioSource ของตัวเอง (ลูป)
+            caveCollapseAudioSource.clip = caveCollapseSound;
+            caveCollapseAudioSource.volume = caveCollapseVolume;
+            caveCollapseAudioSource.loop = true;
+            caveCollapseAudioSource.Play();
+        }
+
+        Debug.Log("?? เล่นเสียงถ้ำถล่มต่อเนื่อง (ลูป)");
+    }
+
+    /// <summary>
+    /// หยุดเสียงถ้ำถล่ม (เรียกก่อนย้ายซีนถ้าต้องการ)
+    /// </summary>
+    public void StopCaveCollapseSound()
+    {
+        if (caveCollapseAudioSource != null && caveCollapseAudioSource.isPlaying)
+        {
+            caveCollapseAudioSource.Stop();
+            Debug.Log("?? หยุดเสียงถ้ำถล่ม");
+        }
+    }
+
     private void SpawnExplosionEffects()
     {
         if (explosionEffect == null)
         {
-            Debug.LogWarning("?? ไม่ได้ตั้งค่า Explosion Effect!");
+            Debug.LogWarning("? ไม่ได้ตั้งค่า Explosion Effect!");
             return;
         }
 
@@ -232,7 +293,7 @@ public class ExplosionController : MonoBehaviour
             Destroy(effect.gameObject, effect.main.duration + effect.main.startLifetime.constantMax);
         }
 
-        Debug.Log($"?? Spawn Effect จำนวน {effectCount} ตัว");
+        Debug.Log($"? Spawn Effect จำนวน {effectCount} ตัว");
     }
 
     private IEnumerator ShakeCamera()
@@ -303,9 +364,10 @@ public class ExplosionController : MonoBehaviour
 
     void OnDestroy()
     {
-        // หยุดสั่นเมื่อ Object ถูกทำลาย
+        // หยุดสั่นและเสียงเมื่อ Object ถูกทำลาย
         StopContinuousShake();
         StopContinuousDebris();
+        StopCaveCollapseSound();
     }
 
     private IEnumerator FlashEffect()
@@ -456,6 +518,7 @@ public class ExplosionController : MonoBehaviour
         hasExploded = false;
         StopContinuousShake();
         StopContinuousDebris();
+        StopCaveCollapseSound();
         Debug.Log("?? รีเซ็ต Explosion");
     }
 
