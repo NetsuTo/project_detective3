@@ -57,6 +57,9 @@ public class PlayerController : MonoBehaviour
     private bool isPickingUp = false;
     private Action pickupCallback;
 
+    // ===== 🔒 Movement Lock System =====
+    private bool isMovementLocked = false;
+
     void Start()
     {
         controller = GetComponent<CharacterController>();
@@ -101,39 +104,50 @@ public class PlayerController : MonoBehaviour
         if (isGrounded && velocity.y < 0)
             velocity.y = -2f;
 
-        // การเคลื่อนที่
-        float x = 0f;
-
-        if (Input.GetKey(KeyCode.A))
-            x = -1f;
-        else if (Input.GetKey(KeyCode.D))
-            x = 1f;
-
-        float targetSpeed = x * moveSpeed;
-        currentSpeed = Mathf.Lerp(currentSpeed, targetSpeed, Time.deltaTime * acceleration);
-
-        Vector3 move = new Vector3(currentSpeed, 0f, 0f);
-        controller.Move(move * Time.deltaTime);
-
-        animator.SetFloat("Speed", Mathf.Abs(currentSpeed));
-
-        // เสียงเดิน
-        HandleFootstepSounds();
-
-        // --- หันตัว ---
-        if (x > 0.05f) transform.rotation = Quaternion.Euler(0f, 90f, 0f);
-        else if (x < -0.05f) transform.rotation = Quaternion.Euler(0f, -90f, 0f);
-
-        // --- กระโดด ---
-        if (Input.GetButtonDown("Jump") && isGrounded)
+        // ===== 🔒 ตรวจสอบว่าล็อคอยู่หรือไม่ =====
+        if (!isMovementLocked)
         {
-            velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
-            animator.SetTrigger("Jump");
-            PlayJumpSound(); // เสียงกระโดด
-            PlayJumpEffect(); // เพิ่มบรรทัดนี้
+            // การเคลื่อนที่
+            float x = 0f;
+
+            if (Input.GetKey(KeyCode.A))
+                x = -1f;
+            else if (Input.GetKey(KeyCode.D))
+                x = 1f;
+
+            float targetSpeed = x * moveSpeed;
+            currentSpeed = Mathf.Lerp(currentSpeed, targetSpeed, Time.deltaTime * acceleration);
+
+            Vector3 move = new Vector3(currentSpeed, 0f, 0f);
+            controller.Move(move * Time.deltaTime);
+
+            animator.SetFloat("Speed", Mathf.Abs(currentSpeed));
+
+            // เสียงเดิน
+            HandleFootstepSounds();
+
+            // --- หันตัว ---
+            if (x > 0.05f) transform.rotation = Quaternion.Euler(0f, 90f, 0f);
+            else if (x < -0.05f) transform.rotation = Quaternion.Euler(0f, -90f, 0f);
+
+            // --- กระโดด ---
+            if (Input.GetButtonDown("Jump") && isGrounded)
+            {
+                velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+                animator.SetTrigger("Jump");
+                PlayJumpSound(); // เสียงกระโดด
+                PlayJumpEffect(); // เพิ่มบรรทัดนี้
+            }
+        }
+        else
+        {
+            // ===== ถ้าล็อคอยู่: หยุดการเคลื่อนที่ค่อยๆ =====
+            currentSpeed = Mathf.Lerp(currentSpeed, 0f, Time.deltaTime * acceleration);
+            animator.SetFloat("Speed", 0f);
+            footstepTimer = 0f; // รีเซ็ตเสียงเท้า
         }
 
-        // แรงโน้มถ่วง
+        // แรงโน้มถ่วง (ยังคงทำงานแม้ล็อค)
         if (velocity.y < 0)
             velocity.y += gravity * fallMultiplier * Time.deltaTime;
         else
@@ -147,6 +161,24 @@ public class PlayerController : MonoBehaviour
             animator.SetTrigger("Land");
             PlayLandSound();
         }
+    }
+
+    // ===== 🔒 Public Methods สำหรับล็อค/ปลดล็อค =====
+    public void LockMovement()
+    {
+        isMovementLocked = true;
+        Debug.Log("🔒 ล็อคการเคลื่อนที่ของผู้เล่น");
+    }
+
+    public void UnlockMovement()
+    {
+        isMovementLocked = false;
+        Debug.Log("🔓 ปลดล็อคการเคลื่อนที่ของผู้เล่น");
+    }
+
+    public bool IsMovementLocked()
+    {
+        return isMovementLocked;
     }
 
     private void PlayJumpEffect()

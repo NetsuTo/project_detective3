@@ -5683,6 +5683,13 @@ MonoBehaviour:
   PressVolume: 0.1
   FailVolume: 0.1
   bookModel: {fileID: 1371996521}
+  bookAnimator: {fileID: 1371996523}
+  bookAnimation: {fileID: 0}
+  openAnimationClip: bookanimation_open
+  closeAnimationClip: bookanimation_close
+  openAnimationTrigger: Open
+  closeAnimationTrigger: Close
+  closeAnimationDuration: 0.3
   successEffect: {fileID: 6650199810314842004, guid: 3b7f2c753d435d647a80f1f047a113e3, type: 3}
   handEffectSpawnPoint: {fileID: 160642806}
   effectDelay: 0
@@ -8264,6 +8271,13 @@ MonoBehaviour:
   PressVolume: 0.1
   FailVolume: 0.1
   bookModel: {fileID: 1371996521}
+  bookAnimator: {fileID: 1371996523}
+  bookAnimation: {fileID: 0}
+  openAnimationClip: bookanimation_open
+  closeAnimationClip: bookanimation_close
+  openAnimationTrigger: Open
+  closeAnimationTrigger: Close
+  closeAnimationDuration: 0.3
   successEffect: {fileID: 0}
   handEffectSpawnPoint: {fileID: 0}
   effectDelay: 0.5
@@ -9632,6 +9646,13 @@ MonoBehaviour:
   PressVolume: 0.1
   FailVolume: 0.1
   bookModel: {fileID: 1371996521}
+  bookAnimator: {fileID: 1371996523}
+  bookAnimation: {fileID: 0}
+  openAnimationClip: bookanimation_open
+  closeAnimationClip: bookanimation_close
+  openAnimationTrigger: Open
+  closeAnimationTrigger: Close
+  closeAnimationDuration: 0.3
   successEffect: {fileID: 6650199810314842004, guid: 3b7f2c753d435d647a80f1f047a113e3, type: 3}
   handEffectSpawnPoint: {fileID: 1793744487}
   effectDelay: 0
@@ -22353,7 +22374,7 @@ MonoBehaviour:
   platformPrefab: {fileID: 4611046686804355914, guid: 898b9ba734fc14441868a8f8dc7205cd, type: 3}
   dropPoints:
   - {fileID: 1395427881}
-  dropDelay: 1
+  dropDelay: 0.5
   spawnHeight: 20
   fallSpeed: 50
   randomOffset: 0.5
@@ -37114,6 +37135,13 @@ MonoBehaviour:
   PressVolume: 0.1
   FailVolume: 0.1
   bookModel: {fileID: 1371996521}
+  bookAnimator: {fileID: 1371996523}
+  bookAnimation: {fileID: 0}
+  openAnimationClip: bookanimation_open
+  closeAnimationClip: bookanimation_close
+  openAnimationTrigger: Open
+  closeAnimationTrigger: Close
+  closeAnimationDuration: 0.3
   successEffect: {fileID: 6650199810314842004, guid: 3b7f2c753d435d647a80f1f047a113e3, type: 3}
   handEffectSpawnPoint: {fileID: 563719438}
   effectDelay: 0
@@ -54590,6 +54618,13 @@ MonoBehaviour:
   PressVolume: 0.1
   FailVolume: 0.1
   bookModel: {fileID: 1371996521}
+  bookAnimator: {fileID: 1371996523}
+  bookAnimation: {fileID: 0}
+  openAnimationClip: bookanimation_open
+  closeAnimationClip: bookanimation_close
+  openAnimationTrigger: Open
+  closeAnimationTrigger: Close
+  closeAnimationDuration: 0.3
   successEffect: {fileID: 0}
   handEffectSpawnPoint: {fileID: 0}
   effectDelay: 0.5
@@ -62521,8 +62556,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 1, y: 0.6906904, z: 1}
+  m_Center: {x: 0, y: -0.15465471, z: 0}
 --- !u!23 &956299296
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -82019,6 +82054,13 @@ MonoBehaviour:
   PressVolume: 0.1
   FailVolume: 0.1
   bookModel: {fileID: 1371996521}
+  bookAnimator: {fileID: 1371996523}
+  bookAnimation: {fileID: 0}
+  openAnimationClip: bookanimation_open
+  closeAnimationClip: bookanimation_close
+  openAnimationTrigger: Open
+  closeAnimationTrigger: Close
+  closeAnimationDuration: 0.3
   successEffect: {fileID: 0}
   handEffectSpawnPoint: {fileID: 0}
   effectDelay: 0.5
@@ -85773,6 +85815,13 @@ MonoBehaviour:
   PressVolume: 0.1
   FailVolume: 0.1
   bookModel: {fileID: 1371996521}
+  bookAnimator: {fileID: 1371996523}
+  bookAnimation: {fileID: 0}
+  openAnimationClip: bookanimation_open
+  closeAnimationClip: bookanimation_close
+  openAnimationTrigger: Open
+  closeAnimationTrigger: Close
+  closeAnimationDuration: 0.3
   successEffect: {fileID: 0}
   handEffectSpawnPoint: {fileID: 0}
   effectDelay: 0.5
@@ -89450,6 +89499,13 @@ MonoBehaviour:
   PressVolume: 0.1
   FailVolume: 0.1
   bookModel: {fileID: 1371996521}
+  bookAnimator: {fileID: 1371996523}
+  bookAnimation: {fileID: 0}
+  openAnimationClip: bookanimation_open
+  closeAnimationClip: bookanimation_close
+  openAnimationTrigger: Open
+  closeAnimationTrigger: Close
+  closeAnimationDuration: 0.3
   successEffect: {fileID: 0}
   handEffectSpawnPoint: {fileID: 0}
   effectDelay: 0
