@@ -624,7 +624,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -21.9, y: 123.711464}
+  m_AnchoredPosition: {x: -21.9, y: -174}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &9150291
@@ -2120,6 +2120,37 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 52485225}
   m_Mesh: {fileID: -5495902117074765545, guid: 1159e15eda8b9b64db546e7618969eab, type: 3}
+--- !u!1 &56720307
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 56720308}
+  m_Layer: 0
+  m_Name: TargetTiming
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &56720308
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 56720307}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: 0.7071068, z: -0, w: 0.7071068}
+  m_LocalPosition: {x: -4.52, y: 0.42666018, z: -0.14}
+  m_LocalScale: {x: 0.29629204, y: 0.29629207, z: 0.29629204}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1412319333}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &58980400 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4027744226266032311, guid: 00bba72dbda252a4eac12e218848cb44, type: 3}
@@ -9945,6 +9976,67 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 10c6ee44ab5cef34fa764a2e274dda55, type: 3}
   m_PrefabInstance: {fileID: 283784241}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &239785446
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 239785447}
+  - component: {fileID: 239785448}
+  m_Layer: 0
+  m_Name: TimerManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &239785447
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 239785446}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1412319333}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &239785448
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 239785446}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b09c9a0cfc5e8fc4c9f62ec8e5b28949, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  timeLimit: 100
+  fallPosition: {fileID: 56720308}
+  timerText: {fileID: 1565263726}
+  timerCanvasGroup: {fileID: 1303304882}
+  timerBackground: {fileID: 0}
+  normalColor: {r: 1, g: 1, b: 1, a: 1}
+  warningColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  dangerColor: {r: 1, g: 0, b: 0, a: 1}
+  warningTime: 20
+  dangerTime: 10
+  tickSound: {fileID: 0}
+  tickStartTime: 10
+  timeOutSound: {fileID: 0}
+  fadeDuration: 0.5
+  enableBlinking: 1
+  blinkSpeed: 2
+  restartTimerDelay: 2
 --- !u!4 &240794635 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 4e316fca28dc1ed4a9161fed8f15b371, type: 3}
@@ -18922,7 +19014,7 @@ GameObject:
   - component: {fileID: 342240219}
   - component: {fileID: 342240218}
   - component: {fileID: 342240217}
-  - component: {fileID: 342240216}
+  - component: {fileID: 342240221}
   m_Layer: 0
   m_Name: FalllingStone (1)
   m_TagString: Untagged
@@ -18930,37 +19022,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &342240216
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 342240215}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ec7a2298bc281d24fa3a9b310784f81e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  platformPrefab: {fileID: 4611046686804355914, guid: 898b9ba734fc14441868a8f8dc7205cd, type: 3}
-  dropPoints:
-  - {fileID: 1410081266}
-  - {fileID: 1824976898}
-  dropDelay: 1
-  spawnHeight: 25
-  fallSpeed: 50
-  randomOffset: 0.5
-  useDropPointRotation: 1
-  platformRotationOffset: {x: -90, y: 0, z: 0}
-  numberOfPlatforms: 3
-  platformDropInterval: 1
-  platformLifetime: 0
-  triggerOnce: 1
-  landingEffect: {fileID: 104829970813648393, guid: d3015b7eea383f64d8b81f965cc466e7, type: 3}
-  effectDuration: 2
-  landingSound: {fileID: 8300000, guid: 87a4976fa9d80564db5e362347a575e7, type: 3}
-  soundVolume: 0.02
-  playerTag: Player
 --- !u!65 &342240217
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -19052,6 +19113,49 @@ Transform:
   - {fileID: 1824976898}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &342240221
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 342240215}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 686bb394f54bf9640b9efdcafc74d660, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  platformPrefabs:
+  - {fileID: 4611046686804355914, guid: 898b9ba734fc14441868a8f8dc7205cd, type: 3}
+  - {fileID: 4611046686804355914, guid: 293cc217fce876c4889cab8a17b2c15f, type: 3}
+  - {fileID: 4611046686804355914, guid: d30f84fd45b926c4eb6790b1b048ef9e, type: 3}
+  dropPoints:
+  - {fileID: 1410081266}
+  - {fileID: 1824976898}
+  dropDelay: 1
+  spawnHeight: 25
+  fallSpeed: 30
+  randomOffset: 0.5
+  bounceCount: 3
+  firstBounceHeight: 1.5
+  bounceDecay: 0.7
+  bounceSpeed: 8
+  useDropPointRotation: 1
+  platformRotationOffset: {x: -90, y: 0, z: 0}
+  rotationSpeed: 360
+  rotationAxis: {x: 1, y: 0, z: 1}
+  numberOfPlatforms: 3
+  platformDropInterval: 1
+  uniquePrefabsPerTrigger: 1
+  platformLifetime: 0
+  triggerOnce: 1
+  landingEffect: {fileID: 104829970813648393, guid: d3015b7eea383f64d8b81f965cc466e7, type: 3}
+  effectDuration: 2
+  landingSound: {fileID: 8300000, guid: 87a4976fa9d80564db5e362347a575e7, type: 3}
+  soundVolume: 0.2
+  spatialBlend: 0.2
+  maxSoundDistance: 50
+  playerTag: Player
 --- !u!1 &342593530
 GameObject:
   m_ObjectHideFlags: 0
@@ -22387,7 +22491,9 @@ MonoBehaviour:
   landingEffect: {fileID: 104829970813648393, guid: d3015b7eea383f64d8b81f965cc466e7, type: 3}
   effectDuration: 2
   landingSound: {fileID: 8300000, guid: 87a4976fa9d80564db5e362347a575e7, type: 3}
-  soundVolume: 0.05
+  soundVolume: 0.3
+  spatialBlend: 0.8
+  maxSoundDistance: 50
   playerTag: Player
 --- !u!65 &395091041
 BoxCollider:
@@ -31684,7 +31790,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -21.9, y: 123.711464}
+  m_AnchoredPosition: {x: -21.9, y: -174}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1001 &499385706
@@ -52050,6 +52156,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 65de914ae391ce448bf77e96f62ea6f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  timerController: {fileID: 239785448}
   objectsToDestroy:
   - {fileID: 1902061161}
   explosionEffect: {fileID: 265766274217486953, guid: d3015b7eea383f64d8b81f965cc466e7, type: 3}
@@ -53582,7 +53689,7 @@ GameObject:
   - component: {fileID: 743672387}
   - component: {fileID: 743672386}
   - component: {fileID: 743672385}
-  - component: {fileID: 743672384}
+  - component: {fileID: 743672389}
   m_Layer: 0
   m_Name: FalllingStone (3)
   m_TagString: Untagged
@@ -53590,38 +53697,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &743672384
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 743672383}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ec7a2298bc281d24fa3a9b310784f81e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  platformPrefab: {fileID: 4611046686804355914, guid: 898b9ba734fc14441868a8f8dc7205cd, type: 3}
-  dropPoints:
-  - {fileID: 1403748148}
-  - {fileID: 1555466474}
-  - {fileID: 2106052174}
-  dropDelay: 1
-  spawnHeight: 25
-  fallSpeed: 50
-  randomOffset: 0.5
-  useDropPointRotation: 1
-  platformRotationOffset: {x: -90, y: 0, z: 0}
-  numberOfPlatforms: 3
-  platformDropInterval: 1
-  platformLifetime: 0
-  triggerOnce: 1
-  landingEffect: {fileID: 104829970813648393, guid: d3015b7eea383f64d8b81f965cc466e7, type: 3}
-  effectDuration: 2
-  landingSound: {fileID: 8300000, guid: 87a4976fa9d80564db5e362347a575e7, type: 3}
-  soundVolume: 0.02
-  playerTag: Player
 --- !u!65 &743672385
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -53714,6 +53789,50 @@ Transform:
   - {fileID: 2106052174}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &743672389
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 743672383}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 686bb394f54bf9640b9efdcafc74d660, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  platformPrefabs:
+  - {fileID: 4611046686804355914, guid: 898b9ba734fc14441868a8f8dc7205cd, type: 3}
+  - {fileID: 4611046686804355914, guid: 293cc217fce876c4889cab8a17b2c15f, type: 3}
+  - {fileID: 4611046686804355914, guid: d30f84fd45b926c4eb6790b1b048ef9e, type: 3}
+  dropPoints:
+  - {fileID: 1403748148}
+  - {fileID: 1555466474}
+  - {fileID: 2106052174}
+  dropDelay: 1
+  spawnHeight: 25
+  fallSpeed: 30
+  randomOffset: 0.5
+  bounceCount: 3
+  firstBounceHeight: 1.5
+  bounceDecay: 0.7
+  bounceSpeed: 8
+  useDropPointRotation: 1
+  platformRotationOffset: {x: -90, y: 0, z: 0}
+  rotationSpeed: 360
+  rotationAxis: {x: 1, y: 0, z: 1}
+  numberOfPlatforms: 3
+  platformDropInterval: 1
+  uniquePrefabsPerTrigger: 1
+  platformLifetime: 0
+  triggerOnce: 1
+  landingEffect: {fileID: 104829970813648393, guid: d3015b7eea383f64d8b81f965cc466e7, type: 3}
+  effectDuration: 2
+  landingSound: {fileID: 8300000, guid: 87a4976fa9d80564db5e362347a575e7, type: 3}
+  soundVolume: 0.2
+  spatialBlend: 0.2
+  maxSoundDistance: 50
+  playerTag: Player
 --- !u!1 &744908627 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 70640473a04b8994bb0872396b5b25d4, type: 3}
@@ -64422,7 +64541,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -21.9, y: 123.711464}
+  m_AnchoredPosition: {x: -21.9, y: -174}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &986375382
@@ -65189,6 +65308,43 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ac5453cd7c197ff469424f97ead4cc1d, type: 3}
+--- !u!1 &1008154895
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1008154896}
+  m_Layer: 5
+  m_Name: TimerPanel
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1008154896
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1008154895}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1303304881}
+  - {fileID: 1565263725}
+  m_Father: {fileID: 1864271679}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: -233.33328, y: -131.24998}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1009225489
 GameObject:
   m_ObjectHideFlags: 0
@@ -83981,6 +84137,94 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -5495902117074765545, guid: cf4477abffdf79048873bd4c01b4a5f7, type: 3}
+--- !u!1 &1303304880
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1303304881}
+  - component: {fileID: 1303304884}
+  - component: {fileID: 1303304883}
+  - component: {fileID: 1303304882}
+  m_Layer: 5
+  m_Name: CanvasGroup
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!224 &1303304881
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1303304880}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1008154896}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0.000011444092}
+  m_SizeDelta: {x: 699.99994, y: 349.99997}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!225 &1303304882
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1303304880}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
+--- !u!114 &1303304883
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1303304880}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  m_Type: 1
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &1303304884
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1303304880}
+  m_CullTransparentMesh: 1
 --- !u!1 &1306213834
 GameObject:
   m_ObjectHideFlags: 0
@@ -89529,6 +89773,8 @@ Transform:
   - {fileID: 799983010}
   - {fileID: 707682823}
   - {fileID: 49783985}
+  - {fileID: 56720308}
+  - {fileID: 239785447}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1422516237
@@ -90426,11 +90672,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2908075746234812187, guid: 8a7e7f6601b72774cb5e7b8a3f382286, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -61.82
+      value: 527.09
       objectReference: {fileID: 0}
     - target: {fileID: 2908075746234812187, guid: 8a7e7f6601b72774cb5e7b8a3f382286, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -23.97
+      value: 3.42
       objectReference: {fileID: 0}
     - target: {fileID: 2908075746234812187, guid: 8a7e7f6601b72774cb5e7b8a3f382286, type: 3}
       propertyPath: m_LocalPosition.z
@@ -91058,7 +91304,7 @@ GameObject:
   - component: {fileID: 1456756491}
   - component: {fileID: 1456756490}
   - component: {fileID: 1456756489}
-  - component: {fileID: 1456756488}
+  - component: {fileID: 1456756493}
   m_Layer: 0
   m_Name: FalllingStone
   m_TagString: Untagged
@@ -91066,38 +91312,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1456756488
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1456756487}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ec7a2298bc281d24fa3a9b310784f81e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  platformPrefab: {fileID: 4611046686804355914, guid: 898b9ba734fc14441868a8f8dc7205cd, type: 3}
-  dropPoints:
-  - {fileID: 739390598}
-  - {fileID: 1600052526}
-  - {fileID: 1121069524}
-  dropDelay: 1
-  spawnHeight: 25
-  fallSpeed: 50
-  randomOffset: 0.5
-  useDropPointRotation: 1
-  platformRotationOffset: {x: -90, y: 0, z: 0}
-  numberOfPlatforms: 3
-  platformDropInterval: 1
-  platformLifetime: 0
-  triggerOnce: 1
-  landingEffect: {fileID: 104829970813648393, guid: d3015b7eea383f64d8b81f965cc466e7, type: 3}
-  effectDuration: 2
-  landingSound: {fileID: 8300000, guid: 87a4976fa9d80564db5e362347a575e7, type: 3}
-  soundVolume: 0.02
-  playerTag: Player
 --- !u!65 &1456756489
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -91190,6 +91404,50 @@ Transform:
   - {fileID: 1121069524}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1456756493
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1456756487}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 686bb394f54bf9640b9efdcafc74d660, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  platformPrefabs:
+  - {fileID: 4611046686804355914, guid: 898b9ba734fc14441868a8f8dc7205cd, type: 3}
+  - {fileID: 4611046686804355914, guid: 293cc217fce876c4889cab8a17b2c15f, type: 3}
+  - {fileID: 4611046686804355914, guid: d30f84fd45b926c4eb6790b1b048ef9e, type: 3}
+  dropPoints:
+  - {fileID: 739390598}
+  - {fileID: 1600052526}
+  - {fileID: 1121069524}
+  dropDelay: 1
+  spawnHeight: 25
+  fallSpeed: 30
+  randomOffset: 0.5
+  bounceCount: 3
+  firstBounceHeight: 1.5
+  bounceDecay: 0.7
+  bounceSpeed: 8
+  useDropPointRotation: 1
+  platformRotationOffset: {x: -90, y: 0, z: 0}
+  rotationSpeed: 360
+  rotationAxis: {x: 1, y: 0, z: 1}
+  numberOfPlatforms: 3
+  platformDropInterval: 1
+  uniquePrefabsPerTrigger: 1
+  platformLifetime: 0
+  triggerOnce: 1
+  landingEffect: {fileID: 104829970813648393, guid: d3015b7eea383f64d8b81f965cc466e7, type: 3}
+  effectDuration: 2
+  landingSound: {fileID: 8300000, guid: 87a4976fa9d80564db5e362347a575e7, type: 3}
+  soundVolume: 0.2
+  spatialBlend: 0.2
+  maxSoundDistance: 50
+  playerTag: Player
 --- !u!1 &1457144203
 GameObject:
   m_ObjectHideFlags: 0
@@ -96139,6 +96397,10 @@ MonoBehaviour:
   animator: {fileID: 1554308339}
   useSpeedParameter: 1
   speedParameterName: Speed
+  footstepSounds:
+  - {fileID: 0}
+  footstepInterval: 0.5
+  footstepVolume: 0.3
   showDebugLogs: 1
   showGizmos: 1
 --- !u!114 &1554308344
@@ -96492,6 +96754,85 @@ Transform:
   m_Children: []
   m_Father: {fileID: 235292687}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1565263724
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1565263725}
+  - component: {fileID: 1565263727}
+  - component: {fileID: 1565263726}
+  m_Layer: 5
+  m_Name: Text (Legacy)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1565263725
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1565263724}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1.9281998, y: 1.9281998, z: 1.9281998}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1008154896}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 549, y: 302}
+  m_SizeDelta: {x: 52.5893, y: 30}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1565263726
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1565263724}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_FontData:
+    m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
+    m_FontSize: 0
+    m_FontStyle: 0
+    m_BestFit: 0
+    m_MinSize: 0
+    m_MaxSize: 50
+    m_Alignment: 0
+    m_AlignByGeometry: 0
+    m_RichText: 1
+    m_HorizontalOverflow: 0
+    m_VerticalOverflow: 0
+    m_LineSpacing: 1
+  m_Text: 
+--- !u!222 &1565263727
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1565263724}
+  m_CullTransparentMesh: 1
 --- !u!1 &1566741404
 GameObject:
   m_ObjectHideFlags: 0
@@ -115204,7 +115545,9 @@ MonoBehaviour:
   landingEffect: {fileID: 104829970813648393, guid: d3015b7eea383f64d8b81f965cc466e7, type: 3}
   effectDuration: 2
   landingSound: {fileID: 8300000, guid: 87a4976fa9d80564db5e362347a575e7, type: 3}
-  soundVolume: 0.05
+  soundVolume: 0.3
+  spatialBlend: 0.8
+  maxSoundDistance: 50
   playerTag: Player
 --- !u!65 &1885174584
 BoxCollider:
@@ -116502,6 +116845,8 @@ MonoBehaviour:
   soundVolume: 0.5
   transitionEffect: {fileID: 0}
   delayBeforeChange: 1
+  timerController: {fileID: 0}
+  explosionController: {fileID: 0}
 --- !u!1 &1902372481
 GameObject:
   m_ObjectHideFlags: 0
@@ -116687,7 +117032,7 @@ GameObject:
   - component: {fileID: 1905360952}
   - component: {fileID: 1905360951}
   - component: {fileID: 1905360950}
-  - component: {fileID: 1905360949}
+  - component: {fileID: 1905360954}
   m_Layer: 0
   m_Name: FalllingStone (2)
   m_TagString: Untagged
@@ -116695,37 +117040,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1905360949
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1905360948}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ec7a2298bc281d24fa3a9b310784f81e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  platformPrefab: {fileID: 4611046686804355914, guid: 898b9ba734fc14441868a8f8dc7205cd, type: 3}
-  dropPoints:
-  - {fileID: 1463425723}
-  - {fileID: 1645001892}
-  dropDelay: 1
-  spawnHeight: 25
-  fallSpeed: 50
-  randomOffset: 0.5
-  useDropPointRotation: 1
-  platformRotationOffset: {x: -90, y: 0, z: 0}
-  numberOfPlatforms: 3
-  platformDropInterval: 1
-  platformLifetime: 0
-  triggerOnce: 1
-  landingEffect: {fileID: 104829970813648393, guid: d3015b7eea383f64d8b81f965cc466e7, type: 3}
-  effectDuration: 2
-  landingSound: {fileID: 8300000, guid: 87a4976fa9d80564db5e362347a575e7, type: 3}
-  soundVolume: 0.02
-  playerTag: Player
 --- !u!65 &1905360950
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -116817,6 +117131,49 @@ Transform:
   - {fileID: 1645001892}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1905360954
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1905360948}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 686bb394f54bf9640b9efdcafc74d660, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  platformPrefabs:
+  - {fileID: 4611046686804355914, guid: 898b9ba734fc14441868a8f8dc7205cd, type: 3}
+  - {fileID: 4611046686804355914, guid: 293cc217fce876c4889cab8a17b2c15f, type: 3}
+  - {fileID: 4611046686804355914, guid: d30f84fd45b926c4eb6790b1b048ef9e, type: 3}
+  dropPoints:
+  - {fileID: 1463425723}
+  - {fileID: 1645001892}
+  dropDelay: 1
+  spawnHeight: 25
+  fallSpeed: 30
+  randomOffset: 0.5
+  bounceCount: 3
+  firstBounceHeight: 1.5
+  bounceDecay: 0.7
+  bounceSpeed: 8
+  useDropPointRotation: 1
+  platformRotationOffset: {x: -90, y: 0, z: 0}
+  rotationSpeed: 360
+  rotationAxis: {x: 1, y: 0, z: 1}
+  numberOfPlatforms: 3
+  platformDropInterval: 1
+  uniquePrefabsPerTrigger: 1
+  platformLifetime: 0
+  triggerOnce: 1
+  landingEffect: {fileID: 104829970813648393, guid: d3015b7eea383f64d8b81f965cc466e7, type: 3}
+  effectDuration: 2
+  landingSound: {fileID: 8300000, guid: 87a4976fa9d80564db5e362347a575e7, type: 3}
+  soundVolume: 0.2
+  spatialBlend: 0.2
+  maxSoundDistance: 50
+  playerTag: Player
 --- !u!1 &1906435820
 GameObject:
   m_ObjectHideFlags: 0
@@ -118074,6 +118431,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: -0.004
       objectReference: {fileID: 0}
+    - target: {fileID: 8217434054740218659, guid: 187065839ac862c43a2c21944408dfa7, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8862090011188924650, guid: 187065839ac862c43a2c21944408dfa7, type: 3}
       propertyPath: m_Color.b
       value: 1
@@ -118110,6 +118471,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7979559157065865806, guid: 187065839ac862c43a2c21944408dfa7, type: 3}
       insertIndex: -1
       addedObject: {fileID: 986375381}
+    - targetCorrespondingSourceObject: {fileID: 7979559157065865806, guid: 187065839ac862c43a2c21944408dfa7, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1008154896}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 187065839ac862c43a2c21944408dfa7, type: 3}
 --- !u!1 &1921006774

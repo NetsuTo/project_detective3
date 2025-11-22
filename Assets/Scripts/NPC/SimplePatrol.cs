@@ -8,15 +8,21 @@ public class SimplePatrol : MonoBehaviour
 
     [Header("การเดิน")]
     public float walkSpeed = 2f;
-    public float rotationSpeed = 10f; // เพิ่มความเร็วหมุน
-    public float stoppingDistance = 0.5f; // เพิ่มระยะหยุด
+    public float rotationSpeed = 10f;
+    public float stoppingDistance = 0.5f;
 
     [Header("อนิเมชั่น")]
     public Animator animator;
     public bool useSpeedParameter = true;
     public string speedParameterName = "Speed";
 
-    [Header("?? Debug")]
+    [Header("เสียงฝีเท้า")]
+    public AudioClip[] footstepSounds;
+    public float footstepInterval = 0.5f; // ระยะเวลาระหว่างเสียงฝีเท้า
+    [Range(0f, 1f)]
+    public float footstepVolume = 0.7f;
+
+    [Header("Debug")]
     public bool showDebugLogs = true;
     public bool showGizmos = true;
 
@@ -24,7 +30,11 @@ public class SimplePatrol : MonoBehaviour
     private bool isWaiting = false;
     private float waitTimer = 0f;
     private bool isPaused = false;
-    private bool isRotating = false; // เพิ่ม: สถานะการหมุน
+    private bool isRotating = false;
+    private float footstepTimer = 0f;
+
+    // Audio components
+    private AudioSource audioSource;
 
     void Start()
     {
@@ -33,9 +43,21 @@ public class SimplePatrol : MonoBehaviour
             animator = GetComponent<Animator>();
         }
 
+        // สร้าง AudioSource สำรับ fallback
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
+        audioSource.playOnAwake = false;
+        audioSource.spatialBlend = 1f; // 3D sound
+        audioSource.minDistance = 1f;
+        audioSource.maxDistance = 15f;
+        audioSource.volume = footstepVolume;
+
         if (patrolPoints == null || patrolPoints.Length == 0)
         {
-            LogError("? ไม่มีจุดเดินตรวจ!");
+            LogError("ไม่มีจุดเดินตรวจ!");
             enabled = false;
             return;
         }
@@ -51,7 +73,7 @@ public class SimplePatrol : MonoBehaviour
             }
         }
 
-        Log($"? พร้อมใช้งาน - มี {patrolPoints.Length} จุด");
+        Log($"พร้อมใช้งาน - มี {patrolPoints.Length} จุด");
     }
 
     void Update()
@@ -71,9 +93,9 @@ public class SimplePatrol : MonoBehaviour
             if (waitTimer <= 0f)
             {
                 isWaiting = false;
-                isRotating = true; // เริ่มหมุนหาจุดใหม่
+                isRotating = true;
                 currentPointIndex = (currentPointIndex + 1) % patrolPoints.Length;
-                Log($"?? เตรียมเดินไปจุดที่ {currentPointIndex + 1}");
+                Log($"เตรียมเดินไปจุดที่ {currentPointIndex + 1}");
             }
             return;
         }
@@ -96,7 +118,7 @@ public class SimplePatrol : MonoBehaviour
 
         Vector3 targetPos = patrolPoints[currentPointIndex].position;
         Vector3 direction = (targetPos - transform.position).normalized;
-        direction.y = 0; // ไม่หมุนตาม Y
+        direction.y = 0;
 
         if (direction == Vector3.zero)
         {
@@ -107,16 +129,15 @@ public class SimplePatrol : MonoBehaviour
         Quaternion targetRotation = Quaternion.LookRotation(direction);
         transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
 
-        // ตรวจสอบว่าหมุนเสร็จหรือยัง
         float angle = Quaternion.Angle(transform.rotation, targetRotation);
-        if (angle < 5f) // หมุนเสร็จแล้ว
+        if (angle < 5f)
         {
             transform.rotation = targetRotation;
             isRotating = false;
-            Log($"? หมุนเสร็จ เริ่มเดินไปจุดที่ {currentPointIndex + 1}");
+            Log($"หมุนเสร็จ เริ่มเดินไปจุดที่ {currentPointIndex + 1}");
         }
 
-        UpdateAnimation(0f); // ไม่เดินขณะหมุน
+        UpdateAnimation(0f);
     }
 
     void MoveTowardsTarget()
@@ -126,23 +147,17 @@ public class SimplePatrol : MonoBehaviour
         Vector3 targetPos = patrolPoints[currentPointIndex].position;
         Vector3 currentPos = transform.position;
 
-        // คำนวณระยะทางแบบ 3 มิติ
         float distance = Vector3.Distance(currentPos, targetPos);
 
-        // ถ้าถึงจุดหมายแล้ว
         if (distance <= stoppingDistance)
         {
             StartWaiting();
             return;
         }
 
-        // คำนวณทิศทาง
         Vector3 direction = (targetPos - currentPos).normalized;
-
-        // เดินไปหาเป้าหมาย
         transform.position += direction * walkSpeed * Time.deltaTime;
 
-        // หมุนหน้าไปทางที่เดินขณะเดิน (ค่อยๆ หมุน)
         direction.y = 0;
         if (direction != Vector3.zero)
         {
@@ -150,8 +165,32 @@ public class SimplePatrol : MonoBehaviour
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * 0.5f * Time.deltaTime);
         }
 
-        // อัพเดทอนิเมชั่น
+        // เล่นเสียงฝีเท้าขณะเดิน
+        PlayFootstepSound();
+
         UpdateAnimation(walkSpeed);
+    }
+
+    void PlayFootstepSound()
+    {
+        if (footstepSounds == null || footstepSounds.Length == 0) return;
+
+        footstepTimer -= Time.deltaTime;
+        if (footstepTimer <= 0f)
+        {
+            AudioClip clip = footstepSounds[Random.Range(0, footstepSounds.Length)];
+
+            // เล่นเสียง
+            if (clip != null)
+            {
+                if (AudioManager.Instance != null)
+                    AudioManager.Instance.PlaySFX(clip, footstepVolume);
+                else if (audioSource != null)
+                    audioSource.PlayOneShot(clip, footstepVolume);
+            }
+
+            footstepTimer = footstepInterval;
+        }
     }
 
     void StartWaiting()
@@ -160,8 +199,9 @@ public class SimplePatrol : MonoBehaviour
 
         isWaiting = true;
         waitTimer = waitTimeAtPoint;
+        footstepTimer = 0f; // รีเซ็ตเสียงฝีเท้า
         UpdateAnimation(0f);
-        Log($"?? ถึงจุดที่ {currentPointIndex + 1} - รออยู่ {waitTimeAtPoint} วินาที");
+        Log($"ถึงจุดที่ {currentPointIndex + 1} - รออยู่ {waitTimeAtPoint} วินาที");
     }
 
     void UpdateAnimation(float speed)
@@ -178,13 +218,13 @@ public class SimplePatrol : MonoBehaviour
     {
         isPaused = true;
         UpdateAnimation(0f);
-        Log("?? หยุดการเดินตรวจ");
+        Log("หยุดการเดินตรวจ");
     }
 
     public void ResumePatrol()
     {
         isPaused = false;
-        Log("?? เดินตรวจต่อ");
+        Log("เดินตรวจต่อ");
     }
 
     void Log(string message)
@@ -201,7 +241,6 @@ public class SimplePatrol : MonoBehaviour
     {
         if (!showGizmos || patrolPoints == null || patrolPoints.Length == 0) return;
 
-        // วาดจุดเดินตรวจ
         Gizmos.color = Color.cyan;
         for (int i = 0; i < patrolPoints.Length; i++)
         {
@@ -216,7 +255,6 @@ public class SimplePatrol : MonoBehaviour
             }
         }
 
-        // วาดเส้นเชื่อมจุด
         Gizmos.color = Color.blue;
         for (int i = 0; i < patrolPoints.Length - 1; i++)
         {
@@ -226,7 +264,6 @@ public class SimplePatrol : MonoBehaviour
             }
         }
 
-        // วาดเส้นจากจุดสุดท้ายกลับจุดแรก
         if (patrolPoints.Length > 1 && patrolPoints[0] != null &&
             patrolPoints[patrolPoints.Length - 1] != null)
         {
@@ -234,7 +271,6 @@ public class SimplePatrol : MonoBehaviour
                           patrolPoints[0].position);
         }
 
-        // วาดเส้นไปยังจุดหมายปัจจุบัน (เวลา Play)
         if (Application.isPlaying && patrolPoints.Length > 0 &&
             patrolPoints[currentPointIndex] != null)
         {
@@ -242,7 +278,6 @@ public class SimplePatrol : MonoBehaviour
             Gizmos.DrawLine(transform.position, patrolPoints[currentPointIndex].position);
             Gizmos.DrawWireSphere(patrolPoints[currentPointIndex].position, stoppingDistance);
 
-            // วาดลูกศรแสดงทิศทางที่หัน
             Gizmos.color = Color.red;
             Vector3 forward = transform.forward * 1f;
             Gizmos.DrawRay(transform.position + Vector3.up, forward);

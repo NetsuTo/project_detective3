@@ -22,6 +22,13 @@ public class SceneChangerEndGame : MonoBehaviour
     [Header("หน่วงเวลา")]
     public float delayBeforeChange = 1f; // รอกี่วินาทีก่อนเปลี่ยน Scene
 
+    [Header("?? การเชื่อมต่อ")]
+    [Tooltip("ลาก TimerController มาใส่ (หรือปล่อยว่างให้หาอัตโนมัติ)")]
+    public TimerController timerController;
+
+    [Tooltip("ลาก ExplosionController มาใส่ (หรือปล่อยว่างให้หาอัตโนมัติ)")]
+    public ExplosionController explosionController;
+
     private bool playerInRange = false;
     private bool isChanging = false;
     private AudioSource audioSource;
@@ -40,15 +47,35 @@ public class SceneChangerEndGame : MonoBehaviour
         Collider col = GetComponent<Collider>();
         if (col == null)
         {
-            Debug.LogWarning("?? ไม่พบ Collider! กำลังสร้าง SphereCollider...");
+            Debug.LogWarning("[SceneChangerEndGame] ไม่พบ Collider! กำลังสร้าง SphereCollider...");
             SphereCollider sphere = gameObject.AddComponent<SphereCollider>();
             sphere.isTrigger = true;
             sphere.radius = detectionRange;
         }
         else if (!col.isTrigger)
         {
-            Debug.LogWarning("?? Collider ต้องเปิด Is Trigger!");
+            Debug.LogWarning("[SceneChangerEndGame] Collider ต้องเปิด Is Trigger!");
             col.isTrigger = true;
+        }
+
+        // หา TimerController ถ้ายังไม่ได้ลากมาใส่
+        if (timerController == null)
+        {
+            timerController = FindObjectOfType<TimerController>();
+            if (timerController != null)
+            {
+                Debug.Log("[SceneChangerEndGame] เจอ TimerController แล้ว!");
+            }
+        }
+
+        // หา ExplosionController ถ้ายังไม่ได้ลากมาใส่
+        if (explosionController == null)
+        {
+            explosionController = FindObjectOfType<ExplosionController>();
+            if (explosionController != null)
+            {
+                Debug.Log("[SceneChangerEndGame] เจอ ExplosionController แล้ว!");
+            }
         }
 
         // ตรวจสอบว่า Scene อยู่ใน Build Settings หรือไม่
@@ -74,6 +101,22 @@ public class SceneChangerEndGame : MonoBehaviour
         isChanging = true;
 
         Debug.Log($"?? กำลังเปลี่ยนไป Scene '{endGameSceneName}'...");
+
+        // ? หยุด Timer ทันทีที่ผู้เล่นจบ!
+        if (timerController != null)
+        {
+            timerController.StopTimer();
+            Debug.Log("? หยุด Timer - ผู้เล่นจบเกมแล้ว!");
+        }
+
+        // ? หยุดเอฟเฟกต์การระเบิดทั้งหมด
+        if (explosionController != null)
+        {
+            explosionController.StopContinuousShake();
+            explosionController.StopContinuousDebris();
+            explosionController.StopCaveCollapseSound();
+            Debug.Log("?? หยุดเอฟเฟกต์ระเบิดทั้งหมด");
+        }
 
         // ซ่อน Press E
         if (pressEIndicator != null)
@@ -116,7 +159,7 @@ public class SceneChangerEndGame : MonoBehaviour
             if (pressEIndicator != null && !isChanging)
                 pressEIndicator.SetActive(true);
 
-            Debug.Log("?? กด E เพื่อจบเกม");
+            Debug.Log("?? ผู้เล่นเข้าใกล้จุดจบ - กด E เพื่อจบเกม");
         }
     }
 
@@ -128,6 +171,8 @@ public class SceneChangerEndGame : MonoBehaviour
 
             if (pressEIndicator != null)
                 pressEIndicator.SetActive(false);
+
+            Debug.Log("?? ผู้เล่นออกจากจุดจบ");
         }
     }
 

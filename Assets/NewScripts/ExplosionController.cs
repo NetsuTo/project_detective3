@@ -7,6 +7,10 @@ using UnityEngine;
 /// </summary>
 public class ExplosionController : MonoBehaviour
 {
+    [Header("? เชื่อม Timer")]
+    [Tooltip("ลาก TimerController มาใส่ที่นี่")]
+    public TimerController timerController;
+
     [Header("?? วัตถุที่จะถูกทำลาย")]
     [Tooltip("วัตถุที่จะหายไปเมื่อระเบิด (เช่น กำแพง, หิน)")]
     public List<GameObject> objectsToDestroy = new List<GameObject>();
@@ -65,7 +69,7 @@ public class ExplosionController : MonoBehaviour
     [Tooltip("ดีเลย์ก่อนทำลาย Object (วินาที) - ให้เวลา Effect เล่นก่อน")]
     public float destroyDelay = 0.3f;
 
-    [Header("? Visual Effects")]
+    [Header("?? Visual Effects")]
     [Tooltip("Flash สีขาวตอนระเบิด")]
     public bool enableFlash = true;
 
@@ -132,6 +136,20 @@ public class ExplosionController : MonoBehaviour
         {
             Debug.LogWarning("[ExplosionController] ไม่พบ Main Camera!");
         }
+
+        // หา TimerController ถ้ายังไม่ได้ลากมาใส่
+        if (timerController == null)
+        {
+            timerController = FindObjectOfType<TimerController>();
+            if (timerController != null)
+            {
+                Debug.Log("[ExplosionController] เจอ TimerController แล้ว!");
+            }
+            else
+            {
+                Debug.LogWarning("[ExplosionController] ไม่พบ TimerController! Timer จะไม่ทำงาน");
+            }
+        }
     }
 
     void LateUpdate()
@@ -166,6 +184,17 @@ public class ExplosionController : MonoBehaviour
         if (explosionDelay > 0)
         {
             yield return new WaitForSeconds(explosionDelay);
+        }
+
+        // ?? เริ่ม Timer หลังจากระเบิด! ??
+        if (timerController != null)
+        {
+            timerController.StartTimer();
+            Debug.Log("? เริ่ม Timer หลังระเบิด!");
+        }
+        else
+        {
+            Debug.LogWarning("?? ไม่พบ TimerController! กรุณาลากมาใส่ใน Inspector");
         }
 
         // เล่นเสียงระเบิด

@@ -3,15 +3,16 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Trigger ที่ทำให้วัตถุตกลงมาเป็น Platform จากหลายจุดที่กำหนด (ไม่ซ้ำจุด)
-/// เมื่อ Player เหยียบ Trigger ? วัตถุตกมายังตำแหน่งที่ Set ไว้
-/// มีเอฟเฟคและเสียง พร้อมระบบเสียงที่เชื่อมกับ AudioManager
+/// Trigger ที่ทำให้วัตถุตกลงมาเป็น Platform จากหลายจุดที่กำหนด (ไม่ซ้ำจุด) + มีการเด้ง
+/// เมื่อ Player เหยียบ Trigger ? วัตถุตกมายังตำแหน่งที่ Set ไว้ แล้วเด้งกระดอนเล็กน้อย
+/// มีเอฟเฟคและเสียงแค่ตอนถึงพื้นครั้งแรก พร้อมระบบเสียงที่เชื่อมกับ AudioManager
+/// รองรับการใส่ Platform หลายแบบ (สุ่มเลือกไม่ซ้ำในแต่ละรอบ)
 /// </summary>
-public class FallingPlatformTrigger : MonoBehaviour
+public class BouncingPlatformTrigger : MonoBehaviour
 {
     [Header("?? วัตถุที่จะตก (Platform)")]
-    [Tooltip("Prefab ของ Platform ที่จะตกลงมา")]
-    public GameObject platformPrefab;
+    [Tooltip("Prefab ของ Platform ที่จะตกลงมา (หลายแบบ - จะสุ่มเลือกไม่ซ้ำ)")]
+    public GameObject[] platformPrefabs;
 
     [Tooltip("จุดที่ Platform จะตกลงมา (ตำแหน่งสุดท้าย)")]
     public Transform[] dropPoints;
@@ -29,6 +30,20 @@ public class FallingPlatformTrigger : MonoBehaviour
     [Tooltip("สุ่มตำแหน่งรอบๆ Drop Point เล็กน้อย (รัศมี)")]
     public float randomOffset = 0.5f;
 
+    [Header("?? การเด้ง")]
+    [Tooltip("จำนวนครั้งที่จะเด้ง")]
+    public int bounceCount = 2;
+
+    [Tooltip("ความสูงของการเด้งครั้งแรก")]
+    public float firstBounceHeight = 1.5f;
+
+    [Tooltip("เปอร์เซ็นต์ที่ความสูงลดลงในแต่ละครั้ง (0-1)")]
+    [Range(0f, 1f)]
+    public float bounceDecay = 0.6f;
+
+    [Tooltip("ความเร็วในการเด้ง (ยิ่งมากยิ่งเร็ว)")]
+    public float bounceSpeed = 8f;
+
     [Header("?? การหมุนของ Platform")]
     [Tooltip("ใช้ Rotation ของ Drop Point")]
     public bool useDropPointRotation = true;
@@ -36,12 +51,21 @@ public class FallingPlatformTrigger : MonoBehaviour
     [Tooltip("มุมหมุนเพิ่มเติมของ Platform (X, Y, Z)")]
     public Vector3 platformRotationOffset = new Vector3(-90, 0, 0);
 
+    [Tooltip("ความเร็วในการหมุน Platform ขณะเด้ง (องศา/วินาที) - ตั้ง 0 ถ้าไม่ต้องการหมุน")]
+    public float rotationSpeed = 180f;
+
+    [Tooltip("แกนที่จะหมุน (X=pitch, Y=yaw, Z=roll)")]
+    public Vector3 rotationAxis = new Vector3(1, 0, 0);
+
     [Header("?? การสุ่ม")]
     [Tooltip("จำนวน Platform ที่จะตก (สุ่มจาก Drop Points แบบไม่ซ้ำ)")]
     public int numberOfPlatforms = 1;
 
     [Tooltip("ระยะห่างระหว่างการตกของแต่ละชิ้น (วินาที)")]
     public float platformDropInterval = 0.5f;
+
+    [Tooltip("สุ่ม Prefab ไม่ซ้ำกันในแต่ละรอบที่ trigger")]
+    public bool uniquePrefabsPerTrigger = true;
 
     [Header("? พฤติกรรม")]
     [Tooltip("ระยะเวลาก่อน Platform หายไป (วินาที) - ถ้าเป็น 0 จะไม่หาย")]
@@ -51,14 +75,14 @@ public class FallingPlatformTrigger : MonoBehaviour
     public bool triggerOnce = true;
 
     [Header("? เอฟเฟคตอนตกถึง")]
-    [Tooltip("Particle Effect ที่จะเล่นตอน Platform ตกถึง")]
+    [Tooltip("Particle Effect ที่จะเล่นตอน Platform ตกถึงครั้งแรก")]
     public GameObject landingEffect;
 
     [Tooltip("ระยะเวลาก่อน Effect หายไป (วินาที)")]
     public float effectDuration = 2f;
 
     [Header("?? เสียง")]
-    [Tooltip("เสียงตอน Platform ตกถึง")]
+    [Tooltip("เสียงตอน Platform ตกถึงครั้งแรก")]
     public AudioClip landingSound;
 
     [Range(0f, 1f)]
@@ -97,13 +121,19 @@ public class FallingPlatformTrigger : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("?? [FallingPlatformTrigger] ไม่มี Collider! กรุณาเพิ่ม Collider และเปิด 'Is Trigger'");
+            Debug.LogWarning("?? [BouncingPlatformTrigger] ไม่มี Collider! กรุณาเพิ่ม Collider และเปิด 'Is Trigger'");
         }
 
         // ตรวจสอบว่ามี Drop Points หรือไม่
         if (dropPoints == null || dropPoints.Length == 0)
         {
-            Debug.LogError("? [FallingPlatformTrigger] ไม่ได้ใส่ Drop Points! Platform จะไม่รู้ว่าจะตกที่ไหน!");
+            Debug.LogError("? [BouncingPlatformTrigger] ไม่ได้ใส่ Drop Points! Platform จะไม่รู้ว่าจะตกที่ไหน!");
+        }
+
+        // ตรวจสอบว่ามี Platform Prefabs หรือไม่
+        if (platformPrefabs == null || platformPrefabs.Length == 0)
+        {
+            Debug.LogError("? [BouncingPlatformTrigger] ไม่ได้ใส่ Platform Prefabs! Platform จะไม่มีอะไรตกลงมา!");
         }
     }
 
@@ -112,14 +142,14 @@ public class FallingPlatformTrigger : MonoBehaviour
         // เช็คว่าเป็น Player หรือไม่
         if (other.CompareTag(playerTag))
         {
-            TriggerFallingPlatform();
+            TriggerBouncingPlatform();
         }
     }
 
     /// <summary>
     /// เริ่มให้ Platform ตก (เรียกจาก Trigger หรือ Script อื่นก็ได้)
     /// </summary>
-    public void TriggerFallingPlatform()
+    public void TriggerBouncingPlatform()
     {
         if (triggerOnce && hasTriggered)
         {
@@ -163,14 +193,18 @@ public class FallingPlatformTrigger : MonoBehaviour
             Debug.LogWarning($"?? มี Drop Points เพียง {shuffledPoints.Count} จุด แต่ตั้งค่าให้ตก {numberOfPlatforms} ชิ้น - จะตกเพียง {actualPlatformCount} ชิ้น");
         }
 
+        // สุ่ม Prefabs แบบไม่ซ้ำ (ถ้าเปิดใช้งาน)
+        List<GameObject> selectedPrefabs = GetShuffledPrefabs(actualPlatformCount);
+
         // ตก Platform ตามจำนวนที่กำหนด (แต่ละจุดไม่ซ้ำ)
         for (int i = 0; i < actualPlatformCount; i++)
         {
             Transform selectedDropPoint = shuffledPoints[i];
+            GameObject selectedPrefab = selectedPrefabs[i];
 
-            if (selectedDropPoint != null)
+            if (selectedDropPoint != null && selectedPrefab != null)
             {
-                SpawnFallingPlatform(selectedDropPoint);
+                SpawnBouncingPlatform(selectedDropPoint, selectedPrefab);
             }
 
             // รอก่อนตกชิ้นถัดไป (ถ้ามีหลายชิ้น)
@@ -217,11 +251,103 @@ public class FallingPlatformTrigger : MonoBehaviour
         return validPoints;
     }
 
-    private void SpawnFallingPlatform(Transform dropPoint)
+    /// <summary>
+    /// สุ่ม Prefabs แบบไม่ซ้ำ (ถ้าเปิดใช้งาน uniquePrefabsPerTrigger)
+    /// </summary>
+    private List<GameObject> GetShuffledPrefabs(int count)
     {
-        if (platformPrefab == null)
+        List<GameObject> result = new List<GameObject>();
+
+        if (platformPrefabs == null || platformPrefabs.Length == 0)
         {
-            Debug.LogWarning("?? ไม่ได้ใส่ Platform Prefab!");
+            Debug.LogWarning("?? ไม่ได้ใส่ Platform Prefabs!");
+            return result;
+        }
+
+        // กรองเอาเฉพาะ Prefab ที่ไม่เป็น null
+        List<GameObject> validPrefabs = new List<GameObject>();
+        foreach (GameObject prefab in platformPrefabs)
+        {
+            if (prefab != null)
+            {
+                validPrefabs.Add(prefab);
+            }
+        }
+
+        if (validPrefabs.Count == 0)
+        {
+            Debug.LogWarning("?? ไม่มี Platform Prefab ที่ใช้งานได้!");
+            return result;
+        }
+
+        // ถ้าเปิด uniquePrefabsPerTrigger = สุ่มไม่ซ้ำ
+        if (uniquePrefabsPerTrigger)
+        {
+            // ถ้าต้องการ Platform มากกว่าจำนวน Prefab ที่มี
+            if (count > validPrefabs.Count)
+            {
+                Debug.LogWarning($"?? ต้องการ Platform {count} ชิ้น แต่มี Prefab แค่ {validPrefabs.Count} แบบ - จะวนซ้ำ Prefab");
+
+                // สุ่ม Prefabs แล้ววนซ้ำจนครบจำนวน
+                List<GameObject> shuffled = new List<GameObject>(validPrefabs);
+
+                // Shuffle
+                for (int i = shuffled.Count - 1; i > 0; i--)
+                {
+                    int randomIndex = Random.Range(0, i + 1);
+                    GameObject temp = shuffled[i];
+                    shuffled[i] = shuffled[randomIndex];
+                    shuffled[randomIndex] = temp;
+                }
+
+                // วนซ้ำจนครบจำนวน
+                for (int i = 0; i < count; i++)
+                {
+                    result.Add(shuffled[i % shuffled.Count]);
+                }
+            }
+            else
+            {
+                // สุ่ม Prefabs แบบไม่ซ้ำ (Fisher-Yates Shuffle)
+                List<GameObject> shuffled = new List<GameObject>(validPrefabs);
+
+                for (int i = shuffled.Count - 1; i > 0; i--)
+                {
+                    int randomIndex = Random.Range(0, i + 1);
+                    GameObject temp = shuffled[i];
+                    shuffled[i] = shuffled[randomIndex];
+                    shuffled[randomIndex] = temp;
+                }
+
+                // เอาเฉพาะจำนวนที่ต้องการ
+                for (int i = 0; i < count; i++)
+                {
+                    result.Add(shuffled[i]);
+                }
+
+                Debug.Log($"?? สุ่ม Prefab ไม่ซ้ำ: {string.Join(", ", result.ConvertAll(p => p.name))}");
+            }
+        }
+        else
+        {
+            // สุ่มแบบธรรมดา (อาจซ้ำได้)
+            for (int i = 0; i < count; i++)
+            {
+                GameObject randomPrefab = validPrefabs[Random.Range(0, validPrefabs.Count)];
+                result.Add(randomPrefab);
+            }
+
+            Debug.Log($"?? สุ่ม Prefab: {string.Join(", ", result.ConvertAll(p => p.name))}");
+        }
+
+        return result;
+    }
+
+    private void SpawnBouncingPlatform(Transform dropPoint, GameObject prefab)
+    {
+        if (prefab == null)
+        {
+            Debug.LogWarning("?? Prefab เป็น null!");
             return;
         }
 
@@ -261,7 +387,7 @@ public class FallingPlatformTrigger : MonoBehaviour
             spawnRotation = Quaternion.Euler(platformRotationOffset);
         }
 
-        GameObject platform = Instantiate(platformPrefab, spawnPos, spawnRotation);
+        GameObject platform = Instantiate(prefab, spawnPos, spawnRotation);
         activePlatforms.Add(platform);
 
         // ลบ Rigidbody ถ้ามี (เพราะเราไม่ใช้ Physics)
@@ -271,10 +397,10 @@ public class FallingPlatformTrigger : MonoBehaviour
             Destroy(rb);
         }
 
-        Debug.Log($"?? Platform ตก! จาก {spawnPos} ? {targetPos} (จาก {dropPoint.name})");
+        Debug.Log($"?? Platform ตก! [{prefab.name}] จาก {spawnPos} ? {targetPos} (จาก {dropPoint.name})");
 
-        // เริ่ม Animation ตก
-        StartCoroutine(AnimatePlatformFalling(platform, targetPos));
+        // เริ่ม Animation ตกและเด้ง
+        StartCoroutine(AnimatePlatformFallingAndBouncing(platform, targetPos));
 
         // ทำลาย Platform หลังจากเวลาที่กำหนด (ถ้าตั้งค่าไว้)
         if (platformLifetime > 0)
@@ -284,20 +410,21 @@ public class FallingPlatformTrigger : MonoBehaviour
     }
 
     /// <summary>
-    /// Animation ให้ Platform ตกลงมาแบบ Smooth
+    /// Animation ให้ Platform ตกลงมาแบบ Smooth แล้วเด้งขึ้นลง
     /// </summary>
-    private IEnumerator AnimatePlatformFalling(GameObject platform, Vector3 targetPos)
+    private IEnumerator AnimatePlatformFallingAndBouncing(GameObject platform, Vector3 targetPos)
     {
         if (platform == null) yield break;
 
+        // ========== ตอนที่ 1: ตกลงมา ==========
         Vector3 startPos = platform.transform.position;
         float elapsedTime = 0f;
-        float duration = Vector3.Distance(startPos, targetPos) / fallSpeed;
+        float fallDuration = Vector3.Distance(startPos, targetPos) / fallSpeed;
 
-        while (elapsedTime < duration && platform != null)
+        while (elapsedTime < fallDuration && platform != null)
         {
             elapsedTime += Time.deltaTime;
-            float t = elapsedTime / duration;
+            float t = elapsedTime / fallDuration;
 
             // ใช้ Lerp เพื่อความ Smooth
             platform.transform.position = Vector3.Lerp(startPos, targetPos, t);
@@ -306,18 +433,90 @@ public class FallingPlatformTrigger : MonoBehaviour
         }
 
         // ตรวจสอบว่า Platform ยังอยู่หรือไม่
-        if (platform != null)
+        if (platform == null) yield break;
+
+        // ตั้งตำแหน่งให้แน่นอน
+        platform.transform.position = targetPos;
+
+        // เรียก Landing Effect และเสียง (เฉพาะครั้งแรก)
+        OnPlatformLanded(platform, targetPos);
+
+        // ========== ตอนที่ 2: เด้งขึ้นลง ==========
+        float currentBounceHeight = firstBounceHeight;
+
+        for (int i = 0; i < bounceCount; i++)
         {
-            // ตั้งตำแหน่งให้แน่นอน
+            if (platform == null) yield break;
+
+            // คำนวณความสูงของการเด้งในรอบนี้
+            Vector3 bounceTarget = targetPos + Vector3.up * currentBounceHeight;
+
+            // เด้งขึ้น
+            float bounceUpTime = 0f;
+            float bounceUpDuration = currentBounceHeight / bounceSpeed;
+
+            while (bounceUpTime < bounceUpDuration && platform != null)
+            {
+                bounceUpTime += Time.deltaTime;
+                float t = bounceUpTime / bounceUpDuration;
+
+                // ใช้ SmoothStep เพื่อความนุ่มนวล
+                float easedT = Mathf.SmoothStep(0f, 1f, t);
+                platform.transform.position = Vector3.Lerp(targetPos, bounceTarget, easedT);
+
+                // หมุน Platform ขณะเด้งขึ้น
+                if (rotationSpeed > 0)
+                {
+                    float rotationAmount = rotationSpeed * Time.deltaTime;
+                    platform.transform.Rotate(rotationAxis.normalized * rotationAmount, Space.Self);
+                }
+
+                yield return null;
+            }
+
+            if (platform == null) yield break;
+
+            // เด้งลง
+            float bounceDownTime = 0f;
+            float bounceDownDuration = currentBounceHeight / bounceSpeed;
+
+            Vector3 bounceStartPos = platform.transform.position;
+
+            while (bounceDownTime < bounceDownDuration && platform != null)
+            {
+                bounceDownTime += Time.deltaTime;
+                float t = bounceDownTime / bounceDownDuration;
+
+                // ใช้ SmoothStep เพื่อความนุ่มนวล
+                float easedT = Mathf.SmoothStep(0f, 1f, t);
+                platform.transform.position = Vector3.Lerp(bounceStartPos, targetPos, easedT);
+
+                // หมุน Platform ขณะเด้งลง
+                if (rotationSpeed > 0)
+                {
+                    float rotationAmount = rotationSpeed * Time.deltaTime;
+                    platform.transform.Rotate(rotationAxis.normalized * rotationAmount, Space.Self);
+                }
+
+                yield return null;
+            }
+
+            if (platform == null) yield break;
+
+            // ตั้งตำแหน่งกลับไปที่พื้น
             platform.transform.position = targetPos;
 
-            // เรียก Landing Effect
-            OnPlatformLanded(platform, targetPos);
+            // ลดความสูงของการเด้งในรอบถัดไป
+            currentBounceHeight *= bounceDecay;
+
+            Debug.Log($"?? Platform เด้งครั้งที่ {i + 1}/{bounceCount}");
         }
+
+        Debug.Log($"? Platform เด้งเสร็จแล้ว!");
     }
 
     /// <summary>
-    /// เมื่อ Platform ตกถึง - เล่นเอฟเฟคและเสียง
+    /// เมื่อ Platform ตกถึงครั้งแรก - เล่นเอฟเฟคและเสียง
     /// </summary>
     private void OnPlatformLanded(GameObject platform, Vector3 landingPos)
     {
@@ -332,7 +531,7 @@ public class FallingPlatformTrigger : MonoBehaviour
             Destroy(effect, effectDuration);
         }
 
-        // เล่นเสียงตกถึง
+        // เล่นเสียงตกถึง (แค่ครั้งแรก)
         if (landingSound != null)
         {
             PlaySound(landingSound);
@@ -385,7 +584,7 @@ public class FallingPlatformTrigger : MonoBehaviour
         }
         activePlatforms.Clear();
 
-        Debug.Log("?? รีเซ็ต Falling Platform Trigger");
+        Debug.Log("?? รีเซ็ต Bouncing Platform Trigger");
     }
 
     // Gizmos แสดงตำแหน่งที่ Platform จะตก
@@ -414,9 +613,13 @@ public class FallingPlatformTrigger : MonoBehaviour
             Gizmos.color = Color.green;
             Gizmos.DrawWireCube(dropPoints[i].position, Vector3.one * 2f);
 
+            // แสดงความสูงของการเด้ง
+            Gizmos.color = Color.cyan;
+            Gizmos.DrawWireSphere(dropPoints[i].position + Vector3.up * firstBounceHeight, 0.5f);
+
             // แสดงหมายเลข
 #if UNITY_EDITOR
-            UnityEditor.Handles.Label(dropPoints[i].position + Vector3.up * 0.5f, $"Platform {i + 1}");
+            UnityEditor.Handles.Label(dropPoints[i].position + Vector3.up * 0.5f, $"Platform {i + 1}\nBounce: {bounceCount}x");
 #endif
         }
     }
