@@ -19,15 +19,16 @@ public class AudioManager : MonoBehaviour
     private int currentPoolIndex = 0;
 
     [Header("Volume Settings")]
-    [Range(0f, 1f)] public float masterVolume = 1f;
     [Range(0f, 1f)] public float musicVolume = 1f;
     [Range(0f, 1f)] public float sfxVolume = 1f;
 
-    private const string MASTER_VOLUME_KEY = "MasterVolume";
+    [Header("3D Sound Default Settings")]
+    public float default3DMinDistance = 1f;
+    public float default3DMaxDistance = 15f;
+
     private const string MUSIC_VOLUME_KEY = "MusicVolume";
     private const string SFX_VOLUME_KEY = "SFXVolume";
 
-    // เพิ่มส่วนสำหรับจัดการ Loop SFX
     private Dictionary<int, AudioSource> loopingSFX = new Dictionary<int, AudioSource>();
     private int nextLoopID = 0;
 
@@ -51,7 +52,6 @@ public class AudioManager : MonoBehaviour
         if (musicSource != null)
             musicSource.outputAudioMixerGroup = audioMixer.FindMatchingGroups("Music")[0];
 
-        SetMasterVolume(masterVolume);
         SetMusicVolume(musicVolume);
         SetSFXVolume(sfxVolume);
     }
@@ -74,7 +74,6 @@ public class AudioManager : MonoBehaviour
 
     private AudioSource GetAvailableSFXSource()
     {
-        // หา AudioSource ที่ว่าง
         for (int i = 0; i < sfxPool.Count; i++)
         {
             int index = (currentPoolIndex + i) % sfxPool.Count;
@@ -85,7 +84,6 @@ public class AudioManager : MonoBehaviour
             }
         }
 
-        // ถ้าไม่มีที่ว่าง ใช้ตัวถัดไปแทน (จะตัดเสียงเก่า)
         AudioSource source = sfxPool[currentPoolIndex];
         currentPoolIndex = (currentPoolIndex + 1) % sfxPool.Count;
         return source;
@@ -99,18 +97,33 @@ public class AudioManager : MonoBehaviour
         if (clip == null) return;
 
         AudioSource source = GetAvailableSFXSource();
-        source.spatialBlend = 0f; // 2D sound
+        source.spatialBlend = 0f;
         source.clip = clip;
         source.Play();
     }
 
-    // เล่นเสียงพร้อมปรับ volume
+    // เล่นเสียงพร้อมปรับ volume (2D)
     public void PlaySFX(AudioClip clip, float volumeScale)
     {
         if (clip == null) return;
 
         AudioSource source = GetAvailableSFXSource();
         source.spatialBlend = 0f;
+        source.PlayOneShot(clip, volumeScale);
+    }
+
+    // เล่นเสียง 3D จาก Transform ที่กำหนด (เสียงจะติดกับ Transform)
+    public void PlaySFXFromTransform(AudioClip clip, Transform sourceTransform, float volumeScale = 1f,
+                                      float minDistance = -1f, float maxDistance = -1f)
+    {
+        if (clip == null || sourceTransform == null) return;
+
+        AudioSource source = GetAvailableSFXSource();
+        source.transform.position = sourceTransform.position;
+        source.spatialBlend = 1f;
+        source.minDistance = minDistance > 0 ? minDistance : default3DMinDistance;
+        source.maxDistance = maxDistance > 0 ? maxDistance : default3DMaxDistance;
+        source.rolloffMode = AudioRolloffMode.Linear;
         source.PlayOneShot(clip, volumeScale);
     }
 
@@ -121,7 +134,10 @@ public class AudioManager : MonoBehaviour
 
         AudioSource source = GetAvailableSFXSource();
         source.transform.position = position;
-        source.spatialBlend = 1f; // 3D sound
+        source.spatialBlend = 1f;
+        source.minDistance = default3DMinDistance;
+        source.maxDistance = default3DMaxDistance;
+        source.rolloffMode = AudioRolloffMode.Linear;
         source.PlayOneShot(clip, volumeScale);
     }
 
@@ -135,10 +151,11 @@ public class AudioManager : MonoBehaviour
         source.spatialBlend = 1f;
         source.minDistance = minDistance;
         source.maxDistance = maxDistance;
+        source.rolloffMode = AudioRolloffMode.Linear;
         source.PlayOneShot(clip, volumeScale);
     }
 
-    // เล่นเสียงแบบสุ่ม pitch (ทำให้เสียงไม่ซ้ำซาก)
+    // เล่นเสียงแบบสุ่ม pitch
     public void PlaySFXRandomPitch(AudioClip clip, float minPitch = 0.9f, float maxPitch = 1.1f)
     {
         if (clip == null) return;
@@ -149,7 +166,6 @@ public class AudioManager : MonoBehaviour
         source.clip = clip;
         source.Play();
 
-        // คืน pitch กลับเป็นปกติหลังเล่นเสร็จ
         StartCoroutine(ResetPitchAfterPlay(source, clip.length));
     }
 
@@ -159,17 +175,14 @@ public class AudioManager : MonoBehaviour
         source.pitch = 1f;
     }
 
-    // ========== SFX Loop Functions (ใหม่) ==========
+    // ========== SFX Loop Functions ==========
 
-    /// <summary>
-    /// เล่นเสียง SFX แบบ Loop และคืนค่า ID สำหรับหยุดเสียงภายหลัง
-    /// </summary>
     public int PlaySFXLoop(AudioClip clip, float volumeScale = 1f)
     {
         if (clip == null) return -1;
 
         AudioSource source = GetAvailableSFXSource();
-        source.spatialBlend = 0f; // 2D sound
+        source.spatialBlend = 0f;
         source.clip = clip;
         source.volume = volumeScale;
         source.loop = true;
@@ -181,9 +194,6 @@ public class AudioManager : MonoBehaviour
         return id;
     }
 
-    /// <summary>
-    /// หยุดเสียง Loop ตาม ID ที่ได้จาก PlaySFXLoop
-    /// </summary>
     public void StopSFXLoop(int id)
     {
         if (loopingSFX.ContainsKey(id))
@@ -193,24 +203,22 @@ public class AudioManager : MonoBehaviour
             {
                 source.loop = false;
                 source.Stop();
-                source.volume = 1f; // คืนค่า volume เป็นปกติ
+                source.volume = 1f;
             }
             loopingSFX.Remove(id);
         }
     }
 
-    /// <summary>
-    /// เล่นเสียง Loop แบบ 3D ที่ตำแหน่งที่กำหนด
-    /// </summary>
     public int PlaySFXLoop3D(AudioClip clip, Vector3 position, float volumeScale = 1f, float minDistance = 1f, float maxDistance = 500f)
     {
         if (clip == null) return -1;
 
         AudioSource source = GetAvailableSFXSource();
         source.transform.position = position;
-        source.spatialBlend = 1f; // 3D sound
+        source.spatialBlend = 1f;
         source.minDistance = minDistance;
         source.maxDistance = maxDistance;
+        source.rolloffMode = AudioRolloffMode.Linear;
         source.clip = clip;
         source.volume = volumeScale;
         source.loop = true;
@@ -222,9 +230,6 @@ public class AudioManager : MonoBehaviour
         return id;
     }
 
-    /// <summary>
-    /// หยุดเสียง Loop ทั้งหมด
-    /// </summary>
     public void StopAllSFXLoops()
     {
         foreach (var kvp in loopingSFX)
@@ -239,7 +244,6 @@ public class AudioManager : MonoBehaviour
         loopingSFX.Clear();
     }
 
-    // หยุดเสียง SFX ทั้งหมด (รวม Loop ด้วย)
     public void StopAllSFX()
     {
         foreach (AudioSource source in sfxPool)
@@ -249,7 +253,8 @@ public class AudioManager : MonoBehaviour
         StopAllSFXLoops();
     }
 
-    // ========== SFX Volume ==========
+    // ========== Volume Controls ==========
+
     public void SetSFXVolume(float volume)
     {
         sfxVolume = Mathf.Clamp01(volume);
@@ -263,21 +268,6 @@ public class AudioManager : MonoBehaviour
         return sfxVolume;
     }
 
-    // ========== Master Volume ==========
-    public void SetMasterVolume(float volume)
-    {
-        masterVolume = Mathf.Clamp01(volume);
-        float dB = VolumeToDecibels(masterVolume);
-        audioMixer.SetFloat("MasterVolume", dB);
-        SaveVolume(MASTER_VOLUME_KEY, masterVolume);
-    }
-
-    public float GetMasterVolume()
-    {
-        return masterVolume;
-    }
-
-    // ========== Music Volume ==========
     public void SetMusicVolume(float volume)
     {
         musicVolume = Mathf.Clamp01(volume);
@@ -292,6 +282,7 @@ public class AudioManager : MonoBehaviour
     }
 
     // ========== Helper Functions ==========
+
     private float VolumeToDecibels(float volume)
     {
         if (volume <= 0f)
@@ -307,14 +298,12 @@ public class AudioManager : MonoBehaviour
 
     private void LoadVolumeSettings()
     {
-        masterVolume = PlayerPrefs.GetFloat(MASTER_VOLUME_KEY, 1f);
         musicVolume = PlayerPrefs.GetFloat(MUSIC_VOLUME_KEY, 1f);
         sfxVolume = PlayerPrefs.GetFloat(SFX_VOLUME_KEY, 1f);
     }
 
     public void ResetToDefault()
     {
-        SetMasterVolume(1f);
         SetMusicVolume(1f);
         SetSFXVolume(1f);
     }

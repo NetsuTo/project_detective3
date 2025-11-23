@@ -8,9 +8,8 @@ public class MenuWithVolume : MonoBehaviour
     public Button[] buttons; // Start / Options / Quit เป็นต้น
 
     [Header("Volume Sliders")]
-    public Slider masterVolumeSlider;
+    public Slider sfxVolumeSlider;
     public Slider musicVolumeSlider;
-    public Slider sfxVolumeSlider; // เพิ่ม SFX ด้วยถ้าต้องการ
 
     [Header("การตั้งค่าสี")]
     public Color normalButtonColor = new Color(0.7f, 0.7f, 0.7f, 0.5f);
@@ -25,9 +24,8 @@ public class MenuWithVolume : MonoBehaviour
     {
         // คำนวณจำนวน element ทั้งหมด
         int sliderCount = 0;
-        if (masterVolumeSlider != null) sliderCount++;
-        if (musicVolumeSlider != null) sliderCount++;
         if (sfxVolumeSlider != null) sliderCount++;
+        if (musicVolumeSlider != null) sliderCount++;
 
         totalElements = buttons.Length + sliderCount;
 
@@ -35,14 +33,11 @@ public class MenuWithVolume : MonoBehaviour
         LoadVolumeValues();
 
         // เชื่อม Slider กับ AudioManager
-        if (masterVolumeSlider != null)
-            masterVolumeSlider.onValueChanged.AddListener(OnMasterVolumeChanged);
+        if (sfxVolumeSlider != null)
+            sfxVolumeSlider.onValueChanged.AddListener(OnSFXVolumeChanged);
 
         if (musicVolumeSlider != null)
             musicVolumeSlider.onValueChanged.AddListener(OnMusicVolumeChanged);
-
-        if (sfxVolumeSlider != null)
-            sfxVolumeSlider.onValueChanged.AddListener(OnSFXVolumeChanged);
 
         UpdateUIHighlight();
     }
@@ -100,21 +95,15 @@ public class MenuWithVolume : MonoBehaviour
         int sliderIndex = selectedIndex - buttons.Length;
         int currentSlider = 0;
 
-        if (masterVolumeSlider != null)
+        if (sfxVolumeSlider != null)
         {
-            if (sliderIndex == currentSlider) return masterVolumeSlider;
+            if (sliderIndex == currentSlider) return sfxVolumeSlider;
             currentSlider++;
         }
 
         if (musicVolumeSlider != null)
         {
             if (sliderIndex == currentSlider) return musicVolumeSlider;
-            currentSlider++;
-        }
-
-        if (sfxVolumeSlider != null)
-        {
-            if (sliderIndex == currentSlider) return sfxVolumeSlider;
         }
 
         return null;
@@ -149,21 +138,15 @@ public class MenuWithVolume : MonoBehaviour
         int sliderIndexStart = buttons.Length;
         int currentSliderIndex = sliderIndexStart;
 
-        if (masterVolumeSlider != null)
+        if (sfxVolumeSlider != null)
         {
-            UpdateSliderHighlight(masterVolumeSlider, selectedIndex == currentSliderIndex);
+            UpdateSliderHighlight(sfxVolumeSlider, selectedIndex == currentSliderIndex);
             currentSliderIndex++;
         }
 
         if (musicVolumeSlider != null)
         {
             UpdateSliderHighlight(musicVolumeSlider, selectedIndex == currentSliderIndex);
-            currentSliderIndex++;
-        }
-
-        if (sfxVolumeSlider != null)
-        {
-            UpdateSliderHighlight(sfxVolumeSlider, selectedIndex == currentSliderIndex);
         }
     }
 
@@ -184,26 +167,15 @@ public class MenuWithVolume : MonoBehaviour
     {
         if (AudioManager.Instance != null)
         {
-            if (masterVolumeSlider != null)
-                masterVolumeSlider.value = AudioManager.Instance.GetMasterVolume();
+            if (sfxVolumeSlider != null)
+                sfxVolumeSlider.value = AudioManager.Instance.GetSFXVolume();
 
             if (musicVolumeSlider != null)
                 musicVolumeSlider.value = AudioManager.Instance.GetMusicVolume();
-
-            if (sfxVolumeSlider != null)
-                sfxVolumeSlider.value = AudioManager.Instance.GetSFXVolume();
         }
     }
 
     // ========== Slider Callbacks ==========
-    void OnMasterVolumeChanged(float value)
-    {
-        if (AudioManager.Instance != null)
-        {
-            AudioManager.Instance.SetMasterVolume(value);
-        }
-    }
-
     void OnMusicVolumeChanged(float value)
     {
         if (AudioManager.Instance != null)

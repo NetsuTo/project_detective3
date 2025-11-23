@@ -592,7 +592,7 @@ GameObject:
   - component: {fileID: 783422465}
   - component: {fileID: 783422466}
   m_Layer: 5
-  m_Name: Master Slider
+  m_Name: SFX Slider
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -704,9 +704,10 @@ MonoBehaviour:
   sfxMixerGroup: {fileID: 6290789860154673896, guid: 513f49915ee93ca4a89d92f7cf6c619c, type: 2}
   musicSource: {fileID: 0}
   poolSize: 20
-  masterVolume: 1
   musicVolume: 1
   sfxVolume: 1
+  default3DMinDistance: 1
+  default3DMaxDistance: 15
 --- !u!4 &840860015
 Transform:
   m_ObjectHideFlags: 0
@@ -929,7 +930,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Master Sound
+  m_text: SFX Sound
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -1040,13 +1041,12 @@ MonoBehaviour:
   buttons:
   - {fileID: 122570328}
   - {fileID: 1148762288}
-  masterVolumeSlider: {fileID: 783422466}
+  sfxVolumeSlider: {fileID: 783422466}
   musicVolumeSlider: {fileID: 691444905}
-  sfxVolumeSlider: {fileID: 0}
   normalButtonColor: {r: 0.7, g: 0.7, b: 0.7, a: 0.5}
   selectedButtonColor: {r: 1, g: 1, b: 1, a: 1}
   normalSliderColor: {r: 1, g: 1, b: 1, a: 1}
-  selectedSliderColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  selectedSliderColor: {r: 0.3490566, g: 0.3490566, b: 0.3490566, a: 1}
 --- !u!4 &1148070631
 Transform:
   m_ObjectHideFlags: 0

@@ -18,9 +18,13 @@ public class SimplePatrol : MonoBehaviour
 
     [Header("เสียงฝีเท้า")]
     public AudioClip[] footstepSounds;
-    public float footstepInterval = 0.5f; // ระยะเวลาระหว่างเสียงฝีเท้า
+    public float footstepInterval = 0.5f;
     [Range(0f, 1f)]
     public float footstepVolume = 0.7f;
+
+    [Header("การได้ยินเสียง 3D")]
+    public float minHearDistance = 1f;
+    public float maxHearDistance = 8f;
 
     [Header("Debug")]
     public bool showDebugLogs = true;
@@ -33,7 +37,6 @@ public class SimplePatrol : MonoBehaviour
     private bool isRotating = false;
     private float footstepTimer = 0f;
 
-    // Audio components
     private AudioSource audioSource;
 
     void Start()
@@ -43,17 +46,8 @@ public class SimplePatrol : MonoBehaviour
             animator = GetComponent<Animator>();
         }
 
-        // สร้าง AudioSource สำรับ fallback
-        audioSource = GetComponent<AudioSource>();
-        if (audioSource == null)
-        {
-            audioSource = gameObject.AddComponent<AudioSource>();
-        }
-        audioSource.playOnAwake = false;
-        audioSource.spatialBlend = 1f; // 3D sound
-        audioSource.minDistance = 1f;
-        audioSource.maxDistance = 15f;
-        audioSource.volume = footstepVolume;
+        // สร้าง AudioSource แบบ 3D (สำหรับ fallback)
+        SetupAudioSource();
 
         if (patrolPoints == null || patrolPoints.Length == 0)
         {
@@ -62,7 +56,6 @@ public class SimplePatrol : MonoBehaviour
             return;
         }
 
-        // เริ่มต้นหันหน้าไปจุดแรก
         if (patrolPoints[0] != null)
         {
             Vector3 directionToFirst = (patrolPoints[0].position - transform.position).normalized;
@@ -76,6 +69,28 @@ public class SimplePatrol : MonoBehaviour
         Log($"พร้อมใช้งาน - มี {patrolPoints.Length} จุด");
     }
 
+    void SetupAudioSource()
+    {
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
+
+        // ตั้งค่า 3D Sound อย่างละเอียด
+        audioSource.playOnAwake = false;
+        audioSource.loop = false;
+        audioSource.spatialBlend = 1f;
+        audioSource.volume = footstepVolume;
+
+        audioSource.minDistance = minHearDistance;
+        audioSource.maxDistance = maxHearDistance;
+        audioSource.rolloffMode = AudioRolloffMode.Linear;
+
+        audioSource.dopplerLevel = 0.5f;
+        audioSource.spread = 0f;
+    }
+
     void Update()
     {
         if (isPaused || patrolPoints.Length == 0)
@@ -84,7 +99,6 @@ public class SimplePatrol : MonoBehaviour
             return;
         }
 
-        // กำลังรออยู่
         if (isWaiting)
         {
             waitTimer -= Time.deltaTime;
@@ -100,14 +114,12 @@ public class SimplePatrol : MonoBehaviour
             return;
         }
 
-        // กำลังหมุนหาทิศทาง
         if (isRotating)
         {
             RotateTowardsTarget();
         }
         else
         {
-            // เดินไปยังจุดปัจจุบัน
             MoveTowardsTarget();
         }
     }
@@ -165,9 +177,7 @@ public class SimplePatrol : MonoBehaviour
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * 0.5f * Time.deltaTime);
         }
 
-        // เล่นเสียงฝีเท้าขณะเดิน
         PlayFootstepSound();
-
         UpdateAnimation(walkSpeed);
     }
 
@@ -180,13 +190,19 @@ public class SimplePatrol : MonoBehaviour
         {
             AudioClip clip = footstepSounds[Random.Range(0, footstepSounds.Length)];
 
-            // เล่นเสียง
             if (clip != null)
             {
+                // ใช้ AudioManager 3D ถ้ามี, ไม่งั้นใช้ AudioSource
                 if (AudioManager.Instance != null)
-                    AudioManager.Instance.PlaySFX(clip, footstepVolume);
+                {
+                    // เล่นเสียง 3D ผ่าน AudioManager
+                    AudioManager.Instance.PlaySFXAtPosition(clip, transform.position, footstepVolume);
+                }
                 else if (audioSource != null)
+                {
+                    // Fallback: ใช้ AudioSource ของตัวเอง
                     audioSource.PlayOneShot(clip, footstepVolume);
+                }
             }
 
             footstepTimer = footstepInterval;
@@ -199,7 +215,7 @@ public class SimplePatrol : MonoBehaviour
 
         isWaiting = true;
         waitTimer = waitTimeAtPoint;
-        footstepTimer = 0f; // รีเซ็ตเสียงฝีเท้า
+        footstepTimer = 0f;
         UpdateAnimation(0f);
         Log($"ถึงจุดที่ {currentPointIndex + 1} - รออยู่ {waitTimeAtPoint} วินาที");
     }
@@ -241,6 +257,7 @@ public class SimplePatrol : MonoBehaviour
     {
         if (!showGizmos || patrolPoints == null || patrolPoints.Length == 0) return;
 
+        // วาดจุดเดินตรวจ
         Gizmos.color = Color.cyan;
         for (int i = 0; i < patrolPoints.Length; i++)
         {
@@ -255,6 +272,7 @@ public class SimplePatrol : MonoBehaviour
             }
         }
 
+        // เส้นเชื่อมจุด
         Gizmos.color = Color.blue;
         for (int i = 0; i < patrolPoints.Length - 1; i++)
         {
@@ -271,6 +289,7 @@ public class SimplePatrol : MonoBehaviour
                           patrolPoints[0].position);
         }
 
+        // แสดงจุดปัจจุบัน
         if (Application.isPlaying && patrolPoints.Length > 0 &&
             patrolPoints[currentPointIndex] != null)
         {
@@ -282,5 +301,12 @@ public class SimplePatrol : MonoBehaviour
             Vector3 forward = transform.forward * 1f;
             Gizmos.DrawRay(transform.position + Vector3.up, forward);
         }
+
+        // วาดรัศมีการได้ยินเสียง
+        Gizmos.color = new Color(1f, 1f, 0f, 0.2f);
+        Gizmos.DrawWireSphere(transform.position, maxHearDistance);
+
+        Gizmos.color = new Color(1f, 0f, 0f, 0.3f);
+        Gizmos.DrawWireSphere(transform.position, minHearDistance);
     }
 }

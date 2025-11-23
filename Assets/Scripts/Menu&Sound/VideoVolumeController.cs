@@ -8,7 +8,7 @@ public class VideoVolumeController : MonoBehaviour
 
     [Header("Volume Settings")]
     [Range(0f, 1f)]
-    public float videoVolumeScale = 1f; // ปรับเสียงวิดีโอเทียบกับ Master
+    public float videoVolumeScale = 1f; // ปรับเสียงวิดีโอเทียบกับ Music
 
     private AudioSource videoAudioSource;
 
@@ -18,7 +18,6 @@ public class VideoVolumeController : MonoBehaviour
         if (videoPlayer != null)
         {
             videoAudioSource = videoPlayer.GetComponent<AudioSource>();
-
             if (videoAudioSource == null && videoPlayer.audioOutputMode == VideoAudioOutputMode.AudioSource)
             {
                 videoAudioSource = videoPlayer.GetTargetAudioSource(0);
@@ -35,13 +34,13 @@ public class VideoVolumeController : MonoBehaviour
                 Invoke(nameof(UpdateVideoVolume), 0.1f);
             }
 
-            // ตั้งค่า Output ของ AudioSource ไปที่ Master (ถ้ามี Audio Mixer)
+            // ตั้งค่า Output ของ AudioSource ไปที่ Music Group (ถ้ามี Audio Mixer)
             if (videoAudioSource != null && AudioManager.Instance != null && AudioManager.Instance.audioMixer != null)
             {
-                var masterGroup = AudioManager.Instance.audioMixer.FindMatchingGroups("Master");
-                if (masterGroup.Length > 0)
+                var musicGroup = AudioManager.Instance.audioMixer.FindMatchingGroups("Music");
+                if (musicGroup.Length > 0)
                 {
-                    videoAudioSource.outputAudioMixerGroup = masterGroup[0];
+                    videoAudioSource.outputAudioMixerGroup = musicGroup[0];
                 }
             }
         }
@@ -49,7 +48,7 @@ public class VideoVolumeController : MonoBehaviour
 
     void Update()
     {
-        // อัพเดทเสียงวิดีโอตาม Master Volume แบบ real-time
+        // อัพเดทเสียงวิดีโอตาม Music Volume แบบ real-time
         UpdateVideoVolume();
     }
 
@@ -57,14 +56,13 @@ public class VideoVolumeController : MonoBehaviour
     {
         if (videoAudioSource != null && AudioManager.Instance != null)
         {
-            // เสียงวิดีโอ = Master Volume ? Video Volume Scale
-            float masterVolume = AudioManager.Instance.GetMasterVolume();
-            float finalVolume = masterVolume * videoVolumeScale;
-
+            // เสียงวิดีโอ = Music Volume ? Video Volume Scale
+            float musicVolume = AudioManager.Instance.GetMusicVolume();
+            float finalVolume = musicVolume * videoVolumeScale;
             videoAudioSource.volume = finalVolume;
 
             // Debug (ลบได้ถ้าไม่ต้องการ)
-            // Debug.Log($"Video Volume: Master={masterVolume:F2}, Scale={videoVolumeScale:F2}, Final={finalVolume:F2}");
+            // Debug.Log($"Video Volume: Music={musicVolume:F2}, Scale={videoVolumeScale:F2}, Final={finalVolume:F2}");
         }
     }
 

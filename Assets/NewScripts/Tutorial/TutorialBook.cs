@@ -56,10 +56,20 @@ public class TutorialBook : MonoBehaviour
     [SerializeField]
     private AudioClip pageTurnSound;
 
-    private AudioSource audioSource;
+    [Range(0f, 1f)]
+    [SerializeField]
+    private float pageTurnVolume = 0.7f;
+
+    [Header("ล็อคการกดปุ่ม")]
+    [Tooltip("ล็อคการกด Input อื่นๆ เมื่อเปิดสมุด (ยกเว้นปุ่มปิดสมุด)")]
+    [SerializeField]
+    private bool lockInputWhenOpen = true;
+
     private int currentRightPageIndex = 0;
     private bool isBookOpen = false;
-    private GameObject spawnedCover; // เก็บ instance ปกที่ spawn มา
+    private GameObject spawnedCover;
+    private PlayerController playerController;
+    private AudioSource audioSource;
 
     void Start()
     {
@@ -86,6 +96,9 @@ public class TutorialBook : MonoBehaviour
             prevButton.onClick.AddListener(GoToPrevPage);
         }
 
+        // ค้นหา PlayerController ในฉาก
+        playerController = FindObjectOfType<PlayerController>();
+
         UpdatePageDisplay();
     }
 
@@ -93,6 +106,14 @@ public class TutorialBook : MonoBehaviour
     {
         if (Input.GetKeyDown(toggleKey))
         {
+            // ตรวจสอบว่า Pause Menu เปิดอยู่หรือไม่
+            PauseMenuWithVolume pauseMenu = FindObjectOfType<PauseMenuWithVolume>();
+            if (pauseMenu != null && pauseMenu.IsPaused())
+            {
+                Debug.Log("?? ไม่สามารถเปิด Tutorial Book ได้ - Pause Menu เปิดอยู่");
+                return;
+            }
+
             ToggleBook();
         }
 
@@ -121,6 +142,21 @@ public class TutorialBook : MonoBehaviour
         if (pauseGameWhenOpen)
         {
             Time.timeScale = isBookOpen ? 0f : 1f;
+        }
+
+        // ล็อค/ปลดล็อคการเคลื่อนที่ของผู้เล่น
+        if (lockInputWhenOpen && playerController != null)
+        {
+            if (isBookOpen)
+            {
+                playerController.LockMovement();
+                Debug.Log("?? เปิดสมุด - ล็อคการเคลื่อนที่");
+            }
+            else
+            {
+                playerController.UnlockMovement();
+                Debug.Log("?? ปิดสมุด - ปลดล็อคการเคลื่อนที่");
+            }
         }
 
         if (isBookOpen)
@@ -185,9 +221,16 @@ public class TutorialBook : MonoBehaviour
 
     private void PlayPageSound()
     {
-        if (audioSource != null && pageTurnSound != null)
+        if (pageTurnSound != null)
         {
-            audioSource.PlayOneShot(pageTurnSound);
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlaySFX(pageTurnSound, pageTurnVolume);
+            }
+            else if (audioSource != null)
+            {
+                audioSource.PlayOneShot(pageTurnSound, pageTurnVolume);
+            }
         }
     }
 
@@ -273,5 +316,20 @@ public class TutorialBook : MonoBehaviour
         {
             nextButton.gameObject.SetActive(currentRightPageIndex < pageSprites.Count);
         }
+    }
+
+    void OnDestroy()
+    {
+        // ปลดล็อคเมื่อ Script ถูกทำลาย
+        if (lockInputWhenOpen && playerController != null && isBookOpen)
+        {
+            playerController.UnlockMovement();
+        }
+    }
+
+    // ========== Public Methods ==========
+    public bool IsBookOpen()
+    {
+        return isBookOpen;
     }
 }

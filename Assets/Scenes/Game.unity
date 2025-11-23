@@ -25375,7 +25375,7 @@ MonoBehaviour:
   - {fileID: 1892052912}
   - {fileID: 2120002165}
   - {fileID: 1699808157}
-  masterVolumeSlider: {fileID: 1948088081}
+  sfxVolumeSlider: {fileID: 1948088081}
   musicVolumeSlider: {fileID: 1062595331}
   sliderAdjustSpeed: 0.05
 --- !u!1001 &444563775
@@ -91688,11 +91688,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2908075746234812187, guid: 8a7e7f6601b72774cb5e7b8a3f382286, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 96.91
+      value: -63.31
       objectReference: {fileID: 0}
     - target: {fileID: 2908075746234812187, guid: 8a7e7f6601b72774cb5e7b8a3f382286, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -23.13
+      value: -23.71
       objectReference: {fileID: 0}
     - target: {fileID: 2908075746234812187, guid: 8a7e7f6601b72774cb5e7b8a3f382286, type: 3}
       propertyPath: m_LocalPosition.z
@@ -97414,9 +97414,11 @@ MonoBehaviour:
   useSpeedParameter: 1
   speedParameterName: Speed
   footstepSounds:
-  - {fileID: 0}
+  - {fileID: 8300000, guid: fd620d4a99fea074ab08acbbe600e35a, type: 3}
   footstepInterval: 0.5
   footstepVolume: 0.3
+  minHearDistance: 1
+  maxHearDistance: 50
   showDebugLogs: 1
   showGizmos: 1
 --- !u!114 &1554308344
@@ -105344,7 +105346,9 @@ MonoBehaviour:
   prevButton: {fileID: 153173503}
   bookFrameObject: {fileID: 1009162147}
   pauseGameWhenOpen: 1
-  pageTurnSound: {fileID: 0}
+  pageTurnSound: {fileID: 8300000, guid: 8510ff4a47121904bae68ce192d34bf7, type: 3}
+  pageTurnVolume: 0.7
+  lockInputWhenOpen: 1
 --- !u!82 &1728210152
 AudioSource:
   m_ObjectHideFlags: 0
@@ -105352,7 +105356,7 @@ AudioSource:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1728210150}
-  m_Enabled: 0
+  m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
