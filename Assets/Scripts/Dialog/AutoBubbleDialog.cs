@@ -1,56 +1,72 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 using System.Collections;
+using System.Text.RegularExpressions;
 
 public class AutoBubbleDialog : MonoBehaviour
 {
     [Header("บทสนทนา")]
     [TextArea(2, 5)]
-    public string[] dialogLines; // ข้อความที่จะแสดง
+    public string[] dialogLines;
+
+    [Header("?? การเน้นคำ (Highlight)")]
+    public bool enableHighlight = true;
+    [Tooltip("คำที่ต้องการเน้น (case-insensitive)")]
+    public string[] highlightWords;
+    public Color highlightColor = Color.yellow;
+    public bool highlightBold = true;
+    [Range(0, 50)]
+    public int highlightSizeIncrease = 0;
+    public bool useTextMeshPro = true;
 
     [Header("การตั้งค่าตำแหน่ง")]
-    public float bubbleHeight = 2f; // ความสูงของบับเบิ้ลเหนือหัว
-    public Vector2 bubbleOffset = Vector2.zero; // เลื่อนตำแหน่งบับเบิล (X, Y)
-    public float floatAmplitude = 0.3f; // ความสูงของการลอย (0 = ไม่ลอย)
-    public float floatSpeed = 2f; // ความเร็วการลอย
+    public float bubbleHeight = 2f;
+    public Vector2 bubbleOffset = Vector2.zero;
+    public float floatAmplitude = 0.3f;
+    public float floatSpeed = 2f;
 
     [Header("ขนาดและสี")]
-    public Vector2 bubbleSize = new Vector2(400, 120); // ขนาดกล่องบับเบิล
-    public int fontSize = 24; // ขนาดตัวอักษร
-    public Color textColor = Color.black; // สีตัวอักษร
-    public Color bubbleColor = new Color(1f, 1f, 1f, 0.9f); // สีพื้นหลังบับเบิล (ถ้าไม่มีรูป)
-    public Sprite bubbleSprite; // รูปกรอบบับเบิล (ลากรูปมาใส่ตรงนี้)
-    public float padding = 15f; // ระยะขอบข้อความ
-    public TextAnchor textAlignment = TextAnchor.MiddleCenter; // ตำแหน่งข้อความ
-    public float textVerticalOffset = 0f; // ขยับข้อความขึ้น(+) ลง(-) ภายในกล่อง
+    public Vector2 bubbleSize = new Vector2(400, 120);
+    public int fontSize = 24;
+    public Color textColor = Color.black;
+    public Color bubbleColor = new Color(1f, 1f, 1f, 0.9f);
+    public Sprite bubbleSprite;
+    public float padding = 15f;
+    public TextAnchor textAlignment = TextAnchor.MiddleCenter;
+    public float textVerticalOffset = 0f;
+
+    [Header("?? ฟอนต์")]
+    [Tooltip("ลากฟอนต์จาก Project มาใส่ตรงนี้")]
+    public Font customFont; // สำหรับ UI.Text
+    public TMP_FontAsset customFontTMP; // สำหรับ TextMeshPro
 
     [Header("การแสดงผล")]
-    public float displayDuration = 3f; // ระยะเวลาแสดงแต่ละข้อความ (วินาที)
-    public float typingSpeed = 0.05f; // ความเร็วพิมพ์ตัวอักษร
-    public float detectionRange = 2.5f; // ระยะตรวจจับ Player
-    public bool playOnce = false; // เล่นครั้งเดียวแล้วหยุด
+    public float displayDuration = 3f;
+    public float typingSpeed = 0.05f;
+    public float detectionRange = 2.5f;
+    public bool playOnce = false;
 
     [Header("UI")]
-    public GameObject bubblePrefab; // Prefab ของบับเบิ้ล (ถ้ามี)
+    public GameObject bubblePrefab;
 
     private GameObject bubbleInstance;
     private Text bubbleText;
+    private TextMeshProUGUI bubbleTextTMP;
     private bool isShowingDialog = false;
     private int currentLineIndex = 0;
     private Canvas mainCanvas;
     private float floatTimer = 0f;
-    private bool hasPlayed = false; // เช็คว่าเล่นไปแล้วหรือยัง
+    private bool hasPlayed = false;
 
     void Start()
     {
-        // หา Canvas
         mainCanvas = FindObjectOfType<Canvas>();
         if (mainCanvas == null)
         {
             Debug.LogError("? ไม่พบ Canvas! กรุณาสร้าง Canvas (UI -> Canvas)");
         }
 
-        // ตรวจสอบว่ามี Collider หรือไม่
         Collider col = GetComponent<Collider>();
         if (col == null)
         {
@@ -71,24 +87,25 @@ public class AutoBubbleDialog : MonoBehaviour
         }
 
         Debug.Log($"? AutoBubbleDialog พร้อมใช้งาน - มี {dialogLines.Length} ข้อความ");
+
+        if (enableHighlight && highlightWords.Length > 0)
+        {
+            Debug.Log($"?? เปิดใช้งานการเน้นคำ: {string.Join(", ", highlightWords)}");
+        }
     }
 
     void Update()
     {
-        // อัพเดทตำแหน่งบับเบิ้ลให้ติดตัวตลอด
         if (bubbleInstance != null && Camera.main != null)
         {
-            // เพิ่มการลอยขึ้นลง
             floatTimer += Time.deltaTime * floatSpeed;
             float floatOffset = Mathf.Sin(floatTimer) * floatAmplitude;
 
             Vector3 worldPos = transform.position + Vector3.up * (bubbleHeight + floatOffset);
             Vector3 screenPos = Camera.main.WorldToScreenPoint(worldPos);
 
-            // เช็คว่า NPC อยู่หลังกล้องหรือไม่
             bool isBehindCamera = screenPos.z < 0;
 
-            // เช็คว่าบับเบิลจะทับ Player หรือไม่
             bool isBlockingPlayer = false;
             if (!isBehindCamera)
             {
@@ -97,16 +114,14 @@ public class AutoBubbleDialog : MonoBehaviour
                 {
                     Vector3 playerScreenPos = Camera.main.WorldToScreenPoint(player.transform.position);
 
-                    // ถ้า Player อยู่ระหว่างกล้องกับ NPC
                     if (playerScreenPos.z > 0 && playerScreenPos.z < screenPos.z)
                     {
-                        // เช็คว่าตำแหน่งบนจอใกล้กันไหม
                         float distance = Vector2.Distance(
                             new Vector2(screenPos.x, screenPos.y),
                             new Vector2(playerScreenPos.x, playerScreenPos.y)
                         );
 
-                        if (distance < 150f) // ถ้าใกล้เกินไป
+                        if (distance < 150f)
                         {
                             isBlockingPlayer = true;
                         }
@@ -116,20 +131,62 @@ public class AutoBubbleDialog : MonoBehaviour
 
             if (isBehindCamera || isBlockingPlayer)
             {
-                // ซ่อนบับเบิลถ้าอยู่หลังกล้องหรือทับ Player
                 bubbleInstance.SetActive(false);
             }
             else
             {
                 bubbleInstance.SetActive(true);
-
-                // เพิ่ม offset
                 screenPos.x += bubbleOffset.x;
                 screenPos.y += bubbleOffset.y;
-
                 bubbleInstance.transform.position = screenPos;
             }
         }
+    }
+
+    // ?? ฟังก์ชันเน้นคำในข้อความ
+    string ApplyHighlight(string text)
+    {
+        if (!enableHighlight || highlightWords == null || highlightWords.Length == 0)
+        {
+            return text;
+        }
+
+        string result = text;
+        string hexColor = ColorUtility.ToHtmlStringRGB(highlightColor);
+
+        foreach (string word in highlightWords)
+        {
+            if (string.IsNullOrEmpty(word)) continue;
+
+            string pattern = $@"\b({Regex.Escape(word)})\b";
+
+            string replacement = "";
+
+            if (useTextMeshPro)
+            {
+                replacement = $"<color=#{hexColor}>";
+                if (highlightBold) replacement += "<b>";
+                if (highlightSizeIncrease > 0) replacement += $"<size={fontSize + highlightSizeIncrease}>";
+
+                replacement += "$1";
+
+                if (highlightSizeIncrease > 0) replacement += "</size>";
+                if (highlightBold) replacement += "</b>";
+                replacement += "</color>";
+            }
+            else
+            {
+                replacement = $"<color=#{hexColor}>";
+                if (highlightBold) replacement += "<b>";
+                replacement += "$1";
+                if (highlightBold) replacement += "</b>";
+                replacement += "</color>";
+            }
+
+            result = Regex.Replace(result, pattern, replacement, RegexOptions.IgnoreCase);
+        }
+
+        return result;
     }
 
     void StartDialog()
@@ -140,7 +197,6 @@ public class AutoBubbleDialog : MonoBehaviour
             return;
         }
 
-        // ถ้าเล่นครั้งเดียวและเล่นไปแล้ว ไม่ต้องเล่นอีก
         if (playOnce && hasPlayed)
         {
             Debug.Log("?? เล่นไปแล้ว (Play Once)");
@@ -151,10 +207,7 @@ public class AutoBubbleDialog : MonoBehaviour
         currentLineIndex = 0;
         hasPlayed = true;
 
-        // สร้างบับเบิ้ล
         CreateBubble();
-
-        // แสดงข้อความแรก
         StartCoroutine(TypeText(dialogLines[currentLineIndex]));
     }
 
@@ -172,39 +225,47 @@ public class AutoBubbleDialog : MonoBehaviour
 
         if (bubblePrefab != null)
         {
-            // ใช้ Prefab ถ้ามี
             bubbleInstance = Instantiate(bubblePrefab, mainCanvas.transform);
-            bubbleText = bubbleInstance.GetComponentInChildren<Text>();
+
+            if (useTextMeshPro)
+            {
+                bubbleTextTMP = bubbleInstance.GetComponentInChildren<TextMeshProUGUI>();
+                if (bubbleTextTMP == null)
+                {
+                    Debug.LogWarning("?? ไม่พบ TextMeshPro ใน Prefab! จะใช้ UI.Text แทน");
+                    bubbleText = bubbleInstance.GetComponentInChildren<Text>();
+                    useTextMeshPro = false;
+                }
+            }
+            else
+            {
+                bubbleText = bubbleInstance.GetComponentInChildren<Text>();
+            }
         }
         else
         {
-            // สร้างแบบอัตโนมัติ
             bubbleInstance = new GameObject("SpeechBubble");
             bubbleInstance.transform.SetParent(mainCanvas.transform, false);
 
-            // เพิ่ม RectTransform
             RectTransform rectTransform = bubbleInstance.AddComponent<RectTransform>();
             rectTransform.sizeDelta = bubbleSize;
             rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
             rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
             rectTransform.pivot = new Vector2(0.5f, 0.5f);
 
-            // เพิ่มพื้นหลัง
             Image bg = bubbleInstance.AddComponent<Image>();
 
-            // ใช้รูปที่ลากมาใส่ (ถ้ามี) ไม่งั้นใช้สี
             if (bubbleSprite != null)
             {
                 bg.sprite = bubbleSprite;
-                bg.type = Image.Type.Sliced; // ให้ยืดหดได้สวย
-                bg.color = Color.white; // ไม่เปลี่ยนสีรูป
+                bg.type = Image.Type.Sliced;
+                bg.color = Color.white;
             }
             else
             {
-                bg.color = bubbleColor; // ใช้สีธรรมดา
+                bg.color = bubbleColor;
             }
 
-            // สร้าง Text
             GameObject textObj = new GameObject("Text");
             textObj.transform.SetParent(bubbleInstance.transform, false);
 
@@ -214,21 +275,65 @@ public class AutoBubbleDialog : MonoBehaviour
             textRect.offsetMin = new Vector2(padding, padding + textVerticalOffset);
             textRect.offsetMax = new Vector2(-padding, -padding + textVerticalOffset);
 
-            bubbleText = textObj.AddComponent<Text>();
-
-            // ลอง Load Font
-            Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            if (font == null)
+            // สร้าง TextMeshPro หรือ Text ธรรมดา
+            if (useTextMeshPro)
             {
-                font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-            }
+                bubbleTextTMP = textObj.AddComponent<TextMeshProUGUI>();
 
-            bubbleText.font = font;
-            bubbleText.fontSize = fontSize;
-            bubbleText.color = textColor;
-            bubbleText.alignment = textAlignment; // ใช้ค่าที่ตั้งได้
-            bubbleText.horizontalOverflow = HorizontalWrapMode.Wrap;
-            bubbleText.verticalOverflow = VerticalWrapMode.Overflow;
+                // ใช้ฟอนต์ที่กำหนด หรือใช้ default
+                if (customFontTMP != null)
+                {
+                    bubbleTextTMP.font = customFontTMP;
+                    Debug.Log($"? ใช้ฟอนต์ TMP: {customFontTMP.name}");
+                }
+
+                bubbleTextTMP.fontSize = fontSize;
+                bubbleTextTMP.color = textColor;
+                bubbleTextTMP.alignment = TextAlignmentOptions.Center;
+                bubbleTextTMP.enableWordWrapping = true;
+                bubbleTextTMP.overflowMode = TextOverflowModes.Overflow;
+                bubbleTextTMP.richText = true;
+            }
+            else
+            {
+                bubbleText = textObj.AddComponent<Text>();
+
+                // ใช้ฟอนต์ที่กำหนด หรือใช้ default
+                if (customFont != null)
+                {
+                    bubbleText.font = customFont;
+                    Debug.Log($"? ใช้ฟอนต์: {customFont.name}");
+                }
+                else
+                {
+                    Font defaultFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+                    if (defaultFont == null)
+                    {
+                        defaultFont = Resources.GetBuiltinResource<Font>("Arial.ttf");
+                    }
+                    bubbleText.font = defaultFont;
+                    Debug.Log("?? ใช้ฟอนต์ default (Arial)");
+                }
+
+                bubbleText.fontSize = fontSize;
+                bubbleText.color = textColor;
+                bubbleText.alignment = textAlignment;
+                bubbleText.horizontalOverflow = HorizontalWrapMode.Wrap;
+                bubbleText.verticalOverflow = VerticalWrapMode.Overflow;
+                bubbleText.supportRichText = true;
+            }
+        }
+
+        // ?? เปิดใช้งาน Rich Text
+        if (useTextMeshPro && bubbleTextTMP != null)
+        {
+            bubbleTextTMP.richText = true;
+            Debug.Log("? เปิด Rich Text สำหรับ TextMeshPro");
+        }
+        else if (bubbleText != null)
+        {
+            bubbleText.supportRichText = true;
+            Debug.Log("? เปิด Rich Text สำหรับ UI.Text");
         }
 
         Debug.Log("? สร้างบับเบิ้ลสำเร็จ");
@@ -236,22 +341,60 @@ public class AutoBubbleDialog : MonoBehaviour
 
     IEnumerator TypeText(string text)
     {
-        if (bubbleText == null)
+        if (bubbleText == null && bubbleTextTMP == null)
         {
-            Debug.LogError("? bubbleText เป็น null!");
+            Debug.LogError("? ไม่มี Text Component!");
             yield break;
         }
 
-        bubbleText.text = "";
+        // ?? ใช้ Highlight กับข้อความ
+        string highlightedText = ApplyHighlight(text);
 
-        // พิมพ์ทีละตัว
-        foreach (char c in text)
+        // ล้างข้อความเดิม
+        if (useTextMeshPro && bubbleTextTMP != null)
         {
-            bubbleText.text += c;
-            yield return new WaitForSeconds(typingSpeed);
+            bubbleTextTMP.text = "";
+        }
+        else if (bubbleText != null)
+        {
+            bubbleText.text = "";
         }
 
-        // รอก่อนไปข้อความถัดไป
+        // แสดงข้อความทีละตัว
+        string currentText = "";
+
+        for (int i = 0; i < highlightedText.Length; i++)
+        {
+            currentText += highlightedText[i];
+
+            // ข้าม Rich Text tags
+            if (highlightedText[i] == '<')
+            {
+                while (i < highlightedText.Length && highlightedText[i] != '>')
+                {
+                    i++;
+                    if (i < highlightedText.Length)
+                        currentText += highlightedText[i];
+                }
+            }
+
+            // อัพเดทข้อความ
+            if (useTextMeshPro && bubbleTextTMP != null)
+            {
+                bubbleTextTMP.text = currentText;
+            }
+            else if (bubbleText != null)
+            {
+                bubbleText.text = currentText;
+            }
+
+            // รอเฉพาะตัวอักษรที่มองเห็น
+            if (highlightedText[i] != '<' && highlightedText[i] != '>')
+            {
+                yield return new WaitForSeconds(typingSpeed);
+            }
+        }
+
         yield return new WaitForSeconds(displayDuration);
 
         if (isShowingDialog)
@@ -263,17 +406,14 @@ public class AutoBubbleDialog : MonoBehaviour
     void NextLine()
     {
         StopAllCoroutines();
-
         currentLineIndex++;
 
         if (currentLineIndex < dialogLines.Length)
         {
-            // แสดงข้อความถัดไป
             StartCoroutine(TypeText(dialogLines[currentLineIndex]));
         }
         else
         {
-            // จบบทสนทนา
             EndDialog();
         }
     }
@@ -294,7 +434,6 @@ public class AutoBubbleDialog : MonoBehaviour
     {
         if (other.CompareTag("Player") && !isShowingDialog)
         {
-            // เดินผ่านแล้วเริ่มคุยทันที
             StartDialog();
         }
     }
@@ -311,14 +450,12 @@ public class AutoBubbleDialog : MonoBehaviour
         }
     }
 
-    // แสดงระยะตรวจจับใน Scene View
     void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.cyan;
         Gizmos.DrawWireSphere(transform.position, detectionRange);
     }
 
-    // ฟังก์ชันรีเซ็ตสำหรับทดสอบ
     public void ResetDialog()
     {
         hasPlayed = false;

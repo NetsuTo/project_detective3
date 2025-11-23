@@ -8,8 +8,6 @@ public class SkillInventory : MonoBehaviour
     public Transform bottleParent;   // จุดวาง UI ใน Canvas
     public GameObject bottlePrefab;  // Prefab icon/slot สำหรับสกิลผสมแล้ว
     public ElementMiniGameManager miniGameManager; // reference ไปยัง MiniGameManager (optional ถ้ามี global)
-    public ElementMiniGameManager miniGameManager2;
-    public ElementMiniGameManager miniGameManager3;
 
     private List<List<KeyCode>> storedSkills = new List<List<KeyCode>>();
 

@@ -27,18 +27,40 @@ public class PlayerSkillManager : MonoBehaviour
         }
     }
 
+    // ✅ แก้ไขให้ไม่วนลูป - ขวา
     public void SelectNext()
     {
         if (skills.Count == 0 || lockedSkillIndex != -1) return;
-        selectedSkillIndex = (selectedSkillIndex + 1) % skills.Count;
-        onSkillUpdate?.Invoke();
+
+        // ถ้ายังไม่ถึงขวาสุด ให้เลื่อนไปขวา
+        if (selectedSkillIndex < skills.Count - 1)
+        {
+            selectedSkillIndex++;
+            onSkillUpdate?.Invoke();
+            Debug.Log($"🔵 เลือก skill ถัดไป: {selectedSkillIndex + 1}/{skills.Count}");
+        }
+        else
+        {
+            Debug.Log("⚠️ อยู่ขวาสุดแล้ว ไม่สามารถเลื่อนต่อได้");
+        }
     }
 
+    // ✅ แก้ไขให้ไม่วนลูป - ซ้าย
     public void SelectPrev()
     {
         if (skills.Count == 0 || lockedSkillIndex != -1) return;
-        selectedSkillIndex = (selectedSkillIndex - 1 + skills.Count) % skills.Count;
-        onSkillUpdate?.Invoke();
+
+        // ถ้ายังไม่ถึงซ้ายสุด ให้เลื่อนไปซ้าย
+        if (selectedSkillIndex > 0)
+        {
+            selectedSkillIndex--;
+            onSkillUpdate?.Invoke();
+            Debug.Log($"🔵 เลือก skill ก่อนหน้า: {selectedSkillIndex + 1}/{skills.Count}");
+        }
+        else
+        {
+            Debug.Log("⚠️ อยู่ซ้ายสุดแล้ว ไม่สามารถเลื่อนต่อได้");
+        }
     }
 
     public string ConfirmSkill()
@@ -56,11 +78,9 @@ public class PlayerSkillManager : MonoBehaviour
         }
 
         LockSelectedSkill(); // ✅ ล็อกสกิลนี้ไว้
-
         selector.StartSelection(skill);
         return skill;
     }
-
 
     // ✅ แก้ให้ใช้ selectedSkillIndex ไม่ใช่ selectedIndex
     public void RemoveSkillAt(int index)

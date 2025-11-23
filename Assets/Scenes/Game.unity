@@ -10192,7 +10192,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b09c9a0cfc5e8fc4c9f62ec8e5b28949, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  timeLimit: 100
+  timeLimit: 120
   fallPosition: {fileID: 56720308}
   timerText: {fileID: 1565263726}
   timerCanvasGroup: {fileID: 1303304882}
@@ -17740,10 +17740,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   dialogLines:
-  - 'Mushroom A - Hey, look over there. Something wandered in again.
-
-    Mushroom
-    B - Ohhh Wowwww!'
+  - "Mushroom A - (whispering) Hey, look over there\u2014something wandered in, and
+    it doesn't look like anything from around here."
+  - Mushroom B - (whispering) Think it might be one of those wizards?
   bubbleHeight: 10
   bubbleOffset: {x: 60, y: 0}
   floatAmplitude: 0.3
@@ -17756,7 +17755,7 @@ MonoBehaviour:
   padding: 15
   textAlignment: 4
   textVerticalOffset: 10
-  displayDuration: 5
+  displayDuration: 1
   typingSpeed: 0.05
   detectionRange: 2.5
   playOnce: 1
@@ -48295,6 +48294,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   dialogLines:
   - aaa
+  enableHighlight: 1
+  highlightWords: []
+  highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  highlightBold: 1
+  highlightSizeIncrease: 0
+  useTextMeshPro: 1
   requiredZone: {fileID: 799983011}
   requiredCompletedCount: 2
   startLocked: 1
@@ -48311,8 +48316,10 @@ MonoBehaviour:
   padding: 15
   textAlignment: 4
   textVerticalOffset: 10
+  customFont: {fileID: 0}
+  customFontTMP: {fileID: 0}
   displayDuration: 5
-  typingSpeed: 0.125
+  typingSpeed: 0.05
   detectionRange: 2
   bubblePrefab: {fileID: 0}
   pressEIndicator: {fileID: 9150289}
@@ -87693,6 +87700,14 @@ MonoBehaviour:
   - "Come play with me \u2014 let's see who can smash that rock first."
   - And... if you can do it, come play with me down below. There's lots of fun stuff
     there.
+  - "Hey come \u201CDown There\u201D"
+  enableHighlight: 1
+  highlightWords:
+  - Down There
+  highlightColor: {r: 1, g: 0.09416041, b: 0.015686274, a: 1}
+  highlightBold: 1
+  highlightSizeIncrease: 2
+  useTextMeshPro: 1
   requiredZone: {fileID: 0}
   requiredCompletedCount: 2
   startLocked: 1
@@ -87709,8 +87724,10 @@ MonoBehaviour:
   padding: 15
   textAlignment: 4
   textVerticalOffset: 10
+  customFont: {fileID: 0}
+  customFontTMP: {fileID: 0}
   displayDuration: 5
-  typingSpeed: 0.125
+  typingSpeed: 0.05
   detectionRange: 2
   bubblePrefab: {fileID: 0}
   pressEIndicator: {fileID: 9150289}
@@ -91586,11 +91603,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2908075746234812187, guid: 8a7e7f6601b72774cb5e7b8a3f382286, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 527.09
+      value: 96.91
       objectReference: {fileID: 0}
     - target: {fileID: 2908075746234812187, guid: 8a7e7f6601b72774cb5e7b8a3f382286, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 3.42
+      value: -23.13
       objectReference: {fileID: 0}
     - target: {fileID: 2908075746234812187, guid: 8a7e7f6601b72774cb5e7b8a3f382286, type: 3}
       propertyPath: m_LocalPosition.z
@@ -116229,8 +116246,6 @@ MonoBehaviour:
   bottleParent: {fileID: 891910341}
   bottlePrefab: {fileID: 2689941309453408804, guid: da9549fbb3f0deb4cac82ef0e898544b, type: 3}
   miniGameManager: {fileID: 235292686}
-  miniGameManager2: {fileID: 0}
-  miniGameManager3: {fileID: 0}
 --- !u!114 &1876815152
 MonoBehaviour:
   m_ObjectHideFlags: 0

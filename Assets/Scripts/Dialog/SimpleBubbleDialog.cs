@@ -1,6 +1,9 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using TMPro; // เพิ่ม TextMeshPro
 using System.Collections;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 public class SimpleBubbleDialog : MonoBehaviour
 {
@@ -8,10 +11,20 @@ public class SimpleBubbleDialog : MonoBehaviour
     [TextArea(2, 5)]
     public string[] dialogLines;
 
+    [Header("🎨 การเน้นคำ (Highlight)")]
+    public bool enableHighlight = true;
+    [Tooltip("คำที่ต้องการเน้น (case-insensitive)")]
+    public string[] highlightWords;
+    public Color highlightColor = Color.yellow;
+    public bool highlightBold = true;
+    [Range(0, 50)]
+    public int highlightSizeIncrease = 0;
+    public bool useTextMeshPro = true; // เลือกใช้ TMP หรือ Text ธรรมดา
+
     [Header("🔒 เงื่อนไขการปลดล็อค")]
-    public TargetZone requiredZone; // ลาก TargetZone มาใส่
-    public int requiredCompletedCount = 2; // ต้องใช้ไป 2 สกิล
-    public bool startLocked = true; // เริ่มต้นล็อคไว้
+    public TargetZone requiredZone;
+    public int requiredCompletedCount = 2;
+    public bool startLocked = true;
 
     [Header("การตั้งค่าตำแหน่ง")]
     public float bubbleHeight = 2f;
@@ -30,6 +43,11 @@ public class SimpleBubbleDialog : MonoBehaviour
     public TextAnchor textAlignment = TextAnchor.MiddleCenter;
     public float textVerticalOffset = 0f;
 
+    [Header("🔤 ฟอนต์")]
+    [Tooltip("ลากฟอนต์จาก Project มาใส่ตรงนี้")]
+    public Font customFont; // สำหรับ UI.Text
+    public TMP_FontAsset customFontTMP; // สำหรับ TextMeshPro
+
     [Header("การแสดงผล")]
     public float displayDuration = 3f;
     public float typingSpeed = 0.05f;
@@ -47,6 +65,7 @@ public class SimpleBubbleDialog : MonoBehaviour
 
     private GameObject bubbleInstance;
     private Text bubbleText;
+    private TextMeshProUGUI bubbleTextTMP; // เพิ่ม TMP
     private bool playerInRange = false;
     private bool isShowingDialog = false;
     private int currentLineIndex = 0;
@@ -56,8 +75,8 @@ public class SimpleBubbleDialog : MonoBehaviour
     private Animator playerAnimator;
     private bool isTyping = false;
     private bool hasSpawnedObjects = false;
-    private Collider myCollider; // 🔑 เก็บ Collider ของตัวเอง
-    private bool isUnlocked = false; // 🔑 สถานะปลดล็อค
+    private Collider myCollider;
+    private bool isUnlocked = false;
 
     void Start()
     {
@@ -70,7 +89,6 @@ public class SimpleBubbleDialog : MonoBehaviour
         if (pressEIndicator != null)
             pressEIndicator.SetActive(false);
 
-        // 🔑 หา Collider ของตัวเอง
         myCollider = GetComponent<Collider>();
         if (myCollider == null)
         {
@@ -85,7 +103,6 @@ public class SimpleBubbleDialog : MonoBehaviour
             myCollider.isTrigger = true;
         }
 
-        // 🔒 ล็อค Collider ตอนเริ่มต้น (ถ้าตั้งค่าไว้)
         if (startLocked && requiredZone != null)
         {
             myCollider.enabled = false;
@@ -103,11 +120,15 @@ public class SimpleBubbleDialog : MonoBehaviour
         }
 
         Debug.Log($"✅ SimpleBubbleDialog พร้อมใช้งาน - มี {dialogLines.Length} ข้อความ");
+
+        if (enableHighlight && highlightWords.Length > 0)
+        {
+            Debug.Log($"🎨 เปิดใช้งานการเน้นคำ: {string.Join(", ", highlightWords)}");
+        }
     }
 
     void Update()
     {
-        // 🔑 เช็คการปลดล็อคทุกเฟรม (ถ้ายังล็อคอยู่)
         if (!isUnlocked && requiredZone != null)
         {
             if (requiredZone.GetCompletedCount() >= requiredCompletedCount)
@@ -116,13 +137,11 @@ public class SimpleBubbleDialog : MonoBehaviour
             }
         }
 
-        // กด E เพื่อเริ่มบทสนทนา
         if (playerInRange && Input.GetKeyDown(KeyCode.E) && !isShowingDialog)
         {
             StartDialog();
         }
 
-        // กด Space เพื่อแสดงข้อความทั้งหมด หรือไปข้อความถัดไป
         if (isShowingDialog && Input.GetKeyDown(KeyCode.Space))
         {
             if (isTyping)
@@ -136,7 +155,6 @@ public class SimpleBubbleDialog : MonoBehaviour
             }
         }
 
-        // อัพเดทตำแหน่งบับเบิ้ลให้ติดตัวตลอด
         if (bubbleInstance != null && Camera.main != null)
         {
             floatTimer += Time.deltaTime * floatSpeed;
@@ -184,7 +202,6 @@ public class SimpleBubbleDialog : MonoBehaviour
         }
     }
 
-    // 🔓 ปลดล็อคเห็ด
     void UnlockDialog()
     {
         isUnlocked = true;
@@ -193,6 +210,55 @@ public class SimpleBubbleDialog : MonoBehaviour
             myCollider.enabled = true;
         }
         Debug.Log($"🔓 ปลดล็อคเห็ดแล้ว! (ใช้สกิลครบ {requiredCompletedCount} ตัว)");
+    }
+
+    // 🎨 ฟังก์ชันเน้นคำในข้อความ
+    string ApplyHighlight(string text)
+    {
+        if (!enableHighlight || highlightWords == null || highlightWords.Length == 0)
+        {
+            return text;
+        }
+
+        string result = text;
+        string hexColor = ColorUtility.ToHtmlStringRGB(highlightColor);
+
+        foreach (string word in highlightWords)
+        {
+            if (string.IsNullOrEmpty(word)) continue;
+
+            // หาคำที่ตรงกัน (case-insensitive)
+            string pattern = $@"\b({Regex.Escape(word)})\b";
+
+            string replacement = "";
+
+            // ใช้ tag ที่เหมาะสมกับ TMP หรือ Text
+            if (useTextMeshPro)
+            {
+                replacement = $"<color=#{hexColor}>";
+                if (highlightBold) replacement += "<b>";
+                if (highlightSizeIncrease > 0) replacement += $"<size={fontSize + highlightSizeIncrease}>";
+
+                replacement += "$1";
+
+                if (highlightSizeIncrease > 0) replacement += "</size>";
+                if (highlightBold) replacement += "</b>";
+                replacement += "</color>";
+            }
+            else
+            {
+                // สำหรับ UI.Text ธรรมดา - ใช้แค่ color กับ bold
+                replacement = $"<color=#{hexColor}>";
+                if (highlightBold) replacement += "<b>";
+                replacement += "$1";
+                if (highlightBold) replacement += "</b>";
+                replacement += "</color>";
+            }
+
+            result = Regex.Replace(result, pattern, replacement, RegexOptions.IgnoreCase);
+        }
+
+        return result;
     }
 
     void StartDialog()
@@ -240,7 +306,21 @@ public class SimpleBubbleDialog : MonoBehaviour
         if (bubblePrefab != null)
         {
             bubbleInstance = Instantiate(bubblePrefab, mainCanvas.transform);
-            bubbleText = bubbleInstance.GetComponentInChildren<Text>();
+
+            if (useTextMeshPro)
+            {
+                bubbleTextTMP = bubbleInstance.GetComponentInChildren<TextMeshProUGUI>();
+                if (bubbleTextTMP == null)
+                {
+                    Debug.LogWarning("⚠️ ไม่พบ TextMeshPro ใน Prefab! จะใช้ UI.Text แทน");
+                    bubbleText = bubbleInstance.GetComponentInChildren<Text>();
+                    useTextMeshPro = false;
+                }
+            }
+            else
+            {
+                bubbleText = bubbleInstance.GetComponentInChildren<Text>();
+            }
         }
         else
         {
@@ -275,20 +355,66 @@ public class SimpleBubbleDialog : MonoBehaviour
             textRect.offsetMin = new Vector2(padding, padding + textVerticalOffset);
             textRect.offsetMax = new Vector2(-padding, -padding + textVerticalOffset);
 
-            bubbleText = textObj.AddComponent<Text>();
-
-            Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            if (font == null)
+            // สร้าง TextMeshPro หรือ Text ธรรมดา
+            if (useTextMeshPro)
             {
-                font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-            }
+                bubbleTextTMP = textObj.AddComponent<TextMeshProUGUI>();
 
-            bubbleText.font = font;
-            bubbleText.fontSize = fontSize;
-            bubbleText.color = textColor;
-            bubbleText.alignment = textAlignment;
-            bubbleText.horizontalOverflow = HorizontalWrapMode.Wrap;
-            bubbleText.verticalOverflow = VerticalWrapMode.Overflow;
+                // ใช้ฟอนต์ที่กำหนด หรือใช้ default
+                if (customFontTMP != null)
+                {
+                    bubbleTextTMP.font = customFontTMP;
+                    Debug.Log($"✅ ใช้ฟอนต์ TMP: {customFontTMP.name}");
+                }
+
+                bubbleTextTMP.fontSize = fontSize;
+                bubbleTextTMP.color = textColor;
+                bubbleTextTMP.alignment = TextAlignmentOptions.Center;
+                bubbleTextTMP.enableWordWrapping = true;
+                bubbleTextTMP.overflowMode = TextOverflowModes.Overflow;
+                bubbleTextTMP.richText = true; // สำคัญมาก!
+            }
+            else
+            {
+                bubbleText = textObj.AddComponent<Text>();
+
+                // ใช้ฟอนต์ที่กำหนด หรือใช้ default
+                if (customFont != null)
+                {
+                    bubbleText.font = customFont;
+                    Debug.Log($"✅ ใช้ฟอนต์: {customFont.name}");
+                }
+                else
+                {
+                    // ใช้ฟอนต์ default
+                    Font defaultFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+                    if (defaultFont == null)
+                    {
+                        defaultFont = Resources.GetBuiltinResource<Font>("Arial.ttf");
+                    }
+                    bubbleText.font = defaultFont;
+                    Debug.Log("⚠️ ใช้ฟอนต์ default (Arial)");
+                }
+
+                bubbleText.fontSize = fontSize;
+                bubbleText.color = textColor;
+                bubbleText.alignment = textAlignment;
+                bubbleText.horizontalOverflow = HorizontalWrapMode.Wrap;
+                bubbleText.verticalOverflow = VerticalWrapMode.Overflow;
+                bubbleText.supportRichText = true; // สำคัญมาก!
+            }
+        }
+
+        // 🎨 เปิดใช้งาน Rich Text (สำคัญมาก!)
+        if (useTextMeshPro && bubbleTextTMP != null)
+        {
+            bubbleTextTMP.richText = true;
+            Debug.Log("✅ เปิด Rich Text สำหรับ TextMeshPro");
+        }
+        else if (bubbleText != null)
+        {
+            bubbleText.supportRichText = true;
+            Debug.Log("✅ เปิด Rich Text สำหรับ UI.Text");
         }
 
         Debug.Log("✅ สร้างบับเบิ้ลสำเร็จ");
@@ -296,19 +422,67 @@ public class SimpleBubbleDialog : MonoBehaviour
 
     IEnumerator TypeText(string text)
     {
-        if (bubbleText == null)
+        // เช็คว่ามี Text Component ไหม
+        if (bubbleText == null && bubbleTextTMP == null)
         {
-            Debug.LogError("❌ bubbleText เป็น null!");
+            Debug.LogError("❌ ไม่มี Text Component!");
             yield break;
         }
 
         isTyping = true;
-        bubbleText.text = "";
 
-        foreach (char c in text)
+        // 🎨 ใช้ Highlight กับข้อความ
+        string highlightedText = ApplyHighlight(text);
+
+        // ล้างข้อความเดิม
+        if (useTextMeshPro && bubbleTextTMP != null)
         {
-            bubbleText.text += c;
-            yield return new WaitForSeconds(typingSpeed);
+            bubbleTextTMP.text = "";
+        }
+        else if (bubbleText != null)
+        {
+            bubbleText.text = "";
+        }
+
+        // แสดงข้อความทีละตัว (แบบง่าย - ไม่แยก tags)
+        string currentText = "";
+        int visibleCharCount = 0;
+
+        for (int i = 0; i < highlightedText.Length; i++)
+        {
+            currentText += highlightedText[i];
+
+            // นับเฉพาะตัวอักษรที่มองเห็น (ไม่นับ tags)
+            if (highlightedText[i] != '<')
+            {
+                visibleCharCount++;
+            }
+            else
+            {
+                // ข้าม tag ไปเลย
+                while (i < highlightedText.Length && highlightedText[i] != '>')
+                {
+                    i++;
+                    if (i < highlightedText.Length)
+                        currentText += highlightedText[i];
+                }
+            }
+
+            // อัพเดทข้อความ
+            if (useTextMeshPro && bubbleTextTMP != null)
+            {
+                bubbleTextTMP.text = currentText;
+            }
+            else if (bubbleText != null)
+            {
+                bubbleText.text = currentText;
+            }
+
+            // รอเฉพาะตัวอักษรที่มองเห็น
+            if (highlightedText[i] != '<' && highlightedText[i] != '>')
+            {
+                yield return new WaitForSeconds(typingSpeed);
+            }
         }
 
         isTyping = false;
@@ -324,7 +498,18 @@ public class SimpleBubbleDialog : MonoBehaviour
     {
         if (currentLineIndex < dialogLines.Length)
         {
-            bubbleText.text = dialogLines[currentLineIndex];
+            // 🎨 ใช้ Highlight กับข้อความเต็ม
+            string fullText = ApplyHighlight(dialogLines[currentLineIndex]);
+
+            if (useTextMeshPro && bubbleTextTMP != null)
+            {
+                bubbleTextTMP.text = fullText;
+            }
+            else if (bubbleText != null)
+            {
+                bubbleText.text = fullText;
+            }
+
             isTyping = false;
             StartCoroutine(WaitAfterComplete());
         }

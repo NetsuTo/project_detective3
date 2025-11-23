@@ -263,7 +263,7 @@ public class PlayerController : MonoBehaviour
         pickupCallback = onPickupComplete;
         animator.SetTrigger("Pickup");
 
-        Invoke(nameof(CompletePickup), 1f);
+        Invoke(nameof(CompletePickup), 0.3f);
     }
 
     private void CompletePickup()
