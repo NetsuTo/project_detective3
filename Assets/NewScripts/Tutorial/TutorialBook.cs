@@ -11,15 +11,13 @@ public class TutorialBook : MonoBehaviour
     [SerializeField]
     private KeyCode toggleKey = KeyCode.Tab;
 
-    // --- ส่วนที่เพิ่มเข้ามา ---
     [Tooltip("ปุ่มที่ใช้พลิกไปหน้าถัดไป")]
     [SerializeField]
-    private KeyCode nextPageKey = KeyCode.RightArrow; // ค่าเริ่มต้น: ลูกศรขวา
+    private KeyCode nextPageKey = KeyCode.RightArrow;
 
     [Tooltip("ปุ่มที่ใช้ย้อนกลับหน้าก่อนหน้า")]
     [SerializeField]
-    private KeyCode prevPageKey = KeyCode.LeftArrow; // ค่าเริ่มต้น: ลูกศรซ้าย
-    // ------------------------
+    private KeyCode prevPageKey = KeyCode.LeftArrow;
 
     [Header("ส่วนประกอบ UI (ลากมาใส่)")]
     [SerializeField]
@@ -28,12 +26,27 @@ public class TutorialBook : MonoBehaviour
     private Image leftPageImage;
     [SerializeField]
     private Image rightPageImage;
+
+    [Tooltip("Prefab ปกสมุด (จะ Spawn ตอนเปิดสมุด)")]
+    [SerializeField]
+    private GameObject coverPrefab;
+
+    [Tooltip("ตำแหน่งที่จะวางปก (ถ้าไม่ใส่จะวางที่ TutorialBookPanel)")]
+    [SerializeField]
+    private Transform coverParent;
+
+    [Tooltip("หน้าเนื้อหาภายในสมุด (ไม่รวมปก)")]
     [SerializeField]
     private List<Sprite> pageSprites;
+
     [SerializeField]
     private Button nextButton;
     [SerializeField]
     private Button prevButton;
+
+    [Tooltip("กรอบสมุดที่จะแสดงเมื่อไม่ใช่หน้าปก")]
+    [SerializeField]
+    private GameObject bookFrameObject;
 
     [Header("การตั้งค่าเกม")]
     [SerializeField]
@@ -46,6 +59,7 @@ public class TutorialBook : MonoBehaviour
     private AudioSource audioSource;
     private int currentRightPageIndex = 0;
     private bool isBookOpen = false;
+    private GameObject spawnedCover; // เก็บ instance ปกที่ spawn มา
 
     void Start()
     {
@@ -62,7 +76,6 @@ public class TutorialBook : MonoBehaviour
 
         isBookOpen = false;
 
-        // ปุ่มคลิกยังคงทำงานเหมือนเดิม
         if (nextButton != null)
         {
             nextButton.onClick.AddListener(GoToNextPage);
@@ -76,32 +89,26 @@ public class TutorialBook : MonoBehaviour
         UpdatePageDisplay();
     }
 
-    // ฟังก์ชันนี้ทำงานทุกเฟรม
     void Update()
     {
-        // 1. ตรวจสอบการเปิด/ปิดสมุดก่อนเสมอ
         if (Input.GetKeyDown(toggleKey))
         {
             ToggleBook();
         }
 
-        // --- ส่วนที่แก้ไข/เพิ่มเข้ามา ---
-        // 2. ถ้าสมุดเปิดอยู่ (isBookOpen == true) ให้ตรวจสอบการกดปุ่มพลิกหน้า
         if (isBookOpen)
         {
             if (Input.GetKeyDown(nextPageKey))
             {
                 GoToNextPage();
             }
-            else if (Input.GetKeyDown(prevPageKey)) // ใช้ else if เพื่อป้องกันการกดพร้อมกัน
+            else if (Input.GetKeyDown(prevPageKey))
             {
                 GoToPrevPage();
             }
         }
-        // -------------------------------
     }
 
-    // ฟังก์ชัน ToggleBook() เหมือนเดิม (ไม่ต้องแก้)
     public void ToggleBook()
     {
         isBookOpen = !isBookOpen;
@@ -121,43 +128,44 @@ public class TutorialBook : MonoBehaviour
             currentRightPageIndex = 0;
             UpdatePageDisplay();
 
-            // ? เพิ่ม DOTween ตอนเปิดเท่านั้น
             CanvasGroup cg = tutorialBookPanelObject.GetComponent<CanvasGroup>();
             if (cg == null)
                 cg = tutorialBookPanelObject.AddComponent<CanvasGroup>();
 
             RectTransform rt = tutorialBookPanelObject.GetComponent<RectTransform>();
 
-            // รีเซ็ตค่าก่อนเริ่ม
             cg.alpha = 0f;
             Vector2 startPos = rt.anchoredPosition;
-            rt.anchoredPosition = startPos - new Vector2(0, 40f); // ล่างลงนิดหน่อย
+            rt.anchoredPosition = startPos - new Vector2(0, 40f);
 
-            // ลบ tween เก่าถ้ามี
             DOTween.Kill(tutorialBookPanelObject);
 
-            // ?? Animation: fade in + slide up (เล่นแม้เวลาเกมหยุด)
             Sequence seq = DOTween.Sequence();
             seq.Append(rt.DOAnchorPos(startPos, 0.5f).SetEase(Ease.OutCubic));
             seq.Join(cg.DOFade(1f, 0.5f).SetEase(Ease.OutCubic));
             seq.OnComplete(() =>
             {
-                // จบแล้วค้างไว้ ไม่ปิด ไม่เปลี่ยนขนาด
                 rt.anchoredPosition = startPos;
                 cg.alpha = 1f;
             });
 
-            // ? บรรทัดสำคัญ! ให้ tween เล่นใน real-time แม้เกม pause
             seq.SetUpdate(true);
             seq.SetTarget(tutorialBookPanelObject);
         }
+        else
+        {
+            // ปิดสมุด - ทำลายปกที่ spawn ไว้
+            if (spawnedCover != null)
+            {
+                Destroy(spawnedCover);
+                spawnedCover = null;
+            }
+        }
     }
 
-
-    // ฟังก์ชัน GoToNextPage() เหมือนเดิม (ไม่ต้องแก้)
     public void GoToNextPage()
     {
-        if (currentRightPageIndex + 1 < pageSprites.Count)
+        if (currentRightPageIndex < pageSprites.Count)
         {
             currentRightPageIndex += 2;
             UpdatePageDisplay();
@@ -165,7 +173,6 @@ public class TutorialBook : MonoBehaviour
         }
     }
 
-    // ฟังก์ชัน GoToPrevPage() เหมือนเดิม (ไม่ต้องแก้)
     public void GoToPrevPage()
     {
         if (currentRightPageIndex > 0)
@@ -176,7 +183,6 @@ public class TutorialBook : MonoBehaviour
         }
     }
 
-    // ฟังก์ชัน PlayPageSound() เหมือนเดิม (ไม่ต้องแก้)
     private void PlayPageSound()
     {
         if (audioSource != null && pageTurnSound != null)
@@ -185,34 +191,79 @@ public class TutorialBook : MonoBehaviour
         }
     }
 
-    // ฟังก์ชัน UpdatePageDisplay() เหมือนเดิม (ไม่ต้องแก้)
     private void UpdatePageDisplay()
     {
-        if (pageSprites.Count == 0 || leftPageImage == null || rightPageImage == null)
+        if (leftPageImage == null || rightPageImage == null)
         {
             return;
         }
 
+        // หน้าปก (index 0)
         if (currentRightPageIndex == 0)
         {
+            // ซ่อนกรอบและหน้าเนื้อหา
+            if (bookFrameObject != null)
+            {
+                bookFrameObject.SetActive(false);
+            }
+
             leftPageImage.gameObject.SetActive(false);
-        }
-        else
-        {
-            leftPageImage.gameObject.SetActive(true);
-            leftPageImage.sprite = pageSprites[currentRightPageIndex - 1];
-        }
-
-        if (currentRightPageIndex < pageSprites.Count)
-        {
-            rightPageImage.gameObject.SetActive(true);
-            rightPageImage.sprite = pageSprites[currentRightPageIndex];
-        }
-        else
-        {
             rightPageImage.gameObject.SetActive(false);
+
+            // แสดงปก Prefab
+            if (spawnedCover == null && coverPrefab != null)
+            {
+                Transform parent = coverParent != null ? coverParent : tutorialBookPanelObject.transform;
+                spawnedCover = Instantiate(coverPrefab, parent);
+                spawnedCover.transform.SetAsFirstSibling(); // วางไว้ด้านหลังสุด
+            }
+
+            if (spawnedCover != null)
+            {
+                spawnedCover.SetActive(true);
+            }
+        }
+        // หน้าเนื้อหา (index > 0)
+        else
+        {
+            // ซ่อนปก แสดงกรอบ
+            if (spawnedCover != null)
+            {
+                spawnedCover.SetActive(false);
+            }
+
+            if (bookFrameObject != null)
+            {
+                bookFrameObject.SetActive(true);
+            }
+
+            int leftIndex = currentRightPageIndex - 1;
+            int rightIndex = currentRightPageIndex;
+
+            // หน้าซ้าย
+            if (leftIndex > 0 && leftIndex <= pageSprites.Count)
+            {
+                leftPageImage.gameObject.SetActive(true);
+                leftPageImage.sprite = pageSprites[leftIndex - 1];
+            }
+            else
+            {
+                leftPageImage.gameObject.SetActive(false);
+            }
+
+            // หน้าขวา
+            if (rightIndex > 0 && rightIndex <= pageSprites.Count)
+            {
+                rightPageImage.gameObject.SetActive(true);
+                rightPageImage.sprite = pageSprites[rightIndex - 1];
+            }
+            else
+            {
+                rightPageImage.gameObject.SetActive(false);
+            }
         }
 
+        // แสดง/ซ่อนปุ่ม
         if (prevButton != null)
         {
             prevButton.gameObject.SetActive(currentRightPageIndex > 0);
@@ -220,7 +271,7 @@ public class TutorialBook : MonoBehaviour
 
         if (nextButton != null)
         {
-            nextButton.gameObject.SetActive(currentRightPageIndex + 1 < pageSprites.Count);
+            nextButton.gameObject.SetActive(currentRightPageIndex < pageSprites.Count);
         }
     }
 }
