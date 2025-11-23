@@ -9497,8 +9497,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 2.5, y: 12.5}
-  m_SizeDelta: {x: -355, y: -75}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: -0.000061035, y: 0.000030518}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &234357077
 MonoBehaviour:
@@ -9520,7 +9520,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -855234284, guid: 76a5aec21f5e6ed4e856202ede2e8f9d, type: 3}
+  m_Sprite: {fileID: 222292120, guid: 3491e36ec08bb1447b8003d0c86101bb, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -25378,6 +25378,13 @@ MonoBehaviour:
   sfxVolumeSlider: {fileID: 1948088081}
   musicVolumeSlider: {fileID: 1062595331}
   sliderAdjustSpeed: 0.05
+  lockInputWhenPaused: 1
+  selectedSliderHandleColor: {r: 0.6, g: 0.6, b: 0.6, a: 1}
+  normalSliderHandleColor: {r: 1, g: 1, b: 1, a: 1}
+  selectedSliderFillColor: {r: 1, g: 1, b: 1, a: 1}
+  normalSliderFillColor: {r: 1, g: 1, b: 1, a: 1}
+  selectedButtonColor: {r: 0.6, g: 0.6, b: 0.6, a: 1}
+  normalButtonColor: {r: 1, g: 1, b: 1, a: 0}
 --- !u!1001 &444563775
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -68543,7 +68550,7 @@ RectTransform:
   m_GameObject: {fileID: 1062595329}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.6814125, y: 1.6814125, z: 1.6814125}
+  m_LocalScale: {x: 1.6358645, y: 1.6814125, z: 1.6814125}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1107711648}
@@ -68553,7 +68560,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 20.4, y: -130.6}
+  m_AnchoredPosition: {x: 28.5, y: -167.7}
   m_SizeDelta: {x: 160, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1062595331
@@ -104017,8 +104024,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 4.6598, y: -27.1435}
-  m_SizeDelta: {x: 237.6317, y: 41.1829}
+  m_AnchoredPosition: {x: 1.8601, y: -27.831009}
+  m_SizeDelta: {x: 186.18, y: 42.4106}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1699808157
 MonoBehaviour:
@@ -117090,8 +117097,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -3.7222, y: 99.266624}
-  m_SizeDelta: {x: 268.72, y: 46.598}
+  m_AnchoredPosition: {x: -7.3837, y: 99.9596}
+  m_SizeDelta: {x: 202.69, y: 40.4254}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1892940556
 GameObject:
@@ -120818,7 +120825,7 @@ RectTransform:
   m_GameObject: {fileID: 1948088079}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.6814125, y: 1.6814125, z: 1.6814125}
+  m_LocalScale: {x: 1.6381714, y: 1.6814125, z: 1.6814125}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1641703570}
@@ -120828,7 +120835,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 20.4, y: -95.5}
+  m_AnchoredPosition: {x: 28.3, y: -106.2}
   m_SizeDelta: {x: 160, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1948088081
@@ -126509,8 +126516,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -3.5695, y: 36.7044}
-  m_SizeDelta: {x: 300.6493, y: 53.1084}
+  m_AnchoredPosition: {x: -7.3004, y: 34.9674}
+  m_SizeDelta: {x: 226.8368, y: 46.4085}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2120002165
 MonoBehaviour:

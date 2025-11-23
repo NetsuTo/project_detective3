@@ -11,37 +11,53 @@ public class PauseMenuWithVolume : MonoBehaviour
     public Slider musicVolumeSlider;
 
     [Header("Settings")]
-    public float sliderAdjustSpeed = 1f; // ความเร็วในการปรับ Slider (เปลี่ยนเป็นทีละขั้น)
+    public float sliderAdjustSpeed = 1f;
 
     [Header("ล็อคการกดปุ่ม")]
     [Tooltip("ล็อคการกด Input อื่นๆ เมื่อเปิด Pause Menu")]
     [SerializeField]
     private bool lockInputWhenPaused = true;
 
+    [Header("สีของ Slider")]
+    [Tooltip("สีของ Handle เมื่อเลือก")]
+    public Color selectedSliderHandleColor = new Color(1f, 0.8f, 0f, 1f); // สีทอง
+
+    [Tooltip("สีของ Handle ปกติ")]
+    public Color normalSliderHandleColor = Color.white;
+
+    [Tooltip("สีของ Fill เมื่อเลือก")]
+    public Color selectedSliderFillColor = new Color(1f, 0.9f, 0f, 1f); // สีเหลืองอ่อน
+
+    [Tooltip("สีของ Fill ปกติ")]
+    public Color normalSliderFillColor = Color.white;
+
+    [Header("สีของปุ่ม")]
+    [Tooltip("สีของปุ่มเมื่อเลือก")]
+    public Color selectedButtonColor = new Color(0.6f, 0.6f, 0.6f, 1f); // สีเทา
+
+    [Tooltip("สีของปุ่มปกติ")]
+    public Color normalButtonColor = new Color(1f, 1f, 1f, 0f); // โปร่งใส
+
     private bool isPaused = false;
     private int selectedIndex = 0;
-    private int totalElements; // ปุ่ม + Slider ทั้งหมด
+    private int totalElements;
     private PlayerController playerController;
 
     void Start()
     {
         pauseMenuUI.SetActive(false);
 
-        // คำนวณจำนวน element ทั้งหมด (ปุ่ม 3 + slider 2)
         totalElements = buttons.Length + 2;
 
-        // ตั้งค่า Slider เริ่มต้นจาก AudioManager
         if (AudioManager.Instance != null)
         {
             sfxVolumeSlider.value = AudioManager.Instance.GetSFXVolume();
             musicVolumeSlider.value = AudioManager.Instance.GetMusicVolume();
         }
 
-        // เชื่อม Slider กับ AudioManager
         sfxVolumeSlider.onValueChanged.AddListener(OnSFXVolumeChanged);
         musicVolumeSlider.onValueChanged.AddListener(OnMusicVolumeChanged);
 
-        // ค้นหา PlayerController ในฉาก
         playerController = FindObjectOfType<PlayerController>();
 
         UpdateUIHighlight();
@@ -51,7 +67,6 @@ public class PauseMenuWithVolume : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            // ตรวจสอบว่า Tutorial Book เปิดอยู่หรือไม่
             TutorialBook book = FindObjectOfType<TutorialBook>();
             if (book != null && book.IsBookOpen())
             {
@@ -73,7 +88,6 @@ public class PauseMenuWithVolume : MonoBehaviour
 
     void HandleInput()
     {
-        // เลื่อนขึ้น-ลง
         if (Input.GetKeyDown(KeyCode.UpArrow))
         {
             selectedIndex = (selectedIndex - 1 + totalElements) % totalElements;
@@ -86,7 +100,6 @@ public class PauseMenuWithVolume : MonoBehaviour
             UpdateUIHighlight();
         }
 
-        // ถ้าเลือก Slider อยู่ ? ปรับค่าด้วยซ้าย-ขวา
         if (selectedIndex >= buttons.Length)
         {
             Slider currentSlider = GetCurrentSlider();
@@ -104,7 +117,6 @@ public class PauseMenuWithVolume : MonoBehaviour
                 }
             }
         }
-        // ถ้าเลือกปุ่มอยู่ ? กด Enter เพื่อกดปุ่ม
         else
         {
             if (Input.GetKeyDown(KeyCode.Return))
@@ -137,11 +149,11 @@ public class PauseMenuWithVolume : MonoBehaviour
 
             if (i == selectedIndex)
             {
-                colors.normalColor = new Color(0.6f, 0.6f, 0.6f, 1f); // สีเทา = เลือก
+                colors.normalColor = selectedButtonColor;
             }
             else
             {
-                colors.normalColor = new Color(1f, 1f, 1f, 0f); // โปร่งใส
+                colors.normalColor = normalButtonColor;
             }
 
             colors.highlightedColor = colors.normalColor;
@@ -149,7 +161,7 @@ public class PauseMenuWithVolume : MonoBehaviour
             buttons[i].colors = colors;
         }
 
-        // อัพเดท Slider (เปลี่ยนสีของ Handle)
+        // อัพเดท Slider
         UpdateSliderHighlight(sfxVolumeSlider, selectedIndex == buttons.Length);
         UpdateSliderHighlight(musicVolumeSlider, selectedIndex == buttons.Length + 1);
     }
@@ -160,18 +172,23 @@ public class PauseMenuWithVolume : MonoBehaviour
         Image handleImage = slider.handleRect.GetComponent<Image>();
         if (handleImage != null)
         {
-            if (isSelected)
-            {
-                handleImage.color = Color.yellow; // สีเหลือง = เลือก
-            }
-            else
-            {
-                handleImage.color = Color.white; // สีขาว = ปกติ
-            }
+            handleImage.color = isSelected ? selectedSliderHandleColor : normalSliderHandleColor;
+        }
+
+        // เปลี่ยนสี Fill ของ Slider
+        Image fillImage = slider.fillRect.GetComponent<Image>();
+        if (fillImage != null)
+        {
+            fillImage.color = isSelected ? selectedSliderFillColor : normalSliderFillColor;
+        }
+
+        // เปลี่ยนขนาด Handle เล็กน้อยเมื่อเลือก
+        if (slider.handleRect != null)
+        {
+            slider.handleRect.localScale = isSelected ? Vector3.one * 1.15f : Vector3.one;
         }
     }
 
-    // ========== Slider Callbacks ==========
     void OnMusicVolumeChanged(float value)
     {
         if (AudioManager.Instance != null)
@@ -188,7 +205,6 @@ public class PauseMenuWithVolume : MonoBehaviour
         }
     }
 
-    // ========== Pause/Resume Functions ==========
     public void PauseGame()
     {
         pauseMenuUI.SetActive(true);
@@ -197,7 +213,6 @@ public class PauseMenuWithVolume : MonoBehaviour
         selectedIndex = 0;
         UpdateUIHighlight();
 
-        // ล็อคการเคลื่อนที่ของผู้เล่น
         if (lockInputWhenPaused && playerController != null)
         {
             playerController.LockMovement();
@@ -211,7 +226,6 @@ public class PauseMenuWithVolume : MonoBehaviour
         Time.timeScale = 1f;
         isPaused = false;
 
-        // ปลดล็อคการเคลื่อนที่ของผู้เล่น
         if (lockInputWhenPaused && playerController != null)
         {
             playerController.UnlockMovement();
@@ -230,7 +244,6 @@ public class PauseMenuWithVolume : MonoBehaviour
     {
         Time.timeScale = 1f;
 
-        // ปลดล็อคก่อนออกเกม
         if (lockInputWhenPaused && playerController != null)
         {
             playerController.UnlockMovement();
@@ -245,14 +258,12 @@ public class PauseMenuWithVolume : MonoBehaviour
 
     void OnDestroy()
     {
-        // ปลดล็อคเมื่อ Script ถูกทำลาย
         if (lockInputWhenPaused && playerController != null && isPaused)
         {
             playerController.UnlockMovement();
         }
     }
 
-    // ========== Public Methods ==========
     public bool IsPaused()
     {
         return isPaused;
