@@ -4629,7 +4629,7 @@ Transform:
   m_GameObject: {fileID: 100207035}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -1.8, y: 0, z: 0}
+  m_LocalPosition: {x: -2.95, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -17571,8 +17571,8 @@ Transform:
   m_GameObject: {fileID: 302531127}
   serializedVersion: 2
   m_LocalRotation: {x: -0.06114229, y: 0.8043871, z: -0.5770914, w: 0.1272342}
-  m_LocalPosition: {x: -0.12389769, y: 0.21793069, z: 0.050489277}
-  m_LocalScale: {x: 2.0206275, y: 1.0336597, z: 5.0728474}
+  m_LocalPosition: {x: -0.1236, y: 0.216, z: 0.0448}
+  m_LocalScale: {x: 1.395506, y: 0.7138764, z: 3.5034606}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 234573060}
@@ -19331,9 +19331,9 @@ MonoBehaviour:
   landingEffect: {fileID: 104829970813648393, guid: d3015b7eea383f64d8b81f965cc466e7, type: 3}
   effectDuration: 2
   landingSound: {fileID: 8300000, guid: 87a4976fa9d80564db5e362347a575e7, type: 3}
-  soundVolume: 0.2
-  spatialBlend: 0.2
-  maxSoundDistance: 50
+  soundVolume: 0.1
+  spatialBlend: 0.1
+  maxSoundDistance: 20
   playerTag: Player
 --- !u!1 &342593530
 GameObject:
@@ -54146,9 +54146,9 @@ MonoBehaviour:
   landingEffect: {fileID: 104829970813648393, guid: d3015b7eea383f64d8b81f965cc466e7, type: 3}
   effectDuration: 2
   landingSound: {fileID: 8300000, guid: 87a4976fa9d80564db5e362347a575e7, type: 3}
-  soundVolume: 0.2
-  spatialBlend: 0.2
-  maxSoundDistance: 50
+  soundVolume: 0.1
+  spatialBlend: 0.1
+  maxSoundDistance: 20
   playerTag: Player
 --- !u!1 &744908627 stripped
 GameObject:
@@ -58152,7 +58152,7 @@ MonoBehaviour:
   moveSpeed: 5
   collisionEffect: {fileID: 104829970813648393, guid: d3015b7eea383f64d8b81f965cc466e7, type: 3}
   collisionSound: {fileID: 8300000, guid: 87a4976fa9d80564db5e362347a575e7, type: 3}
-  soundVolume: 0.2
+  soundVolume: 0.1
   shakeOnCollision: 1
   shakeIntensity: 1
   shakeDuration: 0.5
@@ -73891,8 +73891,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1158593176}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -14.838, y: 0.15, z: 1.23}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -16.359995, y: 0.14999963, z: 1.2299997}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -87095,7 +87095,7 @@ Transform:
   m_GameObject: {fileID: 1346371829}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 525.99, y: 29.24, z: 26.73}
+  m_LocalPosition: {x: 528.71, y: 29.24, z: 26.73}
   m_LocalScale: {x: 1.9736148, y: 1.9736148, z: 1.9736148}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -91695,11 +91695,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2908075746234812187, guid: 8a7e7f6601b72774cb5e7b8a3f382286, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -63.31
+      value: 514.55
       objectReference: {fileID: 0}
     - target: {fileID: 2908075746234812187, guid: 8a7e7f6601b72774cb5e7b8a3f382286, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -23.71
+      value: 8.27
       objectReference: {fileID: 0}
     - target: {fileID: 2908075746234812187, guid: 8a7e7f6601b72774cb5e7b8a3f382286, type: 3}
       propertyPath: m_LocalPosition.z
@@ -91947,8 +91947,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1441725531}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.53, y: 0.16, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.53000236, y: 0.16000019, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -92467,9 +92467,9 @@ MonoBehaviour:
   landingEffect: {fileID: 104829970813648393, guid: d3015b7eea383f64d8b81f965cc466e7, type: 3}
   effectDuration: 2
   landingSound: {fileID: 8300000, guid: 87a4976fa9d80564db5e362347a575e7, type: 3}
-  soundVolume: 0.2
-  spatialBlend: 0.2
-  maxSoundDistance: 50
+  soundVolume: 0.1
+  spatialBlend: 0.1
+  maxSoundDistance: 20
   playerTag: Player
 --- !u!1 &1457144203
 GameObject:
@@ -98687,13 +98687,41 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -8391222552659086748, guid: 0dab513756ad05640aed686c42476ee8, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: -7640558969779515294, guid: 0dab513756ad05640aed686c42476ee8, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: -7146521406498821007, guid: 0dab513756ad05640aed686c42476ee8, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: -1599826595754709761, guid: 0dab513756ad05640aed686c42476ee8, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: -516098083770646512, guid: 0dab513756ad05640aed686c42476ee8, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 0dab513756ad05640aed686c42476ee8, type: 3}
       propertyPath: m_Name
       value: Box
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 0dab513756ad05640aed686c42476ee8, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 0dab513756ad05640aed686c42476ee8, type: 3}
       propertyPath: m_TagString
       value: Box
+      objectReference: {fileID: 0}
+    - target: {fileID: 8416272007918961125, guid: 0dab513756ad05640aed686c42476ee8, type: 3}
+      propertyPath: m_Layer
+      value: 3
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -105920,11 +105948,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 0dab513756ad05640aed686c42476ee8, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -2.88
+      value: -5.602
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 0dab513756ad05640aed686c42476ee8, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.16
+      value: -0.16000019
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 0dab513756ad05640aed686c42476ee8, type: 3}
       propertyPath: m_LocalPosition.z
@@ -105958,13 +105986,41 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -8391222552659086748, guid: 0dab513756ad05640aed686c42476ee8, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: -7640558969779515294, guid: 0dab513756ad05640aed686c42476ee8, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: -7146521406498821007, guid: 0dab513756ad05640aed686c42476ee8, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: -1599826595754709761, guid: 0dab513756ad05640aed686c42476ee8, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: -516098083770646512, guid: 0dab513756ad05640aed686c42476ee8, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 0dab513756ad05640aed686c42476ee8, type: 3}
       propertyPath: m_Name
       value: Box (1)
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 0dab513756ad05640aed686c42476ee8, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 0dab513756ad05640aed686c42476ee8, type: 3}
       propertyPath: m_TagString
       value: Box
+      objectReference: {fileID: 0}
+    - target: {fileID: 8416272007918961125, guid: 0dab513756ad05640aed686c42476ee8, type: 3}
+      propertyPath: m_Layer
+      value: 3
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -118198,9 +118254,9 @@ MonoBehaviour:
   landingEffect: {fileID: 104829970813648393, guid: d3015b7eea383f64d8b81f965cc466e7, type: 3}
   effectDuration: 2
   landingSound: {fileID: 8300000, guid: 87a4976fa9d80564db5e362347a575e7, type: 3}
-  soundVolume: 0.2
-  spatialBlend: 0.2
-  maxSoundDistance: 50
+  soundVolume: 0.1
+  spatialBlend: 0.1
+  maxSoundDistance: 20
   playerTag: Player
 --- !u!1 &1906435820
 GameObject:

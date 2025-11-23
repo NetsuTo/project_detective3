@@ -192,16 +192,28 @@ public class SimplePatrol : MonoBehaviour
 
             if (clip != null)
             {
-                // ใช้ AudioManager 3D ถ้ามี, ไม่งั้นใช้ AudioSource
-                if (AudioManager.Instance != null)
+                // ? ตรวจสอบว่า AudioManager มีจริงและพร้อมใช้งาน
+                AudioManager audioManager = AudioManager.Instance;
+
+                if (audioManager != null)
                 {
-                    // เล่นเสียง 3D ผ่าน AudioManager
-                    AudioManager.Instance.PlaySFXAtPosition(clip, transform.position, footstepVolume);
+                    // เล่นเสียง 3D ผ่าน AudioManager พร้อมการตั้งค่าระยะ
+                    audioManager.PlaySFX3D(
+                        clip,
+                        transform.position,
+                        minHearDistance,
+                        maxHearDistance,
+                        footstepVolume
+                    );
                 }
                 else if (audioSource != null)
                 {
                     // Fallback: ใช้ AudioSource ของตัวเอง
                     audioSource.PlayOneShot(clip, footstepVolume);
+                }
+                else
+                {
+                    LogError("ไม่มี AudioManager และ AudioSource!");
                 }
             }
 

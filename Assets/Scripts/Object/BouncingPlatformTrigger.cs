@@ -550,9 +550,11 @@ public class BouncingPlatformTrigger : MonoBehaviour
 
         if (audioManager != null)
         {
-            // ใช้ PlaySFX จาก AudioManager (ปรับ volume ให้เหมาะสม)
-            audioManager.PlaySFX(clip, soundVolume);
-            Debug.Log($"?? เล่นเสียงผ่าน AudioManager.PlaySFX: {clip.name} (Volume: {soundVolume})");
+            // ใช้ PlaySFX จาก AudioManager 
+            // ลด volume ลงเพราะ AudioManager มักจะมี Master Volume อยู่แล้ว
+            float adjustedVolume = soundVolume * 0.4f; // ลด 60% เพื่อไม่ให้ดังเกิน
+            audioManager.PlaySFX(clip, adjustedVolume);
+            Debug.Log($"?? เล่นเสียงผ่าน AudioManager.PlaySFX: {clip.name} (Volume: {adjustedVolume:F2})");
         }
         // ถ้าไม่มี AudioManager ใช้ AudioSource ของตัวเอง
         else if (localAudioSource != null)
