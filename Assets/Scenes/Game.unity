@@ -90248,7 +90248,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: -5, y: 0}
-  m_SizeDelta: {x: 200, y: 205}
+  m_SizeDelta: {x: 250, y: 280}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1375750024
 CanvasRenderer:
@@ -90965,7 +90965,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: -245, y: 0}
-  m_SizeDelta: {x: 200, y: 205}
+  m_SizeDelta: {x: 240, y: 270}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1389252343
 CanvasRenderer:
@@ -107402,6 +107402,10 @@ MonoBehaviour:
   - {fileID: 1114082287, guid: d234d0b96eb4be948ae67f8aef0121d3, type: 3}
   - {fileID: -1164021116, guid: 785714d1442681446948e8e1c706678d, type: 3}
   - {fileID: 1813162480, guid: 77f14bb932d8398469c4870d8afee734, type: 3}
+  - {fileID: -687216497, guid: 21444cbe2c0cf2c488f908efb69d01ec, type: 3}
+  - {fileID: 412833399, guid: ca7c96189704ffb4297da663c7beed35, type: 3}
+  - {fileID: -744192695, guid: d79bfdb68a12bc540afd9b904b30e3e8, type: 3}
+  - {fileID: -688770380, guid: d62b1cd3e39ae114580b67dfa3b9cf5d, type: 3}
   nextButton: {fileID: 651240178}
   prevButton: {fileID: 153173503}
   bookFrameObject: {fileID: 1009162147}
