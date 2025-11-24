@@ -26,6 +26,10 @@ public class SimpleBubbleDialog : MonoBehaviour
     public int requiredCompletedCount = 2;
     public bool startLocked = true;
 
+    [Header("🔄 การคุยซ้ำ")]
+    [Tooltip("ติ๊กถ้าต้องการให้คุยได้แค่ครั้งเดียว / ปิดถ้าต้องการคุยได้ตลอด")]
+    public bool dialogOnlyOnce = false;
+
     [Header("การตั้งค่าตำแหน่ง")]
     public float bubbleHeight = 2f;
     public Vector2 bubbleOffset = Vector2.zero;
@@ -77,6 +81,7 @@ public class SimpleBubbleDialog : MonoBehaviour
     private bool hasSpawnedObjects = false;
     private Collider myCollider;
     private bool isUnlocked = false;
+    private bool hasDialogCompleted = false; // เก็บสถานะว่าคุยไปแล้วหรือยัง
 
     void Start()
     {
@@ -137,8 +142,14 @@ public class SimpleBubbleDialog : MonoBehaviour
             }
         }
 
+        // ถ้าตั้งค่าให้คุยแค่ครั้งเดียว และคุยไปแล้ว ก็ไม่ให้เริ่มใหม่
         if (playerInRange && Input.GetKeyDown(KeyCode.E) && !isShowingDialog)
         {
+            if (dialogOnlyOnce && hasDialogCompleted)
+            {
+                Debug.Log("⏭️ บทสนทนานี้เล่นไปแล้ว (ตั้งค่าให้เล่นแค่ครั้งเดียว)");
+                return;
+            }
             StartDialog();
         }
 
@@ -543,6 +554,7 @@ public class SimpleBubbleDialog : MonoBehaviour
     void EndDialog()
     {
         isShowingDialog = false;
+        hasDialogCompleted = true; // บันทึกว่าคุยไปแล้ว
 
         if (playerController != null)
         {
@@ -555,9 +567,17 @@ public class SimpleBubbleDialog : MonoBehaviour
             Destroy(bubbleInstance);
         }
 
+        // ถ้าตั้งค่าให้คุยแค่ครั้งเดียว ก็ซ่อน Press E ตัวบ่งชี้
         if (playerInRange && pressEIndicator != null)
         {
-            pressEIndicator.SetActive(true);
+            if (dialogOnlyOnce)
+            {
+                pressEIndicator.SetActive(false);
+            }
+            else
+            {
+                pressEIndicator.SetActive(true);
+            }
         }
 
         SpawnObjects();
@@ -616,7 +636,17 @@ public class SimpleBubbleDialog : MonoBehaviour
             }
 
             if (pressEIndicator != null && !isShowingDialog)
-                pressEIndicator.SetActive(true);
+            {
+                // ถ้าตั้งค่าให้คุยแค่ครั้งเดียว และคุยไปแล้ว ก็ไม่แสดง Press E
+                if (dialogOnlyOnce && hasDialogCompleted)
+                {
+                    pressEIndicator.SetActive(false);
+                }
+                else
+                {
+                    pressEIndicator.SetActive(true);
+                }
+            }
         }
     }
 
