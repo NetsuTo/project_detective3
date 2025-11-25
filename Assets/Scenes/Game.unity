@@ -66589,6 +66589,81 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 883092962}
   m_Mesh: {fileID: 4444728127320036556, guid: 2f88ce36e79205b41a6c9ce117056d58, type: 3}
+--- !u!1 &886566125
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 886566126}
+  - component: {fileID: 886566128}
+  - component: {fileID: 886566127}
+  m_Layer: 5
+  m_Name: Book Tap
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!224 &886566126
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 886566125}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1864271679}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 341.8, y: 181}
+  m_SizeDelta: {x: 50, y: 50}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &886566127
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 886566125}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 951412578, guid: 383d3d12cef47d243921517b14daf67b, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &886566128
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 886566125}
+  m_CullTransparentMesh: 1
 --- !u!1 &887329819
 GameObject:
   m_ObjectHideFlags: 0
@@ -118116,7 +118191,7 @@ MonoBehaviour:
   nextPageKey: 275
   prevPageKey: 276
   tutorialBookPanelObject: {fileID: 559518853}
-  bookIconUI: {fileID: 0}
+  bookIconUI: {fileID: 886566125}
   leftPageImage: {fileID: 1389252344}
   rightPageImage: {fileID: 1375750025}
   coverPrefab: {fileID: 1998456868}
@@ -135125,6 +135200,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7979559157065865806, guid: 187065839ac862c43a2c21944408dfa7, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1008154896}
+    - targetCorrespondingSourceObject: {fileID: 7979559157065865806, guid: 187065839ac862c43a2c21944408dfa7, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 886566126}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 187065839ac862c43a2c21944408dfa7, type: 3}
 --- !u!1 &1921006774
