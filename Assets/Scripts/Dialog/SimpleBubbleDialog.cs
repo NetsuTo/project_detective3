@@ -67,6 +67,12 @@ public class SimpleBubbleDialog : MonoBehaviour
     public Transform spawnPoint;
     public bool spawnOnlyOnce = true;
 
+    [Header("🎭 เอฟเฟคที่จะเปลี่ยน")]
+    [Tooltip("เอฟเฟคเก่าที่จะปิดเมื่อปลดล็อค")]
+    public GameObject[] oldEffects;
+    [Tooltip("เอฟเฟคใหม่ที่จะเปิดเมื่อปลดล็อค")]
+    public GameObject[] newEffects;
+
     private GameObject bubbleInstance;
     private Text bubbleText;
     private TextMeshProUGUI bubbleTextTMP; // เพิ่ม TMP
@@ -220,7 +226,41 @@ public class SimpleBubbleDialog : MonoBehaviour
         {
             myCollider.enabled = true;
         }
+
+        // 🎭 เปลี่ยนเอฟเฟค
+        SwitchEffects();
+
         Debug.Log($"🔓 ปลดล็อคเห็ดแล้ว! (ใช้สกิลครบ {requiredCompletedCount} ตัว)");
+    }
+
+    // 🎭 ฟังก์ชันเปลี่ยนเอฟเฟค
+    void SwitchEffects()
+    {
+        // ปิดเอฟเฟคเก่า
+        if (oldEffects != null && oldEffects.Length > 0)
+        {
+            foreach (GameObject effect in oldEffects)
+            {
+                if (effect != null)
+                {
+                    effect.SetActive(false);
+                    Debug.Log($"❌ ปิดเอฟเฟคเก่า: {effect.name}");
+                }
+            }
+        }
+
+        // เปิดเอฟเฟคใหม่
+        if (newEffects != null && newEffects.Length > 0)
+        {
+            foreach (GameObject effect in newEffects)
+            {
+                if (effect != null)
+                {
+                    effect.SetActive(true);
+                    Debug.Log($"✨ เปิดเอฟเฟคใหม่: {effect.name}");
+                }
+            }
+        }
     }
 
     // 🎨 ฟังก์ชันเน้นคำในข้อความ
