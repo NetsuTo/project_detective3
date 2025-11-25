@@ -7390,6 +7390,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 213286634}
+        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+        m_MethodName: SetActive
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   onFailEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -10534,6 +10546,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 1367104283}
+        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+        m_MethodName: SetActive
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   onFailEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -11021,6 +11045,11 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 209147166}
   m_Mesh: {fileID: 2534964839176971238, guid: 7fa24565f70624047b2ce59a43abe73b, type: 3}
+--- !u!1 &213286634 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4823518202205099639, guid: cdc919a43bba95b4a8b6916b6aa5321d, type: 3}
+  m_PrefabInstance: {fileID: 1611572058}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &213286635 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4823518202205099632, guid: cdc919a43bba95b4a8b6916b6aa5321d, type: 3}
@@ -39639,7 +39668,13 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: 2500eb343fefd444e866439446f34cfc, type: 3}
       insertIndex: 1
       addedObject: {fileID: 621438800}
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 2500eb343fefd444e866439446f34cfc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1512480440}
+    - targetCorrespondingSourceObject: {fileID: -8391222552659086748, guid: 2500eb343fefd444e866439446f34cfc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 935221176}
   m_SourcePrefab: {fileID: 100100000, guid: 2500eb343fefd444e866439446f34cfc, type: 3}
 --- !u!4 &552318945 stripped
 Transform:
@@ -60996,6 +61031,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 965600413}
+        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+        m_MethodName: SetActive
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   onFailEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -62814,7 +62861,31 @@ MonoBehaviour:
     sequence: 680000006e0000006f00000068000000730000006f000000
   onAllElementsCompleted:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 707682822}
+        m_TargetAssemblyTypeName: ExplosionController, Assembly-CSharp
+        m_MethodName: Explode
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 789152413}
+        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+        m_MethodName: SetActive
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1001 &800095389
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -69145,6 +69216,33 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 192584743}
   m_SourcePrefab: {fileID: 100100000, guid: cf4477abffdf79048873bd4c01b4a5f7, type: 3}
+--- !u!1 &935221172 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: -8391222552659086748, guid: 2500eb343fefd444e866439446f34cfc, type: 3}
+  m_PrefabInstance: {fileID: 552318944}
+  m_PrefabAsset: {fileID: 0}
+--- !u!64 &935221176
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 935221172}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: -5495902117074765545, guid: 2500eb343fefd444e866439446f34cfc, type: 3}
 --- !u!1 &938203393
 GameObject:
   m_ObjectHideFlags: 0
@@ -70724,6 +70822,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 735874242}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &965600413 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4823518202205099639, guid: cdc919a43bba95b4a8b6916b6aa5321d, type: 3}
+  m_PrefabInstance: {fileID: 1999289986}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &965600414 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4823518202205099632, guid: cdc919a43bba95b4a8b6916b6aa5321d, type: 3}
@@ -73310,7 +73413,7 @@ Transform:
   m_GameObject: {fileID: 1012800767}
   serializedVersion: 2
   m_LocalRotation: {x: -0.0324374, y: 0.7322307, z: 0.68027806, w: 0.0027725268}
-  m_LocalPosition: {x: 87.16001, y: 88.88, z: 9.469557}
+  m_LocalPosition: {x: 87.16001, y: 88.44, z: 9.469557}
   m_LocalScale: {x: 501.54688, y: 419.29968, z: 23.410982}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -80915,7 +81018,7 @@ Transform:
   m_GameObject: {fileID: 1136632059}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.18, y: 0.07, z: 2.46}
+  m_LocalPosition: {x: 2.18, y: 0.07, z: 1.89}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -96670,6 +96773,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 1367327907}
+        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+        m_MethodName: SetActive
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   onFailEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -97839,10 +97954,20 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -5495902117074765545, guid: cf4477abffdf79048873bd4c01b4a5f7, type: 3}
+--- !u!1 &1367104283 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4823518202205099639, guid: cdc919a43bba95b4a8b6916b6aa5321d, type: 3}
+  m_PrefabInstance: {fileID: 1540773510}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1367104284 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4823518202205099632, guid: cdc919a43bba95b4a8b6916b6aa5321d, type: 3}
   m_PrefabInstance: {fileID: 1540773510}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &1367327907 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4823518202205099639, guid: cdc919a43bba95b4a8b6916b6aa5321d, type: 3}
+  m_PrefabInstance: {fileID: 1985526016}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &1367327908 stripped
 Transform:
@@ -101873,11 +101998,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2908075746234812187, guid: 8a7e7f6601b72774cb5e7b8a3f382286, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 481.26
+      value: -62.1
       objectReference: {fileID: 0}
     - target: {fileID: 2908075746234812187, guid: 8a7e7f6601b72774cb5e7b8a3f382286, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -6.22
+      value: -23.62
       objectReference: {fileID: 0}
     - target: {fileID: 2908075746234812187, guid: 8a7e7f6601b72774cb5e7b8a3f382286, type: 3}
       propertyPath: m_LocalPosition.z
@@ -105881,6 +106006,33 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1510645677}
   m_Mesh: {fileID: 289301614986012343, guid: 2f88ce36e79205b41a6c9ce117056d58, type: 3}
+--- !u!1 &1512480439 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 2500eb343fefd444e866439446f34cfc, type: 3}
+  m_PrefabInstance: {fileID: 552318944}
+  m_PrefabAsset: {fileID: 0}
+--- !u!64 &1512480440
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1512480439}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 0}
 --- !u!1 &1513032708
 GameObject:
   m_ObjectHideFlags: 0
@@ -117964,6 +118116,7 @@ MonoBehaviour:
   nextPageKey: 275
   prevPageKey: 276
   tutorialBookPanelObject: {fileID: 559518853}
+  bookIconUI: {fileID: 0}
   leftPageImage: {fileID: 1389252344}
   rightPageImage: {fileID: 1375750025}
   coverPrefab: {fileID: 1998456868}
@@ -117984,6 +118137,8 @@ MonoBehaviour:
   pageTurnSound: {fileID: 8300000, guid: 8510ff4a47121904bae68ce192d34bf7, type: 3}
   pageTurnVolume: 0.7
   lockInputWhenOpen: 1
+  iconFadeDuration: 0.3
+  pageFlipDuration: 0.4
 --- !u!82 &1728210152
 AudioSource:
   m_ObjectHideFlags: 0

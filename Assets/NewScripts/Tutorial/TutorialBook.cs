@@ -22,6 +22,11 @@ public class TutorialBook : MonoBehaviour
     [Header("ส่วนประกอบ UI (ลากมาใส่)")]
     [SerializeField]
     private GameObject tutorialBookPanelObject;
+
+    [Tooltip("ไอคอนสมุดมุมขวาบน")]
+    [SerializeField]
+    private GameObject bookIconUI;
+
     [SerializeField]
     private Image leftPageImage;
     [SerializeField]
@@ -65,11 +70,22 @@ public class TutorialBook : MonoBehaviour
     [SerializeField]
     private bool lockInputWhenOpen = true;
 
+    [Header("การตั้งค่า Animation")]
+    [Tooltip("ระยะเวลา Fade In/Out ของไอคอนสมุด")]
+    [SerializeField]
+    private float iconFadeDuration = 0.3f;
+
+    [Tooltip("ระยะเวลาการพลิกหน้า")]
+    [SerializeField]
+    private float pageFlipDuration = 0.4f;
+
     private int currentRightPageIndex = 0;
     private bool isBookOpen = false;
     private GameObject spawnedCover;
     private PlayerController playerController;
     private AudioSource audioSource;
+    private CanvasGroup bookIconCanvasGroup;
+    private bool isAnimating = false;
 
     void Start()
     {
@@ -82,6 +98,18 @@ public class TutorialBook : MonoBehaviour
         else
         {
             Debug.LogError("TutorialBook: ยังไม่ได้ลาก TutorialBookPanelObject มาใส่ในสคริปต์!");
+        }
+
+        // ตั้งค่า CanvasGroup สำหรับไอคอนสมุด
+        if (bookIconUI != null)
+        {
+            bookIconCanvasGroup = bookIconUI.GetComponent<CanvasGroup>();
+            if (bookIconCanvasGroup == null)
+            {
+                bookIconCanvasGroup = bookIconUI.AddComponent<CanvasGroup>();
+            }
+            bookIconCanvasGroup.alpha = 1f;
+            bookIconUI.SetActive(true);
         }
 
         isBookOpen = false;
@@ -99,7 +127,23 @@ public class TutorialBook : MonoBehaviour
         // ค้นหา PlayerController ในฉาก
         playerController = FindObjectOfType<PlayerController>();
 
+        // เพิ่ม CanvasGroup ให้หน้าหนังสือ
+        SetupPageCanvasGroup(leftPageImage);
+        SetupPageCanvasGroup(rightPageImage);
+
         UpdatePageDisplay();
+    }
+
+    void SetupPageCanvasGroup(Image pageImage)
+    {
+        if (pageImage != null)
+        {
+            CanvasGroup cg = pageImage.GetComponent<CanvasGroup>();
+            if (cg == null)
+            {
+                pageImage.gameObject.AddComponent<CanvasGroup>();
+            }
+        }
     }
 
     void Update()
@@ -117,7 +161,7 @@ public class TutorialBook : MonoBehaviour
             ToggleBook();
         }
 
-        if (isBookOpen)
+        if (isBookOpen && !isAnimating)
         {
             if (Input.GetKeyDown(nextPageKey))
             {
@@ -159,6 +203,9 @@ public class TutorialBook : MonoBehaviour
             }
         }
 
+        // Animate ไอคอนสมุดมุมขวาบน
+        AnimateBookIcon();
+
         if (isBookOpen)
         {
             currentRightPageIndex = 0;
@@ -199,24 +246,139 @@ public class TutorialBook : MonoBehaviour
         }
     }
 
+    // Animate Fade In/Out ไอคอนสมุด
+    private void AnimateBookIcon()
+    {
+        if (bookIconUI == null || bookIconCanvasGroup == null) return;
+
+        DOTween.Kill(bookIconUI);
+
+        if (isBookOpen)
+        {
+            // Fade Out เมื่อเปิดสมุด
+            bookIconCanvasGroup.DOFade(0f, iconFadeDuration)
+                .SetEase(Ease.OutCubic)
+                .SetUpdate(true)
+                .SetTarget(bookIconUI);
+        }
+        else
+        {
+            // Fade In เมื่อปิดสมุด
+            bookIconCanvasGroup.DOFade(1f, iconFadeDuration)
+                .SetEase(Ease.InCubic)
+                .SetUpdate(true)
+                .SetTarget(bookIconUI);
+        }
+    }
+
     public void GoToNextPage()
     {
-        if (currentRightPageIndex < pageSprites.Count)
+        if (currentRightPageIndex < pageSprites.Count && !isAnimating)
         {
             currentRightPageIndex += 2;
-            UpdatePageDisplay();
+            AnimatePageFlip(true);
             PlayPageSound();
         }
     }
 
     public void GoToPrevPage()
     {
-        if (currentRightPageIndex > 0)
+        if (currentRightPageIndex > 0 && !isAnimating)
         {
             currentRightPageIndex -= 2;
-            UpdatePageDisplay();
+            AnimatePageFlip(false);
             PlayPageSound();
         }
+    }
+
+    // Animation พลิกหน้าหนังสือ
+    private void AnimatePageFlip(bool isNext)
+    {
+        if (leftPageImage == null || rightPageImage == null) return;
+
+        isAnimating = true;
+
+        // หยุด Animation เก่า
+        DOTween.Kill(leftPageImage.gameObject);
+        DOTween.Kill(rightPageImage.gameObject);
+
+        CanvasGroup leftCG = leftPageImage.GetComponent<CanvasGroup>();
+        CanvasGroup rightCG = rightPageImage.GetComponent<CanvasGroup>();
+
+        RectTransform leftRT = leftPageImage.GetComponent<RectTransform>();
+        RectTransform rightRT = rightPageImage.GetComponent<RectTransform>();
+
+        // เก็บ Rotation และ Scale เดิม
+        Vector3 leftOriginalRot = leftRT.localEulerAngles;
+        Vector3 rightOriginalRot = rightRT.localEulerAngles;
+        Vector3 leftOriginalScale = leftRT.localScale;
+        Vector3 rightOriginalScale = rightRT.localScale;
+
+        Sequence seq = DOTween.Sequence();
+
+        if (isNext)
+        {
+            // พลิกไปข้างหน้า - หน้าขวาปัดไปซ้าย
+            seq.Append(rightCG.DOFade(0f, pageFlipDuration * 0.5f).SetEase(Ease.InQuad));
+            seq.Join(rightRT.DOScale(new Vector3(0.95f, 0.95f, 1f), pageFlipDuration * 0.5f).SetEase(Ease.InQuad));
+            seq.Join(rightRT.DOLocalRotate(new Vector3(0, -15f, 0), pageFlipDuration * 0.5f).SetEase(Ease.InQuad));
+
+            seq.AppendCallback(() =>
+            {
+                UpdatePageDisplay();
+                leftCG.alpha = 0f;
+                rightCG.alpha = 0f;
+                leftRT.localScale = new Vector3(0.95f, 0.95f, 1f);
+                rightRT.localScale = new Vector3(0.95f, 0.95f, 1f);
+                leftRT.localEulerAngles = new Vector3(0, 15f, 0);
+                rightRT.localEulerAngles = new Vector3(0, 15f, 0);
+            });
+
+            seq.Append(leftCG.DOFade(1f, pageFlipDuration * 0.5f).SetEase(Ease.OutQuad));
+            seq.Join(rightCG.DOFade(1f, pageFlipDuration * 0.5f).SetEase(Ease.OutQuad));
+            seq.Join(leftRT.DOScale(leftOriginalScale, pageFlipDuration * 0.5f).SetEase(Ease.OutQuad));
+            seq.Join(rightRT.DOScale(rightOriginalScale, pageFlipDuration * 0.5f).SetEase(Ease.OutQuad));
+            seq.Join(leftRT.DOLocalRotate(leftOriginalRot, pageFlipDuration * 0.5f).SetEase(Ease.OutQuad));
+            seq.Join(rightRT.DOLocalRotate(rightOriginalRot, pageFlipDuration * 0.5f).SetEase(Ease.OutQuad));
+        }
+        else
+        {
+            // พลิกถอยหลัง - หน้าซ้ายปัดไปขวา
+            seq.Append(leftCG.DOFade(0f, pageFlipDuration * 0.5f).SetEase(Ease.InQuad));
+            seq.Join(leftRT.DOScale(new Vector3(0.95f, 0.95f, 1f), pageFlipDuration * 0.5f).SetEase(Ease.InQuad));
+            seq.Join(leftRT.DOLocalRotate(new Vector3(0, 15f, 0), pageFlipDuration * 0.5f).SetEase(Ease.InQuad));
+
+            seq.AppendCallback(() =>
+            {
+                UpdatePageDisplay();
+                leftCG.alpha = 0f;
+                rightCG.alpha = 0f;
+                leftRT.localScale = new Vector3(0.95f, 0.95f, 1f);
+                rightRT.localScale = new Vector3(0.95f, 0.95f, 1f);
+                leftRT.localEulerAngles = new Vector3(0, -15f, 0);
+                rightRT.localEulerAngles = new Vector3(0, -15f, 0);
+            });
+
+            seq.Append(leftCG.DOFade(1f, pageFlipDuration * 0.5f).SetEase(Ease.OutQuad));
+            seq.Join(rightCG.DOFade(1f, pageFlipDuration * 0.5f).SetEase(Ease.OutQuad));
+            seq.Join(leftRT.DOScale(leftOriginalScale, pageFlipDuration * 0.5f).SetEase(Ease.OutQuad));
+            seq.Join(rightRT.DOScale(rightOriginalScale, pageFlipDuration * 0.5f).SetEase(Ease.OutQuad));
+            seq.Join(leftRT.DOLocalRotate(leftOriginalRot, pageFlipDuration * 0.5f).SetEase(Ease.OutQuad));
+            seq.Join(rightRT.DOLocalRotate(rightOriginalRot, pageFlipDuration * 0.5f).SetEase(Ease.OutQuad));
+        }
+
+        seq.OnComplete(() =>
+        {
+            isAnimating = false;
+            leftRT.localEulerAngles = leftOriginalRot;
+            rightRT.localEulerAngles = rightOriginalRot;
+            leftRT.localScale = leftOriginalScale;
+            rightRT.localScale = rightOriginalScale;
+            leftCG.alpha = 1f;
+            rightCG.alpha = 1f;
+        });
+
+        seq.SetUpdate(true);
     }
 
     private void PlayPageSound()
@@ -325,6 +487,12 @@ public class TutorialBook : MonoBehaviour
         {
             playerController.UnlockMovement();
         }
+
+        // Kill DOTween animations
+        DOTween.Kill(tutorialBookPanelObject);
+        if (bookIconUI != null) DOTween.Kill(bookIconUI);
+        if (leftPageImage != null) DOTween.Kill(leftPageImage.gameObject);
+        if (rightPageImage != null) DOTween.Kill(rightPageImage.gameObject);
     }
 
     // ========== Public Methods ==========
