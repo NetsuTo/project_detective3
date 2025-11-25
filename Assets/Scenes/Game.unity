@@ -20483,7 +20483,7 @@ MonoBehaviour:
   displayDuration: 1
   typingSpeed: 0.05
   detectionRange: 2.5
-  playOnce: 1
+  playOnce: 0
   bubblePrefab: {fileID: 0}
 --- !u!1 &305213225
 GameObject:
@@ -118205,6 +118205,8 @@ MonoBehaviour:
   - {fileID: 1114082287, guid: d234d0b96eb4be948ae67f8aef0121d3, type: 3}
   - {fileID: -1164021116, guid: 785714d1442681446948e8e1c706678d, type: 3}
   - {fileID: 1813162480, guid: 77f14bb932d8398469c4870d8afee734, type: 3}
+  - {fileID: 1657054736, guid: 025cbfdf98da4c54b932a0a84a10e206, type: 3}
+  - {fileID: -905367782, guid: a2272c75d3559384689edf7e2c0d2ef4, type: 3}
   nextButton: {fileID: 651240178}
   prevButton: {fileID: 153173503}
   bookFrameObject: {fileID: 1009162147}
