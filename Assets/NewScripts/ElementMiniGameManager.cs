@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Events;
+using UnityEngine.InputSystem;
 
 public class ElementMiniGameManager : MonoBehaviour
 {
@@ -41,7 +42,6 @@ public class ElementMiniGameManager : MonoBehaviour
     [Range(0f, 1f)] public float PressVolume = 0.5f;
     [Range(0f, 1f)] public float FailVolume = 0.5f;
 
-    // หนังสือ
     [Header("📖 Book Model Settings")]
     public GameObject bookModel;
     [Tooltip("Animator ของหนังสือ (ถ้ามี) - ถ้าไม่ใส่จะใช้ Simple Animation")]
@@ -59,12 +59,10 @@ public class ElementMiniGameManager : MonoBehaviour
     [Tooltip("เวลารอให้อนิเมชั่นปิดหนังสือเล่นจบ")]
     public float closeAnimationDuration = 1f;
 
-    // เอฟเฟกต์สำเร็จ
     [Header("Success Effect Settings")]
     public ParticleSystem successEffect;
     public Transform handEffectSpawnPoint;
     public float effectDelay = 0.5f;
-
     [Tooltip("เสียงที่เล่นตอนปล่อยสกิลสำเร็จ")]
     public AudioClip successSkillSound;
     [Range(0f, 1f)] public float successSkillVolume = 0.8f;
@@ -81,6 +79,9 @@ public class ElementMiniGameManager : MonoBehaviour
     private bool isRetrying = false;
     private AudioSource audioSource;
     private Vector3 originalImageScale;
+
+    // ===== Input System - Gamepad Support =====
+    private bool[] keyWasPressed = new bool[4]; // สำหรับ Up, Down, Left, Right
 
     [Serializable]
     public class KeySpritePair
@@ -104,6 +105,8 @@ public class ElementMiniGameManager : MonoBehaviour
 
         if (displayImage != null)
             originalImageScale = displayImage.transform.localScale;
+
+        Debug.Log("✅ ElementMiniGameManager - Keyboard + Gamepad Ready!");
     }
 
     void Start()
@@ -111,7 +114,6 @@ public class ElementMiniGameManager : MonoBehaviour
         if (displayText != null) displayText.gameObject.SetActive(false);
         if (displayImage != null) displayImage.gameObject.SetActive(false);
         if (failSymbol != null) failSymbol.SetActive(false);
-
         if (bookModel != null)
             bookModel.SetActive(false);
     }
@@ -123,10 +125,14 @@ public class ElementMiniGameManager : MonoBehaviour
 
         if (currentSequence == null || currentSequence.Count == 0) return;
 
-        if (Input.anyKeyDown)
+        // ===== ตรวจจับ Input ทั้ง Keyboard + Gamepad =====
+        KeyCode pressedKey = GetPressedDirectionKey();
+
+        if (pressedKey != KeyCode.None)
         {
-            if (Input.GetKeyDown(currentSequence[currentIndex]))
+            if (pressedKey == currentSequence[currentIndex])
             {
+                // ✅ กดถูก
                 if (keyPressSound != null)
                 {
                     if (AudioManager.Instance != null)
@@ -143,6 +149,7 @@ public class ElementMiniGameManager : MonoBehaviour
             }
             else
             {
+                // ❌ กดผิด
                 if (keyFailSound != null)
                 {
                     if (AudioManager.Instance != null)
@@ -157,6 +164,95 @@ public class ElementMiniGameManager : MonoBehaviour
                     Fail();
             }
         }
+    }
+
+    /// <summary>
+    /// 🎮 ตรวจจับปุ่มทิศทางจากทั้ง Keyboard และ Gamepad
+    /// </summary>
+    private KeyCode GetPressedDirectionKey()
+    {
+        // ===== Keyboard Input =====
+        if (Keyboard.current != null)
+        {
+            if (Keyboard.current.upArrowKey.wasPressedThisFrame)
+                return KeyCode.UpArrow;
+            if (Keyboard.current.downArrowKey.wasPressedThisFrame)
+                return KeyCode.DownArrow;
+            if (Keyboard.current.leftArrowKey.wasPressedThisFrame)
+                return KeyCode.LeftArrow;
+            if (Keyboard.current.rightArrowKey.wasPressedThisFrame)
+                return KeyCode.RightArrow;
+        }
+
+        // ===== Gamepad Input (D-Pad + Left Stick) =====
+        if (Gamepad.current != null)
+        {
+            Vector2 dpad = Gamepad.current.dpad.ReadValue();
+            Vector2 stick = Gamepad.current.leftStick.ReadValue();
+
+            // รวมค่า D-Pad และ Left Stick
+            Vector2 combined = dpad + stick;
+
+            // ตรวจจับทิศทางแบบ Dead Zone (0.5)
+            float deadZone = 0.5f;
+
+            // Up
+            if (combined.y > deadZone && !keyWasPressed[0])
+            {
+                keyWasPressed[0] = true;
+                keyWasPressed[1] = false;
+                keyWasPressed[2] = false;
+                keyWasPressed[3] = false;
+                return KeyCode.UpArrow;
+            }
+            // Down
+            else if (combined.y < -deadZone && !keyWasPressed[1])
+            {
+                keyWasPressed[0] = false;
+                keyWasPressed[1] = true;
+                keyWasPressed[2] = false;
+                keyWasPressed[3] = false;
+                return KeyCode.DownArrow;
+            }
+            // Left
+            else if (combined.x < -deadZone && !keyWasPressed[2])
+            {
+                keyWasPressed[0] = false;
+                keyWasPressed[1] = false;
+                keyWasPressed[2] = true;
+                keyWasPressed[3] = false;
+                return KeyCode.LeftArrow;
+            }
+            // Right
+            else if (combined.x > deadZone && !keyWasPressed[3])
+            {
+                keyWasPressed[0] = false;
+                keyWasPressed[1] = false;
+                keyWasPressed[2] = false;
+                keyWasPressed[3] = true;
+                return KeyCode.RightArrow;
+            }
+
+            // Reset flags เมื่อไม่กดทิศทางใดๆ
+            if (Mathf.Abs(combined.x) < deadZone && Mathf.Abs(combined.y) < deadZone)
+            {
+                keyWasPressed[0] = false;
+                keyWasPressed[1] = false;
+                keyWasPressed[2] = false;
+                keyWasPressed[3] = false;
+            }
+        }
+
+        // ===== Fallback: Old Input System =====
+        if (Keyboard.current == null && Gamepad.current == null)
+        {
+            if (Input.GetKeyDown(KeyCode.UpArrow)) return KeyCode.UpArrow;
+            if (Input.GetKeyDown(KeyCode.DownArrow)) return KeyCode.DownArrow;
+            if (Input.GetKeyDown(KeyCode.LeftArrow)) return KeyCode.LeftArrow;
+            if (Input.GetKeyDown(KeyCode.RightArrow)) return KeyCode.RightArrow;
+        }
+
+        return KeyCode.None;
     }
 
     public void StartMiniGame(List<KeyCode> sequence, Action<bool> callback)
@@ -179,22 +275,15 @@ public class ElementMiniGameManager : MonoBehaviour
             bookModel.SetActive(true);
             Debug.Log($"📖 เปิดหนังสือ: {bookModel.name}, Active = {bookModel.activeSelf}");
 
-            // ลองใช้ Animation Component ก่อน (ง่ายกว่า)
             if (bookAnimation != null && !string.IsNullOrEmpty(openAnimationClip))
             {
                 bookAnimation.Play(openAnimationClip);
                 Debug.Log($"📖 [Animation] เล่น: {openAnimationClip}");
             }
-            // ถ้าไม่มี Animation ให้ใช้ Animator
             else if (bookAnimator != null && !string.IsNullOrEmpty(openAnimationTrigger))
             {
                 bookAnimator.SetTrigger(openAnimationTrigger);
                 Debug.Log($"📖 [Animator] เล่นอนิเมชั่นเปิดหนังสือ: {openAnimationTrigger}");
-                Debug.Log($"📖 Animator enabled? {bookAnimator.enabled}, Has parameter? {HasParameter(bookAnimator, openAnimationTrigger)}");
-            }
-            else
-            {
-                Debug.LogWarning("📖 ไม่มี Animation/Animator หรือ Clip/Trigger! หนังสือจะแสดงแบบธรรมดา");
             }
         }
 
@@ -205,10 +294,8 @@ public class ElementMiniGameManager : MonoBehaviour
             else
             {
                 Debug.LogWarning("[MiniGame] ไม่มี Sequence ให้เล่น!");
-
                 if (playerController != null)
                     playerController.UnlockMovement();
-
                 callback?.Invoke(false);
                 return;
             }
@@ -223,11 +310,15 @@ public class ElementMiniGameManager : MonoBehaviour
         isActive = true;
         isRetrying = false;
 
+        // Reset input flags
+        for (int i = 0; i < keyWasPressed.Length; i++)
+            keyWasPressed[i] = false;
+
         if (failSymbol != null) failSymbol.SetActive(false);
         UpdateDisplay();
-
         StartCoroutine(DelayInputActivation());
-        Debug.Log($"[MiniGame] StartMiniGame - seq: {SeqToString(currentSequence)}");
+
+        Debug.Log($"🎮 [MiniGame] เริ่มเกม - Sequence: {SeqToString(currentSequence)} (Arrow Keys / D-Pad / Left Stick)");
     }
 
     public void ForceStop()
@@ -236,11 +327,9 @@ public class ElementMiniGameManager : MonoBehaviour
 
         isActive = false;
         onCompleteCallback = null;
-
         HideDisplay();
         StopAllCoroutines();
 
-        // ปิดหนังสือทันที (ไม่เล่นอนิเมชั่น)
         if (bookModel != null)
             bookModel.SetActive(false);
 
@@ -274,7 +363,6 @@ public class ElementMiniGameManager : MonoBehaviour
         onCompleteCallback?.Invoke(true);
         onCompleteCallback = null;
 
-        // 📖 ปิดหนังสือพร้อมอนิเมชั่น แล้วค่อยปลดล็อคและเล่นเอฟเฟกต์
         StartCoroutine(CloseBookAndFinish(true));
 
         Debug.Log($"✅ MiniGame Success ({name})");
@@ -291,18 +379,13 @@ public class ElementMiniGameManager : MonoBehaviour
         onCompleteCallback?.Invoke(false);
         onCompleteCallback = null;
 
-        // 📖 ปิดหนังสือพร้อมอนิเมชั่น แล้วค่อยปลดล็อค
         StartCoroutine(CloseBookAndFinish(false));
 
         Debug.Log($"💥 MiniGame Failed ({name})");
     }
 
-    /// <summary>
-    /// 📖 เล่นอนิเมชั่นปิดหนังสือ รอให้เล่นจบ แล้วค่อยซ่อนและปลดล็อคผู้เล่น
-    /// </summary>
     private IEnumerator CloseBookAndFinish(bool isSuccess)
     {
-        // เล่นอนิเมชั่นปิดหนังสือ
         if (bookAnimation != null && !string.IsNullOrEmpty(closeAnimationClip))
         {
             bookAnimation.Play(closeAnimationClip);
@@ -312,31 +395,22 @@ public class ElementMiniGameManager : MonoBehaviour
         {
             bookAnimator.SetTrigger(closeAnimationTrigger);
             Debug.Log($"📖 [Animator] เล่นอนิเมชั่นปิดหนังสือ: {closeAnimationTrigger}");
-            Debug.Log($"📖 Animator State: {bookAnimator.GetCurrentAnimatorStateInfo(0).IsName("Book_Close")}");
-        }
-        else
-        {
-            Debug.LogWarning("📖 ไม่มี Animation/Animator สำหรับปิดหนังสือ");
         }
 
-        // รอให้อนิเมชั่นเล่นจบ
         yield return new WaitForSeconds(closeAnimationDuration);
 
-        // ซ่อนหนังสือ
         if (bookModel != null)
         {
             bookModel.SetActive(false);
             Debug.Log("📖 ซ่อนหนังสือแล้ว");
         }
 
-        // ปลดล็อคผู้เล่น
         if (playerController != null)
         {
             playerController.StopCastingAnimation();
             playerController.UnlockMovement();
         }
 
-        // ถ้าสำเร็จ ให้เล่นเอฟเฟกต์
         if (isSuccess)
         {
             StartCoroutine(PlaySuccessEffectSequence());
@@ -385,8 +459,12 @@ public class ElementMiniGameManager : MonoBehaviour
         yield return new WaitForSeconds(retryDelay);
         currentIndex = 0;
         isRetrying = false;
-        UpdateDisplay();
 
+        // Reset input flags
+        for (int i = 0; i < keyWasPressed.Length; i++)
+            keyWasPressed[i] = false;
+
+        UpdateDisplay();
         Debug.Log($"🔄 เริ่มใหม่! คีย์ที่ต้องกด: {currentSequence[currentIndex]}");
     }
 
@@ -444,7 +522,6 @@ public class ElementMiniGameManager : MonoBehaviour
         return string.Join("", seq);
     }
 
-    // 🔍 Helper function: เช็คว่า Animator มี Parameter หรือไม่
     private bool HasParameter(Animator anim, string paramName)
     {
         foreach (AnimatorControllerParameter param in anim.parameters)
