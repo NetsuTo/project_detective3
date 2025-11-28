@@ -525,7 +525,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1161051054
 RectTransform:
   m_ObjectHideFlags: 0
@@ -676,7 +676,10 @@ MonoBehaviour:
   videoPlayer: {fileID: 789611932}
   mainMenuSceneName: Menu
   allowSkip: 1
-  skipKey: 32
+  holdDuration: 1.5
+  skipText: {fileID: 1161051053}
+  holdProgressBar: {fileID: 0}
+  holdProgressUI: {fileID: 0}
 --- !u!4 &2007639795
 Transform:
   m_ObjectHideFlags: 0
