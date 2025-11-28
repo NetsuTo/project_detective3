@@ -15,11 +15,7 @@ public class SkillPickup : MonoBehaviour
     private PlayerSkillManager manager;
     private AudioSource audioSource;
 
-    // ===== Input System Detection =====
-    private bool useNewInputSystem = false;
-    private bool inputSystemChecked = false;
-
-    // ===== Input System Actions =====
+    // ===== Input System Actions - รองรับ Keyboard + Gamepad =====
     private InputAction interactAction;
 
     void Awake()
@@ -28,61 +24,30 @@ public class SkillPickup : MonoBehaviour
         audioSource.playOnAwake = false;
         audioSource.spatialBlend = 0f;
 
-        // ตรวจสอบว่าใช้ระบบไหน
-        DetectInputSystem();
+        // สร้าง Input Actions
+        SetupInputActions();
+        interactAction?.Enable();
 
-        if (useNewInputSystem)
-        {
-            SetupInputActions();
-            interactAction?.Enable();
-        }
-    }
-
-    private void DetectInputSystem()
-    {
-        // ตรวจสอบว่ามี Keyboard.current หรือไม่
-        if (Keyboard.current != null)
-        {
-            useNewInputSystem = true;
-            Debug.Log("?? [SkillPickup] ใช้ New Input System (Input System Package)");
-        }
-        else
-        {
-            useNewInputSystem = false;
-            Debug.Log("?? [SkillPickup] ใช้ Old Input System (Input Manager)");
-        }
-        inputSystemChecked = true;
+        Debug.Log("? SkillPickup Started - Keyboard + Gamepad Ready!");
     }
 
     private void SetupInputActions()
     {
-        interactAction = new InputAction("Interact", binding: "<Keyboard>/e");
+        // ===== Interact - รองรับ E และ Button North (Y/Triangle) =====
+        interactAction = new InputAction("Interact", type: InputActionType.Button);
+        interactAction.AddBinding("<Keyboard>/e");
+        interactAction.AddBinding("<Gamepad>/buttonNorth");  // Xbox: Y, PS: Triangle
         interactAction.performed += OnInteractPerformed;
     }
 
+    // ? Update() สำหรับ Fallback (Old Input System)
     void Update()
     {
         if (!playerInRange) return;
 
-        // แสดงข้อความแนะนำครั้งเดียวตอน Player เข้ามา
-        if (!inputSystemChecked)
+        // Fallback สำหรับ Old Input System
+        if (Keyboard.current == null && Gamepad.current == null)
         {
-            DetectInputSystem();
-        }
-
-        // ใช้ระบบที่เหมาะสม
-        if (useNewInputSystem)
-        {
-            // New Input System
-            if (Keyboard.current.eKey.wasPressedThisFrame)
-            {
-                Debug.Log("?? [New Input] กด E");
-                OnInteractPerformed(default);
-            }
-        }
-        else
-        {
-            // Old Input System
             if (Input.GetKeyDown(KeyCode.E))
             {
                 Debug.Log("?? [Old Input] กด E");
@@ -105,16 +70,16 @@ public class SkillPickup : MonoBehaviour
     {
         if (!playerInRange) return;
 
-        Debug.Log("?? กด E ขณะอยู่ในระยะ pickup");
+        Debug.Log("?? กด Interact (E / Y/Triangle) - เริ่มเก็บสกิล");
 
         if (playerController != null)
         {
-            Debug.Log("?? เรียก animation pickup");
+            Debug.Log("?? เล่น Animation Pickup");
             playerController.PlayPickupAnimation(() =>
             {
                 if (manager != null && manager.CanPickupSkill(skillID))
                 {
-                    Debug.Log("? เก็บสกิลสำเร็จ: " + skillID);
+                    Debug.Log($"? เก็บสกิลสำเร็จ: {skillID}");
                     PlayPickupSound();
                     manager.PickupSkill(skillID);
 
@@ -132,6 +97,10 @@ public class SkillPickup : MonoBehaviour
                     Debug.Log("?? ไม่สามารถเก็บสกิลได้ หรือ Inventory เต็ม");
                 }
             });
+        }
+        else
+        {
+            Debug.LogWarning("?? PlayerController not found!");
         }
     }
 
@@ -156,10 +125,21 @@ public class SkillPickup : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            Debug.Log($"?? Player เข้ามาในระยะ pickup (ใช้ระบบ: {(useNewInputSystem ? "New Input" : "Old Input")})");
+            Debug.Log($"?? Player เข้ามาในระยะ Pickup Skill [{skillID}]");
+            Debug.Log("?? กด E หรือ Y/Triangle เพื่อเก็บ");
+
             playerInRange = true;
             playerController = other.GetComponent<PlayerController>();
             manager = other.GetComponent<PlayerSkillManager>();
+
+            if (playerController == null)
+            {
+                Debug.LogWarning("?? PlayerController not found on Player!");
+            }
+            if (manager == null)
+            {
+                Debug.LogWarning("?? PlayerSkillManager not found on Player!");
+            }
         }
     }
 
@@ -167,7 +147,7 @@ public class SkillPickup : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            Debug.Log("?? Player ออกจากระยะ pickup");
+            Debug.Log("?? Player ออกจากระยะ Pickup");
             playerInRange = false;
             playerController = null;
             manager = null;
@@ -181,5 +161,16 @@ public class SkillPickup : MonoBehaviour
             interactAction.performed -= OnInteractPerformed;
             interactAction.Dispose();
         }
+    }
+
+    // ===== Helper Methods =====
+    public bool IsPlayerInRange()
+    {
+        return playerInRange;
+    }
+
+    public string GetSkillID()
+    {
+        return skillID;
     }
 }

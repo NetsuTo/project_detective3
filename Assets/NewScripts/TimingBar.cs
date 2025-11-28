@@ -14,16 +14,19 @@ public class TimingBar : MonoBehaviour
     private Action<bool> onComplete;
     private bool isActive = false;
 
-    // ===== Input System - ใช้ปุ่ม F เหมือน QTE =====
+    // ===== Input System - รองรับทั้ง Keyboard + Gamepad =====
     private InputAction mixAction;
 
     void Start()
     {
-        // ===== สร้าง Input Action สำหรับปุ่ม F =====
-        mixAction = new InputAction("Mix", binding: "<Keyboard>/f", type: InputActionType.Button);
+        // ===== สร้าง Input Action สำหรับปุ่ม F และ Gamepad =====
+        mixAction = new InputAction("Mix", type: InputActionType.Button);
+        mixAction.AddBinding("<Keyboard>/f");              // Keyboard: F
+        mixAction.AddBinding("<Gamepad>/buttonWest");      // Xbox: X, PS: Square □
+
         mixAction.Enable();
 
-        Debug.Log("✅ TimingBar Started - Input System Ready (F Key)!");
+        Debug.Log("✅ TimingBar Started - F (Keyboard) / X/Square (Gamepad) Ready!");
     }
 
     private void OnEnable()
@@ -48,7 +51,7 @@ public class TimingBar : MonoBehaviour
         pointer.anchoredPosition = Vector2.zero; // เริ่มตรงกลาง bar
         direction = 1f; // รีเซ็ตทิศทาง
 
-        Debug.Log("⏱️ เริ่ม Timing Bar - กด F เพื่อหยุดเข็ม");
+        Debug.Log("⏱️ เริ่ม Timing Bar - กด F หรือ X/Square เพื่อหยุดเข็ม");
     }
 
     void Update()
@@ -74,7 +77,7 @@ public class TimingBar : MonoBehaviour
             }
         }
 
-        // ===== ตรวจสอบปุ่ม F ผ่าน Input System =====
+        // ===== ตรวจสอบปุ่ม F หรือ Gamepad ผ่าน Input System =====
         if (mixAction.WasPressedThisFrame())
         {
             bool success = IsPointerInTarget();
@@ -123,5 +126,6 @@ public class TimingBar : MonoBehaviour
     {
         pointer.anchoredPosition = Vector2.zero;
         direction = 1f;
+        Debug.Log("🔄 รีเซ็ตตำแหน่งเข็ม");
     }
 }

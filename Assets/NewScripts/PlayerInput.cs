@@ -5,7 +5,7 @@ public class PlayerInput : MonoBehaviour
 {
     private PlayerSkillManager manager;
 
-    // ===== Input System Actions =====
+    // ===== Input System Actions - รองรับ Keyboard + Gamepad =====
     private InputAction selectPrevAction;
     private InputAction selectNextAction;
     private InputAction confirmSkillAction;
@@ -17,32 +17,42 @@ public class PlayerInput : MonoBehaviour
         // สร้าง Input Actions
         SetupInputActions();
 
-        // ?? Enable ทันทีใน Awake
+        // ? Enable ทันทีใน Awake
         selectPrevAction?.Enable();
         selectNextAction?.Enable();
         confirmSkillAction?.Enable();
+
+        Debug.Log("? PlayerInput Started - Keyboard + Gamepad Ready!");
     }
 
     private void SetupInputActions()
     {
-        // เลือก Skill ก่อนหน้า (Z)
-        selectPrevAction = new InputAction("SelectPrev", binding: "<Keyboard>/z");
+        // ===== เลือก Skill ก่อนหน้า - รองรับ Z และ D-Pad Up =====
+        selectPrevAction = new InputAction("SelectPrev", type: InputActionType.Button);
+        selectPrevAction.AddBinding("<Keyboard>/z");
+        selectPrevAction.AddBinding("<Gamepad>/dpad/up");
+        selectPrevAction.AddBinding("<Gamepad>/leftStick/up");
         selectPrevAction.performed += OnSelectPrevPerformed;
 
-        // เลือก Skill ถัดไป (C)
-        selectNextAction = new InputAction("SelectNext", binding: "<Keyboard>/c");
+        // ===== เลือก Skill ถัดไป - รองรับ C และ D-Pad Down =====
+        selectNextAction = new InputAction("SelectNext", type: InputActionType.Button);
+        selectNextAction.AddBinding("<Keyboard>/c");
+        selectNextAction.AddBinding("<Gamepad>/dpad/down");
+        selectNextAction.AddBinding("<Gamepad>/leftStick/down");
         selectNextAction.performed += OnSelectNextPerformed;
 
-        // ยืนยัน Skill (T)
-        confirmSkillAction = new InputAction("ConfirmSkill", binding: "<Keyboard>/t");
+        // ===== ยืนยัน Skill - รองรับ T และ Button East (B/Circle) =====
+        confirmSkillAction = new InputAction("ConfirmSkill", type: InputActionType.Button);
+        confirmSkillAction.AddBinding("<Keyboard>/t");
+        confirmSkillAction.AddBinding("<Gamepad>/buttonEast");  // Xbox: B, PS: Circle
         confirmSkillAction.performed += OnConfirmSkillPerformed;
     }
 
-    // ? อ่าน Input ทุกเฟรมด้วย Update() (วิธีสำรอง)
+    // ?? อ่าน Input ทุกเฟรมด้วย Update() (วิธีสำรอง - สำหรับ Old Input System)
     private void Update()
     {
         // ถ้า Input System ไม่ทำงาน ให้ใช้ GetKeyDown แทน
-        if (Keyboard.current == null)
+        if (Keyboard.current == null && Gamepad.current == null)
         {
             // ใช้ Input Manager (Old Input System) แทน
             if (Input.GetKeyDown(KeyCode.Z))
@@ -54,22 +64,6 @@ public class PlayerInput : MonoBehaviour
                 OnSelectNextPerformed(default);
             }
             if (Input.GetKeyDown(KeyCode.T))
-            {
-                OnConfirmSkillPerformed(default);
-            }
-        }
-        else
-        {
-            // ใช้ New Input System แบบอ่านทุกเฟรม
-            if (Keyboard.current.zKey.wasPressedThisFrame)
-            {
-                OnSelectPrevPerformed(default);
-            }
-            if (Keyboard.current.cKey.wasPressedThisFrame)
-            {
-                OnSelectNextPerformed(default);
-            }
-            if (Keyboard.current.tKey.wasPressedThisFrame)
             {
                 OnConfirmSkillPerformed(default);
             }
@@ -95,7 +89,7 @@ public class PlayerInput : MonoBehaviour
     {
         if (manager != null)
         {
-            Debug.Log("?? กด Z - เลือก Skill ก่อนหน้า");
+            Debug.Log("?? เลือก Skill ก่อนหน้า (Z / D-Pad Up)");
             manager.SelectPrev();
         }
     }
@@ -104,7 +98,7 @@ public class PlayerInput : MonoBehaviour
     {
         if (manager != null)
         {
-            Debug.Log("?? กด C - เลือก Skill ถัดไป");
+            Debug.Log("?? เลือก Skill ถัดไป (C / D-Pad Down)");
             manager.SelectNext();
         }
     }
@@ -116,13 +110,13 @@ public class PlayerInput : MonoBehaviour
         if (inv != null && inv.HasAnyBottle())
         {
             Debug.Log("?? ไม่สามารถเริ่ม Mix ได้ เพราะยังมีขวดใน Inventory อยู่แล้ว");
-            return; // ? หยุดการทำงาน ไม่ให้แสดงตัวอักษรบนหัว
+            return; // ?? หยุดการทำงาน ไม่ให้แสดงตัวอักษรบนหัว
         }
 
         // ? ถ้าไม่มีขวด ให้ Confirm Skill ได้
         if (manager != null && manager.GetSkills().Count > 0)
         {
-            Debug.Log("? กด T ? เริ่ม Mix Skill");
+            Debug.Log("? เริ่ม Mix Skill (T / B/Circle)");
             manager.ConfirmSkill();
         }
         else

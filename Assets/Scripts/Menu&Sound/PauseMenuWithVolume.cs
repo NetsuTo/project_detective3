@@ -44,13 +44,14 @@ public class PauseMenuWithVolume : MonoBehaviour
     private int totalElements;
     private PlayerController playerController;
 
-    // ===== Input System Actions - แก้ไขใหม่ =====
+    // ===== Input System Actions - รองรับ Keyboard + Gamepad =====
     private InputAction pauseAction;
     private InputAction navigateUpAction;
     private InputAction navigateDownAction;
     private InputAction navigateLeftAction;
     private InputAction navigateRightAction;
     private InputAction confirmAction;
+    private InputAction cancelAction;
 
     // ป้องกันการกดซ้ำ
     private bool pauseWasPressed = false;
@@ -59,6 +60,7 @@ public class PauseMenuWithVolume : MonoBehaviour
     private bool leftWasPressed = false;
     private bool rightWasPressed = false;
     private bool confirmWasPressed = false;
+    private bool cancelWasPressed = false;
 
     void Start()
     {
@@ -82,22 +84,49 @@ public class PauseMenuWithVolume : MonoBehaviour
 
         UpdateUIHighlight();
 
-        Debug.Log("? PauseMenu Started - Input System Ready!");
+        Debug.Log("? PauseMenu Started - Keyboard + Gamepad Ready!");
     }
 
     private void SetupInputActions()
     {
-        // Pause/Unpause
-        pauseAction = new InputAction("Pause", binding: "<Keyboard>/escape", type: InputActionType.Button);
+        // ===== Pause/Unpause - รองรับ ESC และ Start Button =====
+        pauseAction = new InputAction("Pause", type: InputActionType.Button);
+        pauseAction.AddBinding("<Keyboard>/escape");
+        pauseAction.AddBinding("<Gamepad>/start");  // Start button บนจอย
 
-        // Navigation
-        navigateUpAction = new InputAction("NavigateUp", binding: "<Keyboard>/upArrow", type: InputActionType.Button);
-        navigateDownAction = new InputAction("NavigateDown", binding: "<Keyboard>/downArrow", type: InputActionType.Button);
-        navigateLeftAction = new InputAction("NavigateLeft", binding: "<Keyboard>/leftArrow", type: InputActionType.Button);
-        navigateRightAction = new InputAction("NavigateRight", binding: "<Keyboard>/rightArrow", type: InputActionType.Button);
+        // ===== Navigation Up - รองรับ Arrow Up และ D-Pad/Left Stick =====
+        navigateUpAction = new InputAction("NavigateUp", type: InputActionType.Button);
+        navigateUpAction.AddBinding("<Keyboard>/upArrow");
+        navigateUpAction.AddBinding("<Gamepad>/dpad/up");
+        navigateUpAction.AddBinding("<Gamepad>/leftStick/up");
 
-        // Confirm
-        confirmAction = new InputAction("Confirm", binding: "<Keyboard>/enter", type: InputActionType.Button);
+        // ===== Navigation Down =====
+        navigateDownAction = new InputAction("NavigateDown", type: InputActionType.Button);
+        navigateDownAction.AddBinding("<Keyboard>/downArrow");
+        navigateDownAction.AddBinding("<Gamepad>/dpad/down");
+        navigateDownAction.AddBinding("<Gamepad>/leftStick/down");
+
+        // ===== Navigation Left (ปรับ Slider) =====
+        navigateLeftAction = new InputAction("NavigateLeft", type: InputActionType.Button);
+        navigateLeftAction.AddBinding("<Keyboard>/leftArrow");
+        navigateLeftAction.AddBinding("<Gamepad>/dpad/left");
+        navigateLeftAction.AddBinding("<Gamepad>/leftStick/left");
+
+        // ===== Navigation Right (ปรับ Slider) =====
+        navigateRightAction = new InputAction("NavigateRight", type: InputActionType.Button);
+        navigateRightAction.AddBinding("<Keyboard>/rightArrow");
+        navigateRightAction.AddBinding("<Gamepad>/dpad/right");
+        navigateRightAction.AddBinding("<Gamepad>/leftStick/right");
+
+        // ===== Confirm - รองรับ Enter และ Button South (A/Cross) =====
+        confirmAction = new InputAction("Confirm", type: InputActionType.Button);
+        confirmAction.AddBinding("<Keyboard>/enter");
+        confirmAction.AddBinding("<Gamepad>/buttonSouth");  // Xbox: A, PS: Cross
+
+        // ===== Cancel - รองรับ ESC และ Button East (B/Circle) =====
+        cancelAction = new InputAction("Cancel", type: InputActionType.Button);
+        cancelAction.AddBinding("<Keyboard>/escape");
+        cancelAction.AddBinding("<Gamepad>/buttonEast");  // Xbox: B, PS: Circle
 
         // Enable Pause ตลอดเวลา
         pauseAction.Enable();
@@ -116,6 +145,7 @@ public class PauseMenuWithVolume : MonoBehaviour
         navigateLeftAction?.Disable();
         navigateRightAction?.Disable();
         confirmAction?.Disable();
+        cancelAction?.Disable();
     }
 
     void Update()
@@ -149,6 +179,7 @@ public class PauseMenuWithVolume : MonoBehaviour
             bool leftPressed = navigateLeftAction.IsPressed();
             bool rightPressed = navigateRightAction.IsPressed();
             bool confirmPressed = confirmAction.IsPressed();
+            bool cancelPressed = cancelAction.IsPressed();
 
             // Navigate Up
             if (upPressed && !upWasPressed)
@@ -203,6 +234,13 @@ public class PauseMenuWithVolume : MonoBehaviour
                 }
             }
             confirmWasPressed = confirmPressed;
+
+            // Cancel (กลับ/Resume)
+            if (cancelPressed && !cancelWasPressed)
+            {
+                ResumeGame();
+            }
+            cancelWasPressed = cancelPressed;
         }
     }
 
@@ -299,12 +337,15 @@ public class PauseMenuWithVolume : MonoBehaviour
         navigateLeftAction?.Enable();
         navigateRightAction?.Enable();
         confirmAction?.Enable();
+        cancelAction?.Enable();
 
         if (lockInputWhenPaused && playerController != null)
         {
             playerController.LockMovement();
             Debug.Log("?? Pause - ล็อคการเคลื่อนที่");
         }
+
+        Debug.Log("?? เปิด Pause Menu");
     }
 
     public void ResumeGame()
@@ -319,12 +360,15 @@ public class PauseMenuWithVolume : MonoBehaviour
         navigateLeftAction?.Disable();
         navigateRightAction?.Disable();
         confirmAction?.Disable();
+        cancelAction?.Disable();
 
         if (lockInputWhenPaused && playerController != null)
         {
             playerController.UnlockMovement();
             Debug.Log("?? Resume - ปลดล็อคการเคลื่อนที่");
         }
+
+        Debug.Log("?? Resume Game");
     }
 
     public void RestartGame()
@@ -332,6 +376,7 @@ public class PauseMenuWithVolume : MonoBehaviour
         Time.timeScale = 1f;
         Scene currentScene = SceneManager.GetActiveScene();
         SceneManager.LoadScene(currentScene.name);
+        Debug.Log("?? Restart Game");
     }
 
     public void QuitGame()
@@ -342,6 +387,8 @@ public class PauseMenuWithVolume : MonoBehaviour
         {
             playerController.UnlockMovement();
         }
+
+        Debug.Log("?? Quit Game");
 
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
@@ -359,6 +406,7 @@ public class PauseMenuWithVolume : MonoBehaviour
         navigateLeftAction?.Dispose();
         navigateRightAction?.Dispose();
         confirmAction?.Dispose();
+        cancelAction?.Dispose();
 
         if (lockInputWhenPaused && playerController != null && isPaused)
         {

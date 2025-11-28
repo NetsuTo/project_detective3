@@ -80,7 +80,7 @@ public class TutorialBook : MonoBehaviour
     private CanvasGroup bookIconCanvasGroup;
     private bool isAnimating = false;
 
-    // ===== Input System Actions - แก้ไขใหม่ =====
+    // ===== Input System Actions - รองรับ Keyboard + Gamepad =====
     private InputAction toggleBookAction;
     private InputAction nextPageAction;
     private InputAction prevPageAction;
@@ -139,19 +139,27 @@ public class TutorialBook : MonoBehaviour
 
         UpdatePageDisplay();
 
-        Debug.Log("? TutorialBook Started - Input System Ready!");
+        Debug.Log("? TutorialBook Started - Keyboard + Gamepad Ready!");
     }
 
     private void SetupInputActions()
     {
-        // Toggle Book (Tab)
-        toggleBookAction = new InputAction("ToggleBook", binding: "<Keyboard>/tab", type: InputActionType.Button);
+        // ===== Toggle Book - รองรับ Tab และ Select Button =====
+        toggleBookAction = new InputAction("ToggleBook", type: InputActionType.Button);
+        toggleBookAction.AddBinding("<Keyboard>/tab");
+        toggleBookAction.AddBinding("<Gamepad>/select");  // Select/Back button (Xbox: View, PS: Share)
 
-        // Next Page (Right Arrow)
-        nextPageAction = new InputAction("NextPage", binding: "<Keyboard>/rightArrow", type: InputActionType.Button);
+        // ===== Next Page - รองรับ Right Arrow และ Shoulder Buttons =====
+        nextPageAction = new InputAction("NextPage", type: InputActionType.Button);
+        nextPageAction.AddBinding("<Keyboard>/rightArrow");
+        nextPageAction.AddBinding("<Gamepad>/rightShoulder");  // RB/R1
+        nextPageAction.AddBinding("<Gamepad>/dpad/right");
 
-        // Previous Page (Left Arrow)
-        prevPageAction = new InputAction("PrevPage", binding: "<Keyboard>/leftArrow", type: InputActionType.Button);
+        // ===== Previous Page - รองรับ Left Arrow และ Shoulder Buttons =====
+        prevPageAction = new InputAction("PrevPage", type: InputActionType.Button);
+        prevPageAction.AddBinding("<Keyboard>/leftArrow");
+        prevPageAction.AddBinding("<Gamepad>/leftShoulder");   // LB/L1
+        prevPageAction.AddBinding("<Gamepad>/dpad/left");
 
         // Enable Toggle ตลอดเวลา
         toggleBookAction.Enable();
@@ -242,11 +250,13 @@ public class TutorialBook : MonoBehaviour
         {
             nextPageAction?.Enable();
             prevPageAction?.Enable();
+            Debug.Log("?? เปิดสมุด - ใช้ LB/RB หรือ ?/? พลิกหน้า");
         }
         else
         {
             nextPageAction?.Disable();
             prevPageAction?.Disable();
+            Debug.Log("?? ปิดสมุด");
         }
 
         // ล็อค/ปลดล็อคการเคลื่อนที่ของผู้เล่น
@@ -339,6 +349,7 @@ public class TutorialBook : MonoBehaviour
             currentRightPageIndex += 2;
             AnimatePageFlip(true);
             PlayPageSound();
+            Debug.Log($"?? หน้า {currentRightPageIndex}/{pageSprites.Count}");
         }
     }
 
@@ -349,6 +360,7 @@ public class TutorialBook : MonoBehaviour
             currentRightPageIndex -= 2;
             AnimatePageFlip(false);
             PlayPageSound();
+            Debug.Log($"?? หน้า {currentRightPageIndex}/{pageSprites.Count}");
         }
     }
 

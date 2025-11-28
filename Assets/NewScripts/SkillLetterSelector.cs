@@ -26,18 +26,21 @@ public class SkillLetterSelector : MonoBehaviour
     public Vector3[] customOffsets;   // ใส่ใน Inspector
     public float letterSpacing = 100f; // fallback ถ้า customOffsets ไม่พอ
 
-    // ===== Input System =====
+    // ===== Input System - รองรับทั้ง Keyboard + Gamepad =====
     private InputAction mixAction;
 
     void Start()
     {
         manager = GetComponent<PlayerSkillManager>();
 
-        // ===== สร้าง Input Action สำหรับปุ่ม F =====
-        mixAction = new InputAction("Mix", binding: "<Keyboard>/f", type: InputActionType.Button);
+        // ===== สร้าง Input Action สำหรับปุ่ม F และ Gamepad =====
+        mixAction = new InputAction("Mix", type: InputActionType.Button);
+        mixAction.AddBinding("<Keyboard>/f");              // Keyboard: F
+        mixAction.AddBinding("<Gamepad>/buttonWest");      // Xbox: X, PS: Square □
+
         mixAction.Enable();
 
-        Debug.Log("✅ SkillLetterSelector Started - Input System Ready (F Key)!");
+        Debug.Log("✅ SkillLetterSelector Started - F (Keyboard) / X/Square (Gamepad) Ready!");
     }
 
     private void OnEnable()
@@ -72,14 +75,14 @@ public class SkillLetterSelector : MonoBehaviour
             }
         }
 
-        // ===== เริ่ม QTE เมื่อกด F ผ่าน Input System =====
+        // ===== เริ่ม QTE เมื่อกด F หรือปุ่ม Gamepad =====
         if (mixAction.WasPressedThisFrame() && remaining.Count > 0)
         {
             if (!qteStarted)
             {
                 qteStarted = true;
                 StartQTE();
-                Debug.Log("🎯 กดปุ่ม F -> เริ่ม QTE!");
+                Debug.Log("🎯 กดปุ่ม Mix -> เริ่ม QTE!");
             }
         }
 
@@ -182,7 +185,7 @@ public class SkillLetterSelector : MonoBehaviour
         }
     }
 
-    // ===== ฟังก์ชันเสริม: รีเซ็ต QTE (ถ้าต้องการ) =====
+    // ===== ฟังก์ชันเสริม: รีเซ็ต QTE =====
     public void ResetQTE()
     {
         // ลบ UI ทั้งหมด

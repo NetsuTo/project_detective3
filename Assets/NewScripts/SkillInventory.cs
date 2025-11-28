@@ -12,22 +12,27 @@ public class SkillInventory : MonoBehaviour
 
     private List<List<KeyCode>> storedSkills = new List<List<KeyCode>>();
 
-    // ===== Input System Actions =====
+    // ===== Input System Actions - รองรับ Keyboard + Gamepad =====
     private InputAction useSkillAction;
 
     void Awake()
     {
-        // สร้าง Input Action สำหรับใช้สกิล (R)
+        // สร้าง Input Action สำหรับใช้สกิล
         SetupInputActions();
 
-        // ⚠️ Enable ทันทีใน Awake
+        // ✅ Enable ทันทีใน Awake
         useSkillAction?.Enable();
+
+        Debug.Log("✅ SkillInventory Started - Keyboard + Gamepad Ready!");
     }
 
     private void SetupInputActions()
     {
-        // ใช้สกิล (R)
-        useSkillAction = new InputAction("UseSkill", binding: "<Keyboard>/r");
+        // ===== ใช้สกิล - รองรับ R และ Right Trigger =====
+        useSkillAction = new InputAction("UseSkill", type: InputActionType.Button);
+        useSkillAction.AddBinding("<Keyboard>/r");
+        useSkillAction.AddBinding("<Gamepad>/rightTrigger");  // RT/R2
+        useSkillAction.AddBinding("<Gamepad>/rightShoulder"); // RB/R1 (สำรอง)
         useSkillAction.performed += OnUseSkillPerformed;
     }
 
@@ -35,18 +40,10 @@ public class SkillInventory : MonoBehaviour
     private void Update()
     {
         // ถ้า Input System ไม่ทำงาน ให้ใช้ GetKeyDown แทน
-        if (Keyboard.current == null)
+        if (Keyboard.current == null && Gamepad.current == null)
         {
             // ใช้ Input Manager (Old Input System) แทน
             if (Input.GetKeyDown(KeyCode.R))
-            {
-                OnUseSkillPerformed(default);
-            }
-        }
-        else
-        {
-            // ใช้ New Input System แบบอ่านทุกเฟรม
-            if (Keyboard.current.rKey.wasPressedThisFrame)
             {
                 OnUseSkillPerformed(default);
             }
@@ -68,7 +65,7 @@ public class SkillInventory : MonoBehaviour
     {
         if (storedSkills.Count > 0)
         {
-            Debug.Log("🎯 กด R แล้ว! แต่การใช้สกิลจะถูกจัดการผ่าน TargetZone");
+            Debug.Log("🎯 ใช้สกิล (R / RT/R2) - การใช้สกิลจะถูกจัดการผ่าน TargetZone");
         }
         else
         {
@@ -102,6 +99,8 @@ public class SkillInventory : MonoBehaviour
         Sequence seq = DOTween.Sequence();
         seq.Append(go.transform.DOLocalMoveY(startPos.y, 0.4f).SetEase(Ease.OutCubic));
         seq.Join(cg.DOFade(1, 0.4f));
+
+        Debug.Log($"✨ เพิ่มสกิลลงขวด: {string.Join("", sequence)} (รวม {storedSkills.Count} ขวด)");
     }
 
     // ตรวจว่ามี skill ตรงกับ seq หรือไม่
@@ -134,8 +133,20 @@ public class SkillInventory : MonoBehaviour
                 storedSkills.RemoveAt(i);
                 if (i < bottleParent.childCount)
                 {
-                    Destroy(bottleParent.GetChild(i).gameObject);
+                    GameObject bottleObj = bottleParent.GetChild(i).gameObject;
+
+                    // ✅ แอนิเมชันลบขวด
+                    CanvasGroup cg = bottleObj.GetComponent<CanvasGroup>();
+                    if (cg == null)
+                        cg = bottleObj.AddComponent<CanvasGroup>();
+
+                    Sequence seq2 = DOTween.Sequence();
+                    seq2.Append(bottleObj.transform.DOScale(0.8f, 0.2f).SetEase(Ease.InBack));
+                    seq2.Join(cg.DOFade(0f, 0.2f));
+                    seq2.OnComplete(() => Destroy(bottleObj));
                 }
+
+                Debug.Log($"💊 ใช้สกิล: {SeqToString(seq)} (เหลือ {storedSkills.Count} ขวด)");
                 return;
             }
         }
@@ -146,10 +157,22 @@ public class SkillInventory : MonoBehaviour
     {
         if (storedSkills.Count > 0)
         {
+            Debug.Log($"❌ เสียขวด: {SeqToString(storedSkills[0])}");
+
             storedSkills.RemoveAt(0);
             if (bottleParent.childCount > 0)
             {
-                Destroy(bottleParent.GetChild(0).gameObject);
+                GameObject bottleObj = bottleParent.GetChild(0).gameObject;
+
+                // ✅ แอนิเมชันลบขวด
+                CanvasGroup cg = bottleObj.GetComponent<CanvasGroup>();
+                if (cg == null)
+                    cg = bottleObj.AddComponent<CanvasGroup>();
+
+                Sequence seq = DOTween.Sequence();
+                seq.Append(bottleObj.transform.DOScale(0.8f, 0.2f).SetEase(Ease.InBack));
+                seq.Join(cg.DOFade(0f, 0.2f));
+                seq.OnComplete(() => Destroy(bottleObj));
             }
         }
     }
@@ -165,6 +188,11 @@ public class SkillInventory : MonoBehaviour
     public bool HasAnyBottle()
     {
         return storedSkills.Count > 0;
+    }
+
+    public int GetBottleCount()
+    {
+        return storedSkills.Count;
     }
 
     private bool SequencesMatch(List<KeyCode> a, List<KeyCode> b)

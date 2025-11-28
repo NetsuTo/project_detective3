@@ -55,7 +55,7 @@ public class PlayerController : MonoBehaviour
     private bool isPickingUp = false;
     private Action pickupCallback;
 
-    // ===== Input System - แก้ไขใหม่ทั้งหมด =====
+    // ===== Input System - รองรับทั้ง Keyboard + Gamepad =====
     private InputAction moveAction;
     private InputAction jumpAction;
     private InputAction interactAction;
@@ -68,21 +68,36 @@ public class PlayerController : MonoBehaviour
         controller = GetComponent<CharacterController>();
         animator = GetComponent<Animator>();
 
-        // ===== สร้าง Input Actions =====
+        // ===== สร้าง Input Actions รองรับทั้ง Keyboard + Gamepad =====
+
+        // Move - รองรับ A/D และ Left Stick
         moveAction = new InputAction("Move", type: InputActionType.Value);
         moveAction.AddCompositeBinding("1DAxis")
             .With("Negative", "<Keyboard>/a")
             .With("Positive", "<Keyboard>/d");
+        moveAction.AddCompositeBinding("1DAxis")
+            .With("Negative", "<Gamepad>/leftStick/left")
+            .With("Positive", "<Gamepad>/leftStick/right");
+        moveAction.AddCompositeBinding("1DAxis")
+            .With("Negative", "<Gamepad>/dpad/left")
+            .With("Positive", "<Gamepad>/dpad/right");
 
-        jumpAction = new InputAction("Jump", binding: "<Keyboard>/space", type: InputActionType.Button);
-        interactAction = new InputAction("Interact", binding: "<Keyboard>/e", type: InputActionType.Button);
+        // Jump - รองรับ Space และ Button South (A/Cross)
+        jumpAction = new InputAction("Jump", type: InputActionType.Button);
+        jumpAction.AddBinding("<Keyboard>/space");
+        jumpAction.AddBinding("<Gamepad>/buttonSouth");  // Xbox: A, PS: Cross
+
+        // Interact - รองรับ E และ Button North (Y/Triangle)
+        interactAction = new InputAction("Interact", type: InputActionType.Button);
+        interactAction.AddBinding("<Keyboard>/e");
+        interactAction.AddBinding("<Gamepad>/buttonNorth");  // Xbox: Y, PS: Triangle
 
         // Enable Actions
         moveAction.Enable();
         jumpAction.Enable();
         interactAction.Enable();
 
-        // Subscribe to Interact only (Jump และ Move จะอ่านใน Update)
+        // Subscribe to Interact
         interactAction.performed += OnInteractPerformed;
 
         audioSource = GetComponent<AudioSource>();
@@ -95,7 +110,8 @@ public class PlayerController : MonoBehaviour
 
         ScanZonesAtStart();
 
-        Debug.Log("✅ PlayerController Started - Input System Ready!");
+        Debug.Log("✅ PlayerController Started - Keyboard + Gamepad Ready!");
+        Debug.Log("📋 Controls: Move (A/D or Left Stick), Jump (Space or A), Interact (E or Y)");
     }
 
     private void OnEnable()
@@ -161,7 +177,7 @@ public class PlayerController : MonoBehaviour
 
         if (!isMovementLocked)
         {
-            // อ่านค่าการเคลื่อนที่
+            // อ่านค่าการเคลื่อนที่ (รองรับทั้ง Keyboard + Gamepad)
             moveInput = moveAction.ReadValue<float>();
 
             // อ่านค่ากระโดด
