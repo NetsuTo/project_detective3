@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using DG.Tweening;
 
 [RequireComponent(typeof(CharacterController))]
@@ -13,7 +14,6 @@ public class PlayerController : MonoBehaviour
     public float acceleration = 10f;
 
     [Header("Jump / Gravity")]
-    // public float jumpForce = 5f;
     public float jumpHeight = 2f;
     public float gravity = -9.81f;
     public float fallMultiplier = 2.5f;
@@ -24,26 +24,24 @@ public class PlayerController : MonoBehaviour
     public LayerMask groundMask;
 
     [Header("Visual Effects")]
-    public GameObject jumpDustEffectPrefab; // ใส่ Prefab ตรงนี้
-    public Transform effectSpawnPoint; // ตำแหน่งที่จะ spawn (เช่น groundCheck)
+    public GameObject jumpDustEffectPrefab;
+    public Transform effectSpawnPoint;
 
     [Header("Use Zone")]
     public UseZone currentUseZone;
     private readonly HashSet<UseZone> zonesIn = new HashSet<UseZone>();
 
-    // ====== Success Symbol Management ======
     [Header("Success Symbol")]
-    public GameObject successSymbol; // ลาก GameObject ไอคอนเหนือหัวมาวางใน Inspector
+    public GameObject successSymbol;
 
-    // ====== Sound Effects ======
     [Header("Sound Effects")]
-    public AudioClip[] footstepSounds; // ใส่เสียงก้าวเท้าหลายไฟล์เพื่อความหลากหลาย
+    public AudioClip[] footstepSounds;
     public AudioClip jumpSound;
     public AudioClip landSound;
     [Range(0f, 1f)] public float footstepVolume = 0.5f;
     [Range(0f, 1f)] public float jumpVolume = 0.7f;
     [Range(0f, 1f)] public float landVolume = 0.6f;
-    public float footstepInterval = 0.4f; // ระยะห่างระหว่างเสียงเท้า (วินาที)
+    public float footstepInterval = 0.4f;
 
     private AudioSource audioSource;
     private float footstepTimer = 0f;
@@ -57,7 +55,12 @@ public class PlayerController : MonoBehaviour
     private bool isPickingUp = false;
     private Action pickupCallback;
 
-    // ===== 🔒 Movement Lock System =====
+    // ===== Input System - แก้ไขใหม่ทั้งหมด =====
+    private InputAction moveAction;
+    private InputAction jumpAction;
+    private InputAction interactAction;
+
+    // ===== Movement Lock System =====
     private bool isMovementLocked = false;
 
     void Start()
@@ -65,17 +68,65 @@ public class PlayerController : MonoBehaviour
         controller = GetComponent<CharacterController>();
         animator = GetComponent<Animator>();
 
-        // สร้าง AudioSource component
+        // ===== สร้าง Input Actions =====
+        moveAction = new InputAction("Move", type: InputActionType.Value);
+        moveAction.AddCompositeBinding("1DAxis")
+            .With("Negative", "<Keyboard>/a")
+            .With("Positive", "<Keyboard>/d");
+
+        jumpAction = new InputAction("Jump", binding: "<Keyboard>/space", type: InputActionType.Button);
+        interactAction = new InputAction("Interact", binding: "<Keyboard>/e", type: InputActionType.Button);
+
+        // Enable Actions
+        moveAction.Enable();
+        jumpAction.Enable();
+        interactAction.Enable();
+
+        // Subscribe to Interact only (Jump และ Move จะอ่านใน Update)
+        interactAction.performed += OnInteractPerformed;
+
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null)
         {
             audioSource = gameObject.AddComponent<AudioSource>();
         }
         audioSource.playOnAwake = false;
-        audioSource.spatialBlend = 0f; // 2D sound (ปรับเป็น 1f ถ้าต้องการ 3D sound)
+        audioSource.spatialBlend = 0f;
 
-        // สแกนว่าตอน spawn ยืนคร่อมโซนใดอยู่หรือไม่
         ScanZonesAtStart();
+
+        Debug.Log("✅ PlayerController Started - Input System Ready!");
+    }
+
+    private void OnEnable()
+    {
+        moveAction?.Enable();
+        jumpAction?.Enable();
+        interactAction?.Enable();
+    }
+
+    private void OnDisable()
+    {
+        moveAction?.Disable();
+        jumpAction?.Disable();
+        interactAction?.Disable();
+    }
+
+    private void OnDestroy()
+    {
+        if (interactAction != null)
+        {
+            interactAction.performed -= OnInteractPerformed;
+        }
+
+        moveAction?.Dispose();
+        jumpAction?.Dispose();
+        interactAction?.Dispose();
+    }
+
+    private void OnInteractPerformed(InputAction.CallbackContext ctx)
+    {
+        TryUseSelectedInZone();
     }
 
     private void ScanZonesAtStart()
@@ -104,18 +155,23 @@ public class PlayerController : MonoBehaviour
         if (isGrounded && velocity.y < 0)
             velocity.y = -2f;
 
-        // ===== 🔒 ตรวจสอบว่าล็อคอยู่หรือไม่ =====
+        // ===== อ่าน Input ทุกเฟรม =====
+        float moveInput = 0f;
+        bool jumpInput = false;
+
         if (!isMovementLocked)
         {
-            // การเคลื่อนที่
-            float x = 0f;
+            // อ่านค่าการเคลื่อนที่
+            moveInput = moveAction.ReadValue<float>();
 
-            if (Input.GetKey(KeyCode.A))
-                x = -1f;
-            else if (Input.GetKey(KeyCode.D))
-                x = 1f;
+            // อ่านค่ากระโดด
+            jumpInput = jumpAction.WasPressedThisFrame();
+        }
 
-            float targetSpeed = x * moveSpeed;
+        // ===== Movement System =====
+        if (!isMovementLocked)
+        {
+            float targetSpeed = moveInput * moveSpeed;
             currentSpeed = Mathf.Lerp(currentSpeed, targetSpeed, Time.deltaTime * acceleration);
 
             Vector3 move = new Vector3(currentSpeed, 0f, 0f);
@@ -127,27 +183,29 @@ public class PlayerController : MonoBehaviour
             HandleFootstepSounds();
 
             // --- หันตัว ---
-            if (x > 0.05f) transform.rotation = Quaternion.Euler(0f, 90f, 0f);
-            else if (x < -0.05f) transform.rotation = Quaternion.Euler(0f, -90f, 0f);
+            if (moveInput > 0.05f)
+                transform.rotation = Quaternion.Euler(0f, 90f, 0f);
+            else if (moveInput < -0.05f)
+                transform.rotation = Quaternion.Euler(0f, -90f, 0f);
 
             // --- กระโดด ---
-            if (Input.GetButtonDown("Jump") && isGrounded)
+            if (jumpInput && isGrounded)
             {
                 velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
                 animator.SetTrigger("Jump");
-                PlayJumpSound(); // เสียงกระโดด
-                PlayJumpEffect(); // เพิ่มบรรทัดนี้
+                PlayJumpSound();
+                PlayJumpEffect();
             }
         }
         else
         {
-            // ===== ถ้าล็อคอยู่: หยุดการเคลื่อนที่ค่อยๆ =====
+            // ===== ถ้าล็อคอยู่: หยุดการเคลื่อนที่ =====
             currentSpeed = Mathf.Lerp(currentSpeed, 0f, Time.deltaTime * acceleration);
             animator.SetFloat("Speed", 0f);
-            footstepTimer = 0f; // รีเซ็ตเสียงเท้า
+            footstepTimer = 0f;
         }
 
-        // แรงโน้มถ่วง (ยังคงทำงานแม้ล็อค)
+        // แรงโน้มถ่วง
         if (velocity.y < 0)
             velocity.y += gravity * fallMultiplier * Time.deltaTime;
         else
@@ -163,7 +221,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    // ===== 🔒 Public Methods สำหรับล็อค/ปลดล็อค =====
+    // ===== Movement Lock Methods =====
     public void LockMovement()
     {
         isMovementLocked = true;
@@ -186,20 +244,13 @@ public class PlayerController : MonoBehaviour
         if (jumpDustEffectPrefab != null)
         {
             Vector3 spawnPos = effectSpawnPoint != null ? effectSpawnPoint.position : transform.position;
-
-            // Spawn เอฟเฟค
             GameObject effect = Instantiate(jumpDustEffectPrefab, spawnPos, Quaternion.identity);
-
-            // ทำลายหลังจาก 2 วินาที (ปรับตามความยาวของเอฟเฟค)
             Destroy(effect, 2f);
-
-            Debug.Log("✨ Spawn เอฟเฟคกระโดดแล้ว!");
         }
     }
 
     private void HandleFootstepSounds()
     {
-        // เล่นเสียงก้าวเท้าถ้ากำลังเดินอยู่บนพื้น
         if (isGrounded && Mathf.Abs(currentSpeed) > 0.1f)
         {
             footstepTimer += Time.deltaTime;
@@ -221,7 +272,6 @@ public class PlayerController : MonoBehaviour
         if (footstepSounds == null || footstepSounds.Length == 0 || audioSource == null)
             return;
 
-        // สุ่มเสียงก้าวเท้าจากอาร์เรย์
         AudioClip clip = footstepSounds[UnityEngine.Random.Range(0, footstepSounds.Length)];
 
         if (clip != null)
@@ -305,8 +355,6 @@ public class PlayerController : MonoBehaviour
         }
 
         currentUseZone = best;
-
-        bool inAnyZone = currentUseZone != null;
     }
 
     public void TryUseSelectedInZone()

@@ -1,6 +1,7 @@
 ﻿using System;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
 
 public class TimingBar : MonoBehaviour
 {
@@ -13,11 +14,41 @@ public class TimingBar : MonoBehaviour
     private Action<bool> onComplete;
     private bool isActive = false;
 
+    // ===== Input System - ใช้ปุ่ม F เหมือน QTE =====
+    private InputAction mixAction;
+
+    void Start()
+    {
+        // ===== สร้าง Input Action สำหรับปุ่ม F =====
+        mixAction = new InputAction("Mix", binding: "<Keyboard>/f", type: InputActionType.Button);
+        mixAction.Enable();
+
+        Debug.Log("✅ TimingBar Started - Input System Ready (F Key)!");
+    }
+
+    private void OnEnable()
+    {
+        mixAction?.Enable();
+    }
+
+    private void OnDisable()
+    {
+        mixAction?.Disable();
+    }
+
+    private void OnDestroy()
+    {
+        mixAction?.Dispose();
+    }
+
     public void StartTiming(Action<bool> callback)
     {
         onComplete = callback;
         isActive = true;
         pointer.anchoredPosition = Vector2.zero; // เริ่มตรงกลาง bar
+        direction = 1f; // รีเซ็ตทิศทาง
+
+        Debug.Log("⏱️ เริ่ม Timing Bar - กด F เพื่อหยุดเข็ม");
     }
 
     void Update()
@@ -43,13 +74,23 @@ public class TimingBar : MonoBehaviour
             }
         }
 
-        if (Input.GetKeyDown(KeyCode.E))
+        // ===== ตรวจสอบปุ่ม F ผ่าน Input System =====
+        if (mixAction.WasPressedThisFrame())
         {
             bool success = IsPointerInTarget();
+
+            if (success)
+            {
+                Debug.Log("✅ Timing Perfect!");
+            }
+            else
+            {
+                Debug.Log("❌ Timing Failed!");
+            }
+
             onComplete?.Invoke(success);
             isActive = false;
         }
-
     }
 
     bool IsPointerInTarget()
@@ -58,5 +99,29 @@ public class TimingBar : MonoBehaviour
         float targetLeft = targetZone.anchoredPosition.x - targetZone.rect.width / 2f;
         float targetRight = targetZone.anchoredPosition.x + targetZone.rect.width / 2f;
         return pointerX >= targetLeft && pointerX <= targetRight;
+    }
+
+    // ===== ฟังก์ชันเสริม =====
+    public void StopTiming()
+    {
+        isActive = false;
+        Debug.Log("⏸️ หยุด Timing Bar");
+    }
+
+    public void SetSpeed(float newSpeed)
+    {
+        speed = newSpeed;
+        Debug.Log($"⚡ เปลี่ยนความเร็วเข็มเป็น: {newSpeed}");
+    }
+
+    public bool IsTimingActive()
+    {
+        return isActive;
+    }
+
+    public void ResetPointer()
+    {
+        pointer.anchoredPosition = Vector2.zero;
+        direction = 1f;
     }
 }

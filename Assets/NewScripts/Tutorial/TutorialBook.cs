@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
 using System.Collections.Generic;
 using DG.Tweening;
 
@@ -7,17 +8,9 @@ using DG.Tweening;
 public class TutorialBook : MonoBehaviour
 {
     [Header("การตั้งค่าหลัก")]
-    [Tooltip("ปุ่มที่ใช้เปิด/ปิดสมุด")]
+    [Tooltip("ปุ่มที่ใช้เปิด/ปิดสมุด (Tab)")]
     [SerializeField]
     private KeyCode toggleKey = KeyCode.Tab;
-
-    [Tooltip("ปุ่มที่ใช้พลิกไปหน้าถัดไป")]
-    [SerializeField]
-    private KeyCode nextPageKey = KeyCode.RightArrow;
-
-    [Tooltip("ปุ่มที่ใช้ย้อนกลับหน้าก่อนหน้า")]
-    [SerializeField]
-    private KeyCode prevPageKey = KeyCode.LeftArrow;
 
     [Header("ส่วนประกอบ UI (ลากมาใส่)")]
     [SerializeField]
@@ -87,6 +80,16 @@ public class TutorialBook : MonoBehaviour
     private CanvasGroup bookIconCanvasGroup;
     private bool isAnimating = false;
 
+    // ===== Input System Actions - แก้ไขใหม่ =====
+    private InputAction toggleBookAction;
+    private InputAction nextPageAction;
+    private InputAction prevPageAction;
+
+    // ป้องกันการกดซ้ำ
+    private bool toggleWasPressed = false;
+    private bool nextWasPressed = false;
+    private bool prevWasPressed = false;
+
     void Start()
     {
         audioSource = GetComponent<AudioSource>();
@@ -131,7 +134,81 @@ public class TutorialBook : MonoBehaviour
         SetupPageCanvasGroup(leftPageImage);
         SetupPageCanvasGroup(rightPageImage);
 
+        // สร้าง Input Actions
+        SetupInputActions();
+
         UpdatePageDisplay();
+
+        Debug.Log("? TutorialBook Started - Input System Ready!");
+    }
+
+    private void SetupInputActions()
+    {
+        // Toggle Book (Tab)
+        toggleBookAction = new InputAction("ToggleBook", binding: "<Keyboard>/tab", type: InputActionType.Button);
+
+        // Next Page (Right Arrow)
+        nextPageAction = new InputAction("NextPage", binding: "<Keyboard>/rightArrow", type: InputActionType.Button);
+
+        // Previous Page (Left Arrow)
+        prevPageAction = new InputAction("PrevPage", binding: "<Keyboard>/leftArrow", type: InputActionType.Button);
+
+        // Enable Toggle ตลอดเวลา
+        toggleBookAction.Enable();
+    }
+
+    private void OnEnable()
+    {
+        toggleBookAction?.Enable();
+    }
+
+    private void OnDisable()
+    {
+        toggleBookAction?.Disable();
+        nextPageAction?.Disable();
+        prevPageAction?.Disable();
+    }
+
+    void Update()
+    {
+        // ===== อ่าน Toggle Book Input ตลอดเวลา =====
+        bool togglePressed = toggleBookAction.IsPressed();
+
+        if (togglePressed && !toggleWasPressed)
+        {
+            // ตรวจสอบว่า Pause Menu เปิดอยู่หรือไม่
+            PauseMenuWithVolume pauseMenu = FindObjectOfType<PauseMenuWithVolume>();
+            if (pauseMenu != null && pauseMenu.IsPaused())
+            {
+                Debug.Log("?? ไม่สามารถเปิด Tutorial Book ได้ - Pause Menu เปิดอยู่");
+            }
+            else
+            {
+                ToggleBook();
+            }
+        }
+        toggleWasPressed = togglePressed;
+
+        // ===== อ่าน Page Navigation Input เมื่อเปิดสมุด =====
+        if (isBookOpen && !isAnimating)
+        {
+            bool nextPressed = nextPageAction.IsPressed();
+            bool prevPressed = prevPageAction.IsPressed();
+
+            // Next Page
+            if (nextPressed && !nextWasPressed)
+            {
+                GoToNextPage();
+            }
+            nextWasPressed = nextPressed;
+
+            // Previous Page
+            if (prevPressed && !prevWasPressed)
+            {
+                GoToPrevPage();
+            }
+            prevWasPressed = prevPressed;
+        }
     }
 
     void SetupPageCanvasGroup(Image pageImage)
@@ -142,34 +219,6 @@ public class TutorialBook : MonoBehaviour
             if (cg == null)
             {
                 pageImage.gameObject.AddComponent<CanvasGroup>();
-            }
-        }
-    }
-
-    void Update()
-    {
-        if (Input.GetKeyDown(toggleKey))
-        {
-            // ตรวจสอบว่า Pause Menu เปิดอยู่หรือไม่
-            PauseMenuWithVolume pauseMenu = FindObjectOfType<PauseMenuWithVolume>();
-            if (pauseMenu != null && pauseMenu.IsPaused())
-            {
-                Debug.Log("?? ไม่สามารถเปิด Tutorial Book ได้ - Pause Menu เปิดอยู่");
-                return;
-            }
-
-            ToggleBook();
-        }
-
-        if (isBookOpen && !isAnimating)
-        {
-            if (Input.GetKeyDown(nextPageKey))
-            {
-                GoToNextPage();
-            }
-            else if (Input.GetKeyDown(prevPageKey))
-            {
-                GoToPrevPage();
             }
         }
     }
@@ -186,6 +235,18 @@ public class TutorialBook : MonoBehaviour
         if (pauseGameWhenOpen)
         {
             Time.timeScale = isBookOpen ? 0f : 1f;
+        }
+
+        // เปิด/ปิด Input Actions สำหรับพลิกหน้า
+        if (isBookOpen)
+        {
+            nextPageAction?.Enable();
+            prevPageAction?.Enable();
+        }
+        else
+        {
+            nextPageAction?.Disable();
+            prevPageAction?.Disable();
         }
 
         // ล็อค/ปลดล็อคการเคลื่อนที่ของผู้เล่น
@@ -482,6 +543,11 @@ public class TutorialBook : MonoBehaviour
 
     void OnDestroy()
     {
+        // Cleanup Input Actions
+        toggleBookAction?.Dispose();
+        nextPageAction?.Dispose();
+        prevPageAction?.Dispose();
+
         // ปลดล็อคเมื่อ Script ถูกทำลาย
         if (lockInputWhenOpen && playerController != null && isBookOpen)
         {

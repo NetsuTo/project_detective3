@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
 using System.Collections.Generic;
-using DG.Tweening; // ✅ เพิ่มที่บนสุด
+using DG.Tweening;
 
 public class SkillInventory : MonoBehaviour
 {
@@ -11,19 +12,67 @@ public class SkillInventory : MonoBehaviour
 
     private List<List<KeyCode>> storedSkills = new List<List<KeyCode>>();
 
-    void Update()
+    // ===== Input System Actions =====
+    private InputAction useSkillAction;
+
+    void Awake()
     {
-        // ตรวจว่าผู้เล่นกด R
-        if (Input.GetKeyDown(KeyCode.R))
+        // สร้าง Input Action สำหรับใช้สกิล (R)
+        SetupInputActions();
+
+        // ⚠️ Enable ทันทีใน Awake
+        useSkillAction?.Enable();
+    }
+
+    private void SetupInputActions()
+    {
+        // ใช้สกิล (R)
+        useSkillAction = new InputAction("UseSkill", binding: "<Keyboard>/r");
+        useSkillAction.performed += OnUseSkillPerformed;
+    }
+
+    // ✅ อ่าน Input ทุกเฟรมด้วย Update() (วิธีสำรอง)
+    private void Update()
+    {
+        // ถ้า Input System ไม่ทำงาน ให้ใช้ GetKeyDown แทน
+        if (Keyboard.current == null)
         {
-            if (storedSkills.Count > 0)
+            // ใช้ Input Manager (Old Input System) แทน
+            if (Input.GetKeyDown(KeyCode.R))
             {
-                Debug.Log("กด R แล้ว! แต่การใช้สกิลจะถูกจัดการผ่าน TargetZone");
+                OnUseSkillPerformed(default);
             }
-            else
+        }
+        else
+        {
+            // ใช้ New Input System แบบอ่านทุกเฟรม
+            if (Keyboard.current.rKey.wasPressedThisFrame)
             {
-                Debug.Log("ไม่มีสกิลในขวดให้ใช้");
+                OnUseSkillPerformed(default);
             }
+        }
+    }
+
+    private void OnEnable()
+    {
+        useSkillAction?.Enable();
+    }
+
+    private void OnDisable()
+    {
+        useSkillAction?.Disable();
+    }
+
+    // ===== Input Callback =====
+    private void OnUseSkillPerformed(InputAction.CallbackContext ctx)
+    {
+        if (storedSkills.Count > 0)
+        {
+            Debug.Log("🎯 กด R แล้ว! แต่การใช้สกิลจะถูกจัดการผ่าน TargetZone");
+        }
+        else
+        {
+            Debug.Log("⚠️ ไม่มีสกิลในขวดให้ใช้");
         }
     }
 
@@ -133,5 +182,15 @@ public class SkillInventory : MonoBehaviour
     {
         if (seq == null) return "";
         return string.Join("", seq);
+    }
+
+    void OnDestroy()
+    {
+        // Cleanup Input Action
+        if (useSkillAction != null)
+        {
+            useSkillAction.performed -= OnUseSkillPerformed;
+            useSkillAction.Dispose();
+        }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
 
 public class SkillLetterSelector : MonoBehaviour
 {
@@ -25,9 +26,33 @@ public class SkillLetterSelector : MonoBehaviour
     public Vector3[] customOffsets;   // ใส่ใน Inspector
     public float letterSpacing = 100f; // fallback ถ้า customOffsets ไม่พอ
 
+    // ===== Input System =====
+    private InputAction mixAction;
+
     void Start()
     {
         manager = GetComponent<PlayerSkillManager>();
+
+        // ===== สร้าง Input Action สำหรับปุ่ม F =====
+        mixAction = new InputAction("Mix", binding: "<Keyboard>/f", type: InputActionType.Button);
+        mixAction.Enable();
+
+        Debug.Log("✅ SkillLetterSelector Started - Input System Ready (F Key)!");
+    }
+
+    private void OnEnable()
+    {
+        mixAction?.Enable();
+    }
+
+    private void OnDisable()
+    {
+        mixAction?.Disable();
+    }
+
+    private void OnDestroy()
+    {
+        mixAction?.Dispose();
     }
 
     void Update()
@@ -47,13 +72,14 @@ public class SkillLetterSelector : MonoBehaviour
             }
         }
 
-        // เริ่ม QTE เมื่อกด F
-        if (Input.GetKeyDown(KeyCode.F) && remaining.Count > 0)
+        // ===== เริ่ม QTE เมื่อกด F ผ่าน Input System =====
+        if (mixAction.WasPressedThisFrame() && remaining.Count > 0)
         {
             if (!qteStarted)
             {
                 qteStarted = true;
                 StartQTE();
+                Debug.Log("🎯 กดปุ่ม F -> เริ่ม QTE!");
             }
         }
 
@@ -77,7 +103,6 @@ public class SkillLetterSelector : MonoBehaviour
             letterUIs[i].transform.position = screenPos;
         }
     }
-
 
     public void StartSelection(string skillID)
     {
@@ -118,6 +143,8 @@ public class SkillLetterSelector : MonoBehaviour
         currentIndex = 0;
         isActive = true;
         qteStarted = false;
+
+        Debug.Log("🔤 เริ่ม Selection สำหรับ Skill: " + skillID);
     }
 
     private void StartQTE()
@@ -134,7 +161,7 @@ public class SkillLetterSelector : MonoBehaviour
                 }
             }
 
-            Debug.Log("Final QTE sequence count = " + keySequence.Count);
+            Debug.Log("🎮 Final QTE sequence count = " + keySequence.Count);
             qte.StartQTE(keySequence);
         }
     }
@@ -151,6 +178,27 @@ public class SkillLetterSelector : MonoBehaviour
         if (letterUIs.Count == 0)
         {
             isActive = false;
+            Debug.Log("✅ QTE เสร็จสิ้น - ทุก Letter UI ถูกลบแล้ว");
         }
+    }
+
+    // ===== ฟังก์ชันเสริม: รีเซ็ต QTE (ถ้าต้องการ) =====
+    public void ResetQTE()
+    {
+        // ลบ UI ทั้งหมด
+        foreach (var ui in letterUIs)
+        {
+            if (ui != null) Destroy(ui);
+        }
+
+        letterUIs.Clear();
+        letterImages.Clear();
+
+        isActive = false;
+        qteStarted = false;
+        currentIndex = 0;
+        timer = 0f;
+
+        Debug.Log("🔄 รีเซ็ต SkillLetterSelector");
     }
 }

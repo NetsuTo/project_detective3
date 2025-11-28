@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using UnityEngine.InputSystem;
 
 public class PauseMenuWithVolume : MonoBehaviour
 {
@@ -20,28 +21,44 @@ public class PauseMenuWithVolume : MonoBehaviour
 
     [Header("สีของ Slider")]
     [Tooltip("สีของ Handle เมื่อเลือก")]
-    public Color selectedSliderHandleColor = new Color(1f, 0.8f, 0f, 1f); // สีทอง
+    public Color selectedSliderHandleColor = new Color(1f, 0.8f, 0f, 1f);
 
     [Tooltip("สีของ Handle ปกติ")]
     public Color normalSliderHandleColor = Color.white;
 
     [Tooltip("สีของ Fill เมื่อเลือก")]
-    public Color selectedSliderFillColor = new Color(1f, 0.9f, 0f, 1f); // สีเหลืองอ่อน
+    public Color selectedSliderFillColor = new Color(1f, 0.9f, 0f, 1f);
 
     [Tooltip("สีของ Fill ปกติ")]
     public Color normalSliderFillColor = Color.white;
 
     [Header("สีของปุ่ม")]
     [Tooltip("สีของปุ่มเมื่อเลือก")]
-    public Color selectedButtonColor = new Color(0.6f, 0.6f, 0.6f, 1f); // สีเทา
+    public Color selectedButtonColor = new Color(0.6f, 0.6f, 0.6f, 1f);
 
     [Tooltip("สีของปุ่มปกติ")]
-    public Color normalButtonColor = new Color(1f, 1f, 1f, 0f); // โปร่งใส
+    public Color normalButtonColor = new Color(1f, 1f, 1f, 0f);
 
     private bool isPaused = false;
     private int selectedIndex = 0;
     private int totalElements;
     private PlayerController playerController;
+
+    // ===== Input System Actions - แก้ไขใหม่ =====
+    private InputAction pauseAction;
+    private InputAction navigateUpAction;
+    private InputAction navigateDownAction;
+    private InputAction navigateLeftAction;
+    private InputAction navigateRightAction;
+    private InputAction confirmAction;
+
+    // ป้องกันการกดซ้ำ
+    private bool pauseWasPressed = false;
+    private bool upWasPressed = false;
+    private bool downWasPressed = false;
+    private bool leftWasPressed = false;
+    private bool rightWasPressed = false;
+    private bool confirmWasPressed = false;
 
     void Start()
     {
@@ -60,69 +77,132 @@ public class PauseMenuWithVolume : MonoBehaviour
 
         playerController = FindObjectOfType<PlayerController>();
 
+        // สร้าง Input Actions
+        SetupInputActions();
+
         UpdateUIHighlight();
+
+        Debug.Log("? PauseMenu Started - Input System Ready!");
+    }
+
+    private void SetupInputActions()
+    {
+        // Pause/Unpause
+        pauseAction = new InputAction("Pause", binding: "<Keyboard>/escape", type: InputActionType.Button);
+
+        // Navigation
+        navigateUpAction = new InputAction("NavigateUp", binding: "<Keyboard>/upArrow", type: InputActionType.Button);
+        navigateDownAction = new InputAction("NavigateDown", binding: "<Keyboard>/downArrow", type: InputActionType.Button);
+        navigateLeftAction = new InputAction("NavigateLeft", binding: "<Keyboard>/leftArrow", type: InputActionType.Button);
+        navigateRightAction = new InputAction("NavigateRight", binding: "<Keyboard>/rightArrow", type: InputActionType.Button);
+
+        // Confirm
+        confirmAction = new InputAction("Confirm", binding: "<Keyboard>/enter", type: InputActionType.Button);
+
+        // Enable Pause ตลอดเวลา
+        pauseAction.Enable();
+    }
+
+    private void OnEnable()
+    {
+        pauseAction?.Enable();
+    }
+
+    private void OnDisable()
+    {
+        pauseAction?.Disable();
+        navigateUpAction?.Disable();
+        navigateDownAction?.Disable();
+        navigateLeftAction?.Disable();
+        navigateRightAction?.Disable();
+        confirmAction?.Disable();
     }
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape))
+        // ===== อ่าน Pause Input ตลอดเวลา =====
+        bool pausePressed = pauseAction.IsPressed();
+
+        if (pausePressed && !pauseWasPressed)
         {
+            // กด Pause ครั้งแรก
             TutorialBook book = FindObjectOfType<TutorialBook>();
             if (book != null && book.IsBookOpen())
             {
                 Debug.Log("?? ไม่สามารถเปิด Pause ได้ - Tutorial Book เปิดอยู่");
-                return;
             }
-
-            if (isPaused)
-                ResumeGame();
             else
-                PauseGame();
+            {
+                if (isPaused)
+                    ResumeGame();
+                else
+                    PauseGame();
+            }
         }
+        pauseWasPressed = pausePressed;
 
+        // ===== อ่าน Navigation Input เมื่อ Pause =====
         if (isPaused)
         {
-            HandleInput();
-        }
-    }
+            bool upPressed = navigateUpAction.IsPressed();
+            bool downPressed = navigateDownAction.IsPressed();
+            bool leftPressed = navigateLeftAction.IsPressed();
+            bool rightPressed = navigateRightAction.IsPressed();
+            bool confirmPressed = confirmAction.IsPressed();
 
-    void HandleInput()
-    {
-        if (Input.GetKeyDown(KeyCode.UpArrow))
-        {
-            selectedIndex = (selectedIndex - 1 + totalElements) % totalElements;
-            UpdateUIHighlight();
-        }
-
-        if (Input.GetKeyDown(KeyCode.DownArrow))
-        {
-            selectedIndex = (selectedIndex + 1) % totalElements;
-            UpdateUIHighlight();
-        }
-
-        if (selectedIndex >= buttons.Length)
-        {
-            Slider currentSlider = GetCurrentSlider();
-
-            if (currentSlider != null)
+            // Navigate Up
+            if (upPressed && !upWasPressed)
             {
-                if (Input.GetKeyDown(KeyCode.LeftArrow))
-                {
-                    currentSlider.value = Mathf.Clamp01(currentSlider.value - 0.1f);
-                }
+                selectedIndex = (selectedIndex - 1 + totalElements) % totalElements;
+                UpdateUIHighlight();
+            }
+            upWasPressed = upPressed;
 
-                if (Input.GetKeyDown(KeyCode.RightArrow))
+            // Navigate Down
+            if (downPressed && !downWasPressed)
+            {
+                selectedIndex = (selectedIndex + 1) % totalElements;
+                UpdateUIHighlight();
+            }
+            downWasPressed = downPressed;
+
+            // Navigate Left (ปรับ Slider)
+            if (leftPressed && !leftWasPressed)
+            {
+                if (selectedIndex >= buttons.Length)
                 {
-                    currentSlider.value = Mathf.Clamp01(currentSlider.value + 0.1f);
+                    Slider currentSlider = GetCurrentSlider();
+                    if (currentSlider != null)
+                    {
+                        currentSlider.value = Mathf.Clamp01(currentSlider.value - 0.1f);
+                    }
                 }
             }
-        }
-        else
-        {
-            if (Input.GetKeyDown(KeyCode.Return))
+            leftWasPressed = leftPressed;
+
+            // Navigate Right (ปรับ Slider)
+            if (rightPressed && !rightWasPressed)
             {
-                buttons[selectedIndex].onClick.Invoke();
+                if (selectedIndex >= buttons.Length)
+                {
+                    Slider currentSlider = GetCurrentSlider();
+                    if (currentSlider != null)
+                    {
+                        currentSlider.value = Mathf.Clamp01(currentSlider.value + 0.1f);
+                    }
+                }
             }
+            rightWasPressed = rightPressed;
+
+            // Confirm (กดปุ่ม)
+            if (confirmPressed && !confirmWasPressed)
+            {
+                if (selectedIndex < buttons.Length)
+                {
+                    buttons[selectedIndex].onClick.Invoke();
+                }
+            }
+            confirmWasPressed = confirmPressed;
         }
     }
 
@@ -213,6 +293,13 @@ public class PauseMenuWithVolume : MonoBehaviour
         selectedIndex = 0;
         UpdateUIHighlight();
 
+        // เปิด Navigation Actions
+        navigateUpAction?.Enable();
+        navigateDownAction?.Enable();
+        navigateLeftAction?.Enable();
+        navigateRightAction?.Enable();
+        confirmAction?.Enable();
+
         if (lockInputWhenPaused && playerController != null)
         {
             playerController.LockMovement();
@@ -225,6 +312,13 @@ public class PauseMenuWithVolume : MonoBehaviour
         pauseMenuUI.SetActive(false);
         Time.timeScale = 1f;
         isPaused = false;
+
+        // ปิด Navigation Actions
+        navigateUpAction?.Disable();
+        navigateDownAction?.Disable();
+        navigateLeftAction?.Disable();
+        navigateRightAction?.Disable();
+        confirmAction?.Disable();
 
         if (lockInputWhenPaused && playerController != null)
         {
@@ -258,6 +352,14 @@ public class PauseMenuWithVolume : MonoBehaviour
 
     void OnDestroy()
     {
+        // Cleanup Input Actions
+        pauseAction?.Dispose();
+        navigateUpAction?.Dispose();
+        navigateDownAction?.Dispose();
+        navigateLeftAction?.Dispose();
+        navigateRightAction?.Dispose();
+        confirmAction?.Dispose();
+
         if (lockInputWhenPaused && playerController != null && isPaused)
         {
             playerController.UnlockMovement();

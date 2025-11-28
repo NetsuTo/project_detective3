@@ -1,12 +1,13 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class SkillPickup : MonoBehaviour
 {
     [Header("Skill Settings")]
-    public string skillID; // เช่น "HHO", "NNOO" เป็นต้น
+    public string skillID;
 
     [Header("Sound Effects")]
-    public AudioClip pickupSound; // เสียงเก็บไอเทม
+    public AudioClip pickupSound;
     [Range(0f, 1f)] public float pickupVolume = 0.8f;
 
     private bool playerInRange = false;
@@ -14,42 +15,123 @@ public class SkillPickup : MonoBehaviour
     private PlayerSkillManager manager;
     private AudioSource audioSource;
 
-    void Start()
+    // ===== Input System Detection =====
+    private bool useNewInputSystem = false;
+    private bool inputSystemChecked = false;
+
+    // ===== Input System Actions =====
+    private InputAction interactAction;
+
+    void Awake()
     {
-        // สร้าง AudioSource สำรอง
         audioSource = gameObject.AddComponent<AudioSource>();
         audioSource.playOnAwake = false;
         audioSource.spatialBlend = 0f;
+
+        // ตรวจสอบว่าใช้ระบบไหน
+        DetectInputSystem();
+
+        if (useNewInputSystem)
+        {
+            SetupInputActions();
+            interactAction?.Enable();
+        }
+    }
+
+    private void DetectInputSystem()
+    {
+        // ตรวจสอบว่ามี Keyboard.current หรือไม่
+        if (Keyboard.current != null)
+        {
+            useNewInputSystem = true;
+            Debug.Log("?? [SkillPickup] ใช้ New Input System (Input System Package)");
+        }
+        else
+        {
+            useNewInputSystem = false;
+            Debug.Log("?? [SkillPickup] ใช้ Old Input System (Input Manager)");
+        }
+        inputSystemChecked = true;
+    }
+
+    private void SetupInputActions()
+    {
+        interactAction = new InputAction("Interact", binding: "<Keyboard>/e");
+        interactAction.performed += OnInteractPerformed;
     }
 
     void Update()
     {
-        if (playerInRange && Input.GetKeyDown(KeyCode.E))
+        if (!playerInRange) return;
+
+        // แสดงข้อความแนะนำครั้งเดียวตอน Player เข้ามา
+        if (!inputSystemChecked)
         {
-            Debug.Log("?? กด E ขณะอยู่ในระยะ pickup");
-            if (playerController != null)
+            DetectInputSystem();
+        }
+
+        // ใช้ระบบที่เหมาะสม
+        if (useNewInputSystem)
+        {
+            // New Input System
+            if (Keyboard.current.eKey.wasPressedThisFrame)
             {
-                Debug.Log("?? เรียก animation pickup");
-                playerController.PlayPickupAnimation(() =>
-                {
-                    if (manager != null && manager.CanPickupSkill(skillID))
-                    {
-                        Debug.Log("? เก็บสกิลสำเร็จ: " + skillID);
-                        // เล่นเสียงเก็บไอเทม
-                        PlayPickupSound();
-                        manager.PickupSkill(skillID);
-                        // ทำลาย object หลังจากเสียงเล่นเสร็จ (ถ้ามีเสียง)
-                        if (pickupSound != null)
-                        {
-                            Destroy(gameObject, pickupSound.length);
-                        }
-                        else
-                        {
-                            Destroy(gameObject);
-                        }
-                    }
-                });
+                Debug.Log("?? [New Input] กด E");
+                OnInteractPerformed(default);
             }
+        }
+        else
+        {
+            // Old Input System
+            if (Input.GetKeyDown(KeyCode.E))
+            {
+                Debug.Log("?? [Old Input] กด E");
+                OnInteractPerformed(default);
+            }
+        }
+    }
+
+    private void OnEnable()
+    {
+        interactAction?.Enable();
+    }
+
+    private void OnDisable()
+    {
+        interactAction?.Disable();
+    }
+
+    private void OnInteractPerformed(InputAction.CallbackContext ctx)
+    {
+        if (!playerInRange) return;
+
+        Debug.Log("?? กด E ขณะอยู่ในระยะ pickup");
+
+        if (playerController != null)
+        {
+            Debug.Log("?? เรียก animation pickup");
+            playerController.PlayPickupAnimation(() =>
+            {
+                if (manager != null && manager.CanPickupSkill(skillID))
+                {
+                    Debug.Log("? เก็บสกิลสำเร็จ: " + skillID);
+                    PlayPickupSound();
+                    manager.PickupSkill(skillID);
+
+                    if (pickupSound != null)
+                    {
+                        Destroy(gameObject, pickupSound.length);
+                    }
+                    else
+                    {
+                        Destroy(gameObject);
+                    }
+                }
+                else
+                {
+                    Debug.Log("?? ไม่สามารถเก็บสกิลได้ หรือ Inventory เต็ม");
+                }
+            });
         }
     }
 
@@ -74,7 +156,7 @@ public class SkillPickup : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            Debug.Log("?? Player เข้ามาในระยะ pickup");
+            Debug.Log($"?? Player เข้ามาในระยะ pickup (ใช้ระบบ: {(useNewInputSystem ? "New Input" : "Old Input")})");
             playerInRange = true;
             playerController = other.GetComponent<PlayerController>();
             manager = other.GetComponent<PlayerSkillManager>();
@@ -89,6 +171,15 @@ public class SkillPickup : MonoBehaviour
             playerInRange = false;
             playerController = null;
             manager = null;
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (interactAction != null)
+        {
+            interactAction.performed -= OnInteractPerformed;
+            interactAction.Dispose();
         }
     }
 }
