@@ -118191,8 +118191,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   toggleKey: 9
-  nextPageKey: 275
-  prevPageKey: 276
   tutorialBookPanelObject: {fileID: 559518853}
   bookIconUI: {fileID: 886566125}
   leftPageImage: {fileID: 1389252344}
