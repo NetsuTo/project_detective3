@@ -123,9 +123,11 @@ public class QTEManager : MonoBehaviour
 
         GameObject barGO = Instantiate(timingBarPrefab, qteParent.root);
         currentTimingBar = barGO.GetComponent<TimingBar>();
+
+        // 🎲 เริ่ม TimingBar รอบแรก (จะสุ่ม Target อัตโนมัติ)
         currentTimingBar.StartTiming(OnTimingComplete);
 
-        Debug.Log("🎯 สร้าง TimingBar ใหม่");
+        Debug.Log("🎯 สร้าง TimingBar ใหม่ + สุ่ม Target รอบแรก");
     }
 
     void OnTimingComplete(bool success)
@@ -178,9 +180,10 @@ public class QTEManager : MonoBehaviour
             }
             else
             {
+                // 🎲🎲🎲 สำคัญ! เรียก StartTiming() ใหม่ทุกรอบ → Target จะสุ่มตำแหน่งใหม่ทุกครั้ง! 🎲🎲🎲
                 if (currentTimingBar != null)
                 {
-                    Debug.Log($"▶️ ต่อรอบที่ {currentIndex + 1}/{sequence.Count}");
+                    Debug.Log($"🎲 ต่อรอบที่ {currentIndex + 1}/{sequence.Count} → สุ่ม Target ใหม่!");
                     currentTimingBar.StartTiming(OnTimingComplete);
                 }
             }

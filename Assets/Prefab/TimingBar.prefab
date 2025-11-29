@@ -209,6 +209,11 @@ MonoBehaviour:
   loop: 1
   edgePadding: 0
   resetPositionOnStart: 0
+  randomizeTarget: 1
+  randomMode: 1
+  targetEdgePadding: 0
+  randomizeSize: 1
+  minSizeScale: 0.42745602
 --- !u!1 &6892826238622095678
 GameObject:
   m_ObjectHideFlags: 0
