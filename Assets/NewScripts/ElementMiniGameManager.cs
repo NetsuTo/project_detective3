@@ -22,6 +22,22 @@ public class ElementMiniGameManager : MonoBehaviour
     [Range(0.1f, 2f)]
     public float arrowScale = 0.6f;
 
+    [Header("🎮 Button Press Feedback Settings")]
+    [Tooltip("ระยะเวลาที่จะกดลง")]
+    public float pressDuration = 0.1f;
+    [Tooltip("ขนาดที่จะหดลงตอนกด (0.8 = เล็กลง 20%)")]
+    [Range(0.5f, 0.95f)]
+    public float pressScale = 0.85f;
+    [Tooltip("ระยะเวลาที่จะเด้งกลับ")]
+    public float popDuration = 0.2f;
+    [Tooltip("ระยะเวลาที่ลูกศรใหม่จะ Fade In")]
+    public float fadeInDuration = 0.15f;
+    [Tooltip("สีที่จะแฟลช (แนะนำสีเขียว)")]
+    public Color flashColor = Color.green;
+    [Tooltip("ความเข้มของ Flash (0-1)")]
+    [Range(0f, 1f)]
+    public float flashIntensity = 0.7f;
+
     [Header("Optional: Sequence เริ่มต้น (fallback ถ้าไม่ได้ส่งจาก TargetZone)")]
     public List<KeyCode> inspectorSequence = new List<KeyCode>();
 
@@ -79,6 +95,8 @@ public class ElementMiniGameManager : MonoBehaviour
     private bool isRetrying = false;
     private AudioSource audioSource;
     private Vector3 originalImageScale;
+    private Vector3 originalImagePosition;
+    private Color originalImageColor;
 
     // ===== Input System - Gamepad Support =====
     private bool[] keyWasPressed = new bool[4]; // สำหรับ Up, Down, Left, Right
@@ -104,7 +122,11 @@ public class ElementMiniGameManager : MonoBehaviour
         audioSource.spatialBlend = 0f;
 
         if (displayImage != null)
+        {
             originalImageScale = displayImage.transform.localScale;
+            originalImagePosition = displayImage.transform.localPosition;
+            originalImageColor = displayImage.color;
+        }
 
         Debug.Log("✅ ElementMiniGameManager - Keyboard + Gamepad Ready!");
     }
@@ -141,8 +163,10 @@ public class ElementMiniGameManager : MonoBehaviour
                         audioSource.PlayOneShot(keyPressSound, PressVolume);
                 }
 
+                // 🎮 กดลง + เด้งขึ้น + ลูกศรใหม่ Fade In
+                StartCoroutine(ButtonPressEffect());
+
                 currentIndex++;
-                UpdateDisplay();
 
                 if (currentIndex >= currentSequence.Count)
                     Success();
@@ -163,6 +187,88 @@ public class ElementMiniGameManager : MonoBehaviour
                 else
                     Fail();
             }
+        }
+    }
+
+    /// <summary>
+    /// 🎮 เอฟเฟกต์เหมือนกดปุ่ม: กดลง → เด้งกลับ → ลูกศรใหม่ Fade In
+    /// </summary>
+    private IEnumerator ButtonPressEffect()
+    {
+        if (displayImage == null) yield break;
+
+        float elapsed = 0f;
+        Vector3 startScale = displayImage.transform.localScale;
+        Vector3 pressedScale = startScale * pressScale;
+
+        // ===== ขั้นที่ 1: กดลง (Press Down) =====
+        while (elapsed < pressDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / pressDuration;
+
+            // EaseOut สำหรับการกดลง
+            float smoothT = 1f - Mathf.Pow(1f - t, 3f);
+
+            displayImage.transform.localScale = Vector3.Lerp(startScale, pressedScale, smoothT);
+
+            // แฟลชสีเขียวตอนกด
+            displayImage.color = Color.Lerp(originalImageColor, flashColor, smoothT * flashIntensity);
+
+            yield return null;
+        }
+
+        // ===== ขั้นที่ 2: เด้งกลับ (Pop Back) =====
+        elapsed = 0f;
+        while (elapsed < popDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / popDuration;
+
+            // Smooth EaseOut สำหรับการเด้ง
+            float smoothT = Mathf.Sin(t * Mathf.PI * 0.5f);
+
+            displayImage.transform.localScale = Vector3.Lerp(pressedScale, startScale, smoothT);
+            displayImage.color = Color.Lerp(flashColor, originalImageColor, smoothT);
+
+            yield return null;
+        }
+
+        // รีเซ็ตค่า
+        displayImage.transform.localScale = startScale;
+        displayImage.color = originalImageColor;
+
+        // ===== ขั้นที่ 3: ซ่อนลูกศรเดิม =====
+        displayImage.gameObject.SetActive(false);
+
+        yield return new WaitForSeconds(0.05f);
+
+        // ===== ขั้นที่ 4: แสดงลูกศรใหม่ + Fade In =====
+        if (currentIndex < currentSequence.Count)
+        {
+            UpdateDisplay();
+
+            // เริ่มจาก Alpha = 0
+            Color startColor = displayImage.color;
+            startColor.a = 0f;
+            displayImage.color = startColor;
+
+            // Fade In
+            elapsed = 0f;
+            while (elapsed < fadeInDuration)
+            {
+                elapsed += Time.deltaTime;
+                float t = elapsed / fadeInDuration;
+
+                Color newColor = originalImageColor;
+                newColor.a = Mathf.Lerp(0f, 1f, t);
+                displayImage.color = newColor;
+
+                yield return null;
+            }
+
+            // ตั้งค่าสุดท้าย
+            displayImage.color = originalImageColor;
         }
     }
 
@@ -482,6 +588,8 @@ public class ElementMiniGameManager : MonoBehaviour
         {
             displayImage.sprite = keyToSprite[key];
             displayImage.transform.localScale = originalImageScale * arrowScale;
+            displayImage.transform.localPosition = originalImagePosition;
+            displayImage.color = originalImageColor;
             displayImage.gameObject.SetActive(true);
             if (displayText != null) displayText.gameObject.SetActive(false);
         }
@@ -520,15 +628,5 @@ public class ElementMiniGameManager : MonoBehaviour
     {
         if (seq == null || seq.Count == 0) return "";
         return string.Join("", seq);
-    }
-
-    private bool HasParameter(Animator anim, string paramName)
-    {
-        foreach (AnimatorControllerParameter param in anim.parameters)
-        {
-            if (param.name == paramName)
-                return true;
-        }
-        return false;
     }
 }

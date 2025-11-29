@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -7,14 +8,28 @@ using UnityEngine.UI;
 public class QTEManager : MonoBehaviour
 {
     [Header("UI")]
-    public Transform qteParent;           // Panel ใน Canvas
-    public GameObject qteSlotPrefab;      // Prefab QTE Slot (Text + Image)
+    public Transform qteParent;
+    public GameObject qteSlotPrefab;
     public float slotSpacing = 60f;
 
     [Header("Timing Bar")]
-    public GameObject timingBarPrefab;    // Prefab TimingBar
+    public GameObject timingBarPrefab;
     private TimingBar currentTimingBar;
 
+    [Header("⭐ Animation Settings")]
+    [Tooltip("เวลาที่ QTE Slot ค่อยๆ โผล่ขึ้นมา")]
+    public float slotFadeInDuration = 0.3f;
+    [Tooltip("ประเภทอนิเมชั่น: Fade, Scale, Both, Pop")]
+    public SlotAnimationType slotAnimationType = SlotAnimationType.Both;
+
+    public enum SlotAnimationType
+    {
+        None,
+        Fade,
+        Scale,
+        Both,
+        Pop
+    }
 
     [Header("Settings")]
     public float timePerSlot = 1f;
@@ -30,7 +45,7 @@ public class QTEManager : MonoBehaviour
     private List<GameObject> slotUIs = new List<GameObject>();
     private int currentIndex = 0;
     private bool isActive = false;
-    public LetterIconDatabase iconDB;   // ใส่ ScriptableObject A-Z ใน Inspector
+    public LetterIconDatabase iconDB;
 
     void Start()
     {
@@ -38,13 +53,11 @@ public class QTEManager : MonoBehaviour
         sfxSource.playOnAwake = false;
     }
 
-    // 🔹 เริ่ม QTE
     public void StartQTE(List<KeyCode> keySequence)
     {
         if (keySequence == null || keySequence.Count == 0)
             return;
 
-        // ⛔ ตรวจสอบว่ามีขวดแล้วหรือยัง
         SkillInventory inv = FindObjectOfType<SkillInventory>();
         if (inv != null && inv.HasAnyBottle())
         {
@@ -52,7 +65,6 @@ public class QTEManager : MonoBehaviour
             return;
         }
 
-        // 🔹 รีเซ็ตสถานะก่อนเริ่มใหม่ (กันค้าง)
         EndQTE();
 
         isActive = true;
@@ -62,46 +74,40 @@ public class QTEManager : MonoBehaviour
             SpawnQTESlot(key);
         }
 
-        // spawn TimingBar ตัวแรก
         if (currentTimingBar == null && slotUIs.Count > 0)
         {
             SpawnTimingBar();
         }
     }
 
-
     void SpawnQTESlot(KeyCode key)
     {
         Vector2 startPos = Vector2.zero;
 
-        // คำนวณตำแหน่ง
         if (slotUIs.Count > 0)
         {
             RectTransform lastRT = slotUIs[slotUIs.Count - 1].GetComponent<RectTransform>();
             startPos = lastRT.anchoredPosition + new Vector2(slotSpacing, 0f);
         }
 
-        // สร้าง slot
         GameObject slot = Instantiate(qteSlotPrefab, qteParent);
         slot.transform.localScale = Vector3.one;
 
         RectTransform rt = slot.GetComponent<RectTransform>();
         rt.anchoredPosition = startPos;
 
-        // เซ็ตสีพื้นหลังของ slot
         Image bg = slot.GetComponent<Image>();
         if (bg != null)
             bg.color = Color.white;
 
-        // เซ็ตภาพตัวอักษรผ่าน QTESlotUI
         QTESlotUI ui = slot.GetComponent<QTESlotUI>();
         if (ui != null)
         {
-            ui.iconDB = iconDB;       // ส่งฐานข้อมูลรูปตัวอักษร
-            ui.Init(key, timePerSlot); // เซ็ต sprite + timer
+            ui.iconDB = iconDB;
+            ui.Init(key, timePerSlot);
         }
 
-        slot.SetActive(false); // ซ่อนก่อนจนกว่าจะกดถูกจังหวะ
+        slot.SetActive(false);
 
         slotUIs.Add(slot);
         sequence.Add(key);
@@ -110,18 +116,22 @@ public class QTEManager : MonoBehaviour
     void SpawnTimingBar()
     {
         if (currentTimingBar != null)
-            Destroy(currentTimingBar.gameObject);
+        {
+            Debug.LogWarning("⚠️ TimingBar มีอยู่แล้ว ไม่สร้างใหม่");
+            return;
+        }
 
-        GameObject barGO = Instantiate(timingBarPrefab, qteParent.root); // Spawn บน Canvas
+        GameObject barGO = Instantiate(timingBarPrefab, qteParent.root);
         currentTimingBar = barGO.GetComponent<TimingBar>();
         currentTimingBar.StartTiming(OnTimingComplete);
+
+        Debug.Log("🎯 สร้าง TimingBar ใหม่");
     }
 
     void OnTimingComplete(bool success)
     {
         if (!isActive) return;
 
-        // ✅ เล่นเสียงตามผล
         if (success)
         {
             if (keyPressSound != null)
@@ -136,7 +146,9 @@ public class QTEManager : MonoBehaviour
         if (success)
         {
             if (currentIndex < slotUIs.Count)
-                slotUIs[currentIndex].SetActive(true);
+            {
+                StartCoroutine(ShowSlotWithAnimation(slotUIs[currentIndex]));
+            }
 
             SkillLetterSelector selector = FindObjectOfType<SkillLetterSelector>();
             if (selector != null)
@@ -148,7 +160,7 @@ public class QTEManager : MonoBehaviour
 
             if (currentIndex >= sequence.Count)
             {
-                Debug.Log("All QTE Success!");
+                Debug.Log("✅ All QTE Success!");
 
                 SkillBarUI skillBar = FindObjectOfType<SkillBarUI>();
                 if (skillBar != null)
@@ -166,16 +178,32 @@ public class QTEManager : MonoBehaviour
             }
             else
             {
-                SpawnTimingBar();
+                if (currentTimingBar != null)
+                {
+                    Debug.Log($"▶️ ต่อรอบที่ {currentIndex + 1}/{sequence.Count}");
+                    currentTimingBar.StartTiming(OnTimingComplete);
+                }
             }
         }
         else
         {
-            Debug.Log("QTE Failed!");
+            Debug.Log("❌ QTE Failed!");
+
+            // ⭐⭐⭐ เพิ่มส่วนนี้ - เรียก OnQTEFailed() เพื่อลบตัวอักษรบนหัว ⭐⭐⭐
+            SkillLetterSelector selector = FindObjectOfType<SkillLetterSelector>();
+            if (selector != null)
+            {
+                selector.OnQTEFailed();
+                Debug.Log("✅ เรียก OnQTEFailed() สำเร็จ - ลบตัวอักษรบนหัวแล้ว");
+            }
+            else
+            {
+                Debug.LogError("❌ ไม่เจอ SkillLetterSelector!");
+            }
+
             EndQTE();
         }
     }
-
 
     void EndQTE()
     {
@@ -183,12 +211,16 @@ public class QTEManager : MonoBehaviour
 
         PlayerSkillManager manager = FindObjectOfType<PlayerSkillManager>();
         if (manager != null)
-            manager.UnlockSelectedSkill(); // ✅ ปลดล็อกเมื่อจบ QTE
+            manager.UnlockSelectedSkill();
+
+        StopAllCoroutines();
 
         if (currentTimingBar != null)
+        {
             Destroy(currentTimingBar.gameObject);
-
-        currentTimingBar = null;
+            currentTimingBar = null;
+            Debug.Log("🗑️ ลบ TimingBar");
+        }
 
         foreach (var slot in slotUIs)
         {
@@ -200,8 +232,91 @@ public class QTEManager : MonoBehaviour
         sequence.Clear();
         currentIndex = 0;
 
-        Debug.Log("QTE Ended → พร้อมเริ่มใหม่ถ้าไม่มีขวดใน Inventory");
+        Debug.Log("🔚 QTE Ended → พร้อมเริ่มใหม่ถ้าไม่มีขวดใน Inventory");
     }
 
+    private IEnumerator ShowSlotWithAnimation(GameObject slot)
+    {
+        if (slot == null)
+        {
+            Debug.LogWarning("⚠️ Slot ถูก Destroy ไปแล้วก่อนที่อนิเมชั่นจะเสร็จ");
+            yield break;
+        }
 
+        slot.SetActive(true);
+
+        if (slotAnimationType == SlotAnimationType.None)
+            yield break;
+
+        CanvasGroup canvasGroup = slot.GetComponent<CanvasGroup>();
+        if (canvasGroup == null)
+            canvasGroup = slot.AddComponent<CanvasGroup>();
+
+        RectTransform rect = slot.GetComponent<RectTransform>();
+        Vector3 originalScale = rect.localScale;
+
+        float elapsed = 0f;
+
+        switch (slotAnimationType)
+        {
+            case SlotAnimationType.Fade:
+                canvasGroup.alpha = 0f;
+                break;
+
+            case SlotAnimationType.Scale:
+                rect.localScale = Vector3.zero;
+                break;
+
+            case SlotAnimationType.Both:
+                canvasGroup.alpha = 0f;
+                rect.localScale = Vector3.zero;
+                break;
+
+            case SlotAnimationType.Pop:
+                rect.localScale = Vector3.zero;
+                break;
+        }
+
+        while (elapsed < slotFadeInDuration)
+        {
+            if (slot == null || canvasGroup == null || rect == null)
+            {
+                Debug.LogWarning("⚠️ Slot ถูก Destroy ระหว่างอนิเมชั่น");
+                yield break;
+            }
+
+            elapsed += Time.deltaTime;
+            float t = elapsed / slotFadeInDuration;
+
+            switch (slotAnimationType)
+            {
+                case SlotAnimationType.Fade:
+                    canvasGroup.alpha = Mathf.Lerp(0f, 1f, t);
+                    break;
+
+                case SlotAnimationType.Scale:
+                    rect.localScale = Vector3.Lerp(Vector3.zero, originalScale, t);
+                    break;
+
+                case SlotAnimationType.Both:
+                    canvasGroup.alpha = Mathf.Lerp(0f, 1f, t);
+                    rect.localScale = Vector3.Lerp(Vector3.zero, originalScale, t);
+                    break;
+
+                case SlotAnimationType.Pop:
+                    float elasticT = Mathf.Sin(t * Mathf.PI * 0.5f);
+                    float overshoot = 1f + (Mathf.Sin(t * Mathf.PI * 2f) * 0.2f * (1f - t));
+                    rect.localScale = originalScale * elasticT * overshoot;
+                    break;
+            }
+
+            yield return null;
+        }
+
+        if (slot != null && canvasGroup != null && rect != null)
+        {
+            canvasGroup.alpha = 1f;
+            rect.localScale = originalScale;
+        }
+    }
 }

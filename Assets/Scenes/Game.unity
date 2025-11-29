@@ -7353,6 +7353,12 @@ MonoBehaviour:
   failSymbol: {fileID: 1096196335}
   failSymbolDuration: 2
   arrowScale: 0.6
+  pressDuration: 0.1
+  pressScale: 0.85
+  popDuration: 0.2
+  fadeInDuration: 0.15
+  flashColor: {r: 0, g: 1, b: 0, a: 1}
+  flashIntensity: 0.7
   inspectorSequence: 120100001401000012010000140100001101000012010000
   keySpriteMappings:
   - key: 273
@@ -10521,6 +10527,12 @@ MonoBehaviour:
   failSymbol: {fileID: 1096196335}
   failSymbolDuration: 2
   arrowScale: 0.6
+  pressDuration: 0.1
+  pressScale: 0.85
+  popDuration: 0.2
+  fadeInDuration: 0.15
+  flashColor: {r: 0, g: 1, b: 0, a: 1}
+  flashIntensity: 0.7
   inspectorSequence: 120100001301000014010000120100001101000013010000
   keySpriteMappings:
   - key: 273
@@ -12014,6 +12026,12 @@ MonoBehaviour:
   failSymbol: {fileID: 1096196335}
   failSymbolDuration: 2
   arrowScale: 0.6
+  pressDuration: 0.1
+  pressScale: 0.85
+  popDuration: 0.2
+  fadeInDuration: 0.15
+  flashColor: {r: 0.3018868, g: 0.3018868, b: 0.3018868, a: 1}
+  flashIntensity: 0.7
   inspectorSequence: 11010000130100001201000014010000
   keySpriteMappings:
   - key: 273
@@ -42266,6 +42284,12 @@ MonoBehaviour:
   failSymbol: {fileID: 1096196335}
   failSymbolDuration: 2
   arrowScale: 0.6
+  pressDuration: 0.1
+  pressScale: 0.85
+  popDuration: 0.2
+  fadeInDuration: 0.15
+  flashColor: {r: 0, g: 1, b: 0, a: 1}
+  flashIntensity: 0.7
   inspectorSequence: 1101000013010000120100001101000012010000
   keySpriteMappings:
   - key: 273
@@ -61006,6 +61030,12 @@ MonoBehaviour:
   failSymbol: {fileID: 1096196335}
   failSymbolDuration: 2
   arrowScale: 0.6
+  pressDuration: 0.1
+  pressScale: 0.85
+  popDuration: 0.2
+  fadeInDuration: 0.15
+  flashColor: {r: 0, g: 1, b: 0, a: 1}
+  flashIntensity: 0.7
   inspectorSequence: 120100001401000011010000110100001301000012010000
   keySpriteMappings:
   - key: 273
@@ -92442,6 +92472,12 @@ MonoBehaviour:
   failSymbol: {fileID: 1096196335}
   failSymbolDuration: 2
   arrowScale: 0.6
+  pressDuration: 0.1
+  pressScale: 0.85
+  popDuration: 0.2
+  fadeInDuration: 0.15
+  flashColor: {r: 0, g: 1, b: 0, a: 1}
+  flashIntensity: 0.7
   inspectorSequence: 120100001401000012010000140100001301000011010000
   keySpriteMappings:
   - key: 273
@@ -96823,6 +96859,12 @@ MonoBehaviour:
   failSymbol: {fileID: 1096196335}
   failSymbolDuration: 2
   arrowScale: 0.6
+  pressDuration: 0.1
+  pressScale: 0.85
+  popDuration: 0.2
+  fadeInDuration: 0.15
+  flashColor: {r: 0, g: 1, b: 0, a: 1}
+  flashIntensity: 0.7
   inspectorSequence: 110100001301000014010000110100001301000012010000
   keySpriteMappings:
   - key: 273
@@ -100387,6 +100429,14 @@ PrefabInstance:
       propertyPath: keyPressSound
       value: 
       objectReference: {fileID: 8300000, guid: 81054ead8bd740648bc33e7815e86f0a, type: 3}
+    - target: {fileID: 1243483916831076805, guid: abaa3e82029b89043ae42982bbddb0cf, type: 3}
+      propertyPath: slotAnimationType
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1243483916831076805, guid: abaa3e82029b89043ae42982bbddb0cf, type: 3}
+      propertyPath: slotFadeInDuration
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4980700058641200538, guid: abaa3e82029b89043ae42982bbddb0cf, type: 3}
       propertyPath: m_LocalPosition.x
       value: -45.51696
@@ -100953,6 +101003,12 @@ MonoBehaviour:
   failSymbol: {fileID: 1096196335}
   failSymbolDuration: 2
   arrowScale: 0.5
+  pressDuration: 0.1
+  pressScale: 0.85
+  popDuration: 0.2
+  fadeInDuration: 0.15
+  flashColor: {r: 0, g: 1, b: 0, a: 1}
+  flashIntensity: 0.7
   inspectorSequence: 11010000130100001201000014010000110100001201000011010000
   keySpriteMappings:
   - key: 273
@@ -108820,6 +108876,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   dialogLines:
   - What's up.little Wizards
+  enableHighlight: 1
+  highlightWords: []
+  highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  highlightBold: 1
+  highlightSizeIncrease: 0
+  useTextMeshPro: 1
   bubbleHeight: 10
   bubbleOffset: {x: 0, y: 0}
   floatAmplitude: 0.3
@@ -108832,6 +108894,8 @@ MonoBehaviour:
   padding: 15
   textAlignment: 4
   textVerticalOffset: 10
+  customFont: {fileID: 0}
+  customFontTMP: {fileID: 0}
   displayDuration: 3
   typingSpeed: 0.05
   detectionRange: 2.5
@@ -131675,6 +131739,9 @@ MonoBehaviour:
   letterPrefab: {fileID: 4846551199353933299, guid: 7693d595a972a654db93ca0c8bc4ae16, type: 3}
   mainCanvas: {fileID: 1864271678}
   cycleSpeed: 2
+  fadeInDuration: 0.3
+  letterDelay: 0.1
+  animationType: 1
   customOffsets:
   - {x: -150, y: 40, z: 0}
   - {x: 0, y: 40, z: 0}

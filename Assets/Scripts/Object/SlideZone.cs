@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 /// <summary>
 /// โซนสไลด์ - ผู้เล่นจะสไลด์ทันทีเมื่อโซนโผล่ขึ้นมา
@@ -20,17 +21,17 @@ public class SlideZone : MonoBehaviour
 
     [Header("Visual Effects")]
     [SerializeField] private ParticleSystem slideEffect;
-    [SerializeField] private Vector3 effectOffset = new Vector3(0, 0.5f, 0); // ตำแหน่ง offset
-    [SerializeField] private Vector3 effectRotation = new Vector3(0, 0, 0); // มุมหมุนของเอฟเฟกต์
-    [SerializeField] private bool followPlayer = true; // ให้เอฟเฟกต์ตามผู้เล่น
-    [SerializeField] private bool rotateWithPlayer = false; // หมุนตามทิศทางผู้เล่น
+    [SerializeField] private Vector3 effectOffset = new Vector3(0, 0.5f, 0);
+    [SerializeField] private Vector3 effectRotation = new Vector3(0, 0, 0);
+    [SerializeField] private bool followPlayer = true;
+    [SerializeField] private bool rotateWithPlayer = false;
 
     [Header("Zone Settings")]
     [SerializeField] private bool startVisible = true;
 
     private HashSet<PlayerController> playersInZone = new HashSet<PlayerController>();
     private Dictionary<PlayerController, Coroutine> activeSlides = new Dictionary<PlayerController, Coroutine>();
-    private Dictionary<PlayerController, ParticleSystem> playerEffects = new Dictionary<PlayerController, ParticleSystem>(); // เก็บ effect แต่ละคน
+    private Dictionary<PlayerController, ParticleSystem> playerEffects = new Dictionary<PlayerController, ParticleSystem>();
     private Collider zoneCollider;
     private bool isZoneActive = true;
     private AudioSource audioSource;
@@ -43,19 +44,18 @@ public class SlideZone : MonoBehaviour
             zoneCollider.isTrigger = true;
         }
 
-        // ? เช็ค AudioSource ถ้าไม่มีก็สร้างให้อัตโนมัติ
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null)
         {
             audioSource = gameObject.AddComponent<AudioSource>();
             audioSource.playOnAwake = false;
-            audioSource.spatialBlend = 0f; // 2D sound
-            Debug.Log("? สร้าง AudioSource อัตโนมัติสำหรับ SlideZone");
+            audioSource.spatialBlend = 0f;
+            Debug.Log("?? สร้าง AudioSource อัตโนมัติสำหรับ SlideZone");
         }
 
         isZoneActive = startVisible;
         gameObject.SetActive(startVisible);
-        Debug.Log($"? SlideZone เริ่มต้น: {(startVisible ? "แสดง ?" : "ซ่อน ?")}");
+        Debug.Log($"?? SlideZone เริ่มต้น: {(startVisible ? "แสดง ?" : "ซ่อน ?")}");
     }
 
     private void OnEnable()
@@ -78,7 +78,7 @@ public class SlideZone : MonoBehaviour
         Debug.Log("?? SlideZone ซ่อน! หยุดการสไลด์ทั้งหมด + ล้างรายชื่อผู้เล่น");
 
         StopAllSlides();
-        StopAllEffects(); // หยุดเอฟเฟกต์ทั้งหมด
+        StopAllEffects();
         playersInZone.Clear();
     }
 
@@ -94,7 +94,7 @@ public class SlideZone : MonoBehaviour
 
                 if (isZoneActive)
                 {
-                    StartEffectForPlayer(player); // เริ่มเอฟเฟกต์
+                    StartEffectForPlayer(player);
                     StartSlideForPlayer(player);
                 }
             }
@@ -108,9 +108,29 @@ public class SlideZone : MonoBehaviour
             PlayerController player = other.GetComponent<PlayerController>();
             if (player != null && playersInZone.Contains(player))
             {
-                float horizontal = Input.GetAxisRaw("Horizontal");
-                float vertical = Input.GetAxisRaw("Vertical");
+                // ===== ใช้ Input System แทน Input Manager =====
+                float horizontal = 0f;
+                float vertical = 0f;
 
+                // อ่านค่าจาก Keyboard
+                if (Keyboard.current != null)
+                {
+                    if (Keyboard.current.aKey.isPressed) horizontal = -1f;
+                    else if (Keyboard.current.dKey.isPressed) horizontal = 1f;
+
+                    if (Keyboard.current.wKey.isPressed) vertical = 1f;
+                    else if (Keyboard.current.sKey.isPressed) vertical = -1f;
+                }
+
+                // อ่านค่าจาก Gamepad (ถ้ามี)
+                if (Gamepad.current != null)
+                {
+                    Vector2 leftStick = Gamepad.current.leftStick.ReadValue();
+                    if (Mathf.Abs(leftStick.x) > 0.1f) horizontal = leftStick.x;
+                    if (Mathf.Abs(leftStick.y) > 0.1f) vertical = leftStick.y;
+                }
+
+                // เช็คว่ามีการกดปุ่มหรือไม่
                 if ((Mathf.Abs(horizontal) > 0.1f || Mathf.Abs(vertical) > 0.1f) &&
                     !activeSlides.ContainsKey(player))
                 {
@@ -129,7 +149,7 @@ public class SlideZone : MonoBehaviour
             {
                 playersInZone.Remove(player);
                 StopSlideForPlayer(player);
-                StopEffectForPlayer(player); // หยุดเอฟเฟกต์
+                StopEffectForPlayer(player);
                 Debug.Log("?? ผู้เล่นออกจากโซนสไลด์");
             }
         }
@@ -167,25 +187,20 @@ public class SlideZone : MonoBehaviour
     private void StartEffectForPlayer(PlayerController player)
     {
         if (player == null || slideEffect == null) return;
-        if (playerEffects.ContainsKey(player)) return; // มีเอฟเฟกต์อยู่แล้ว
+        if (playerEffects.ContainsKey(player)) return;
 
-        // คำนวณ Rotation
         Quaternion rotation;
         if (rotateWithPlayer)
         {
-            // หมุนตามผู้เล่น + เพิ่ม custom rotation
             rotation = player.transform.rotation * Quaternion.Euler(effectRotation);
         }
         else
         {
-            // ใช้ custom rotation เท่านั้น
             rotation = Quaternion.Euler(effectRotation);
         }
 
-        // สร้าง Particle System ใหม่สำหรับผู้เล่นคนนี้
         ParticleSystem effectInstance = Instantiate(slideEffect, player.transform.position + effectOffset, rotation);
 
-        // ถ้าต้องการให้ตามผู้เล่น
         if (followPlayer)
         {
             effectInstance.transform.SetParent(player.transform);
@@ -215,7 +230,7 @@ public class SlideZone : MonoBehaviour
         if (effect != null)
         {
             effect.Stop();
-            Destroy(effect.gameObject, 2f); // ลบหลังจาก 2 วินาที (ให้ particle ที่เหลือจางหาย)
+            Destroy(effect.gameObject, 2f);
         }
 
         playerEffects.Remove(player);
@@ -243,19 +258,14 @@ public class SlideZone : MonoBehaviour
         slideDirection.y = 0;
         slideDirection.Normalize();
 
-        // เล่นอนิเมชั่น
         Animator animator = player.GetComponent<Animator>();
         if (animator != null && !string.IsNullOrEmpty(slideAnimationTrigger))
         {
             animator.SetTrigger(slideAnimationTrigger);
         }
 
-        // เล่นเสียง
         PlaySlideSound();
 
-        // ไม่ต้องเล่นเอฟเฟกต์ตรงนี้แล้ว เพราะเล่นลูปอยู่แล้วตอนเข้าโซน
-
-        // ทำการสไลด์
         CharacterController controller = player.GetComponent<CharacterController>();
         float slideTime = 0.3f;
         float elapsed = 0f;
@@ -293,16 +303,13 @@ public class SlideZone : MonoBehaviour
     {
         if (slideSound == null) return;
 
-        // ลำดับความสำคัญ: ใช้ AudioManager ก่อน ถ้าไม่มีใช้ AudioSource
         if (AudioManager.Instance != null)
         {
-            // ใช้ AudioManager
             AudioManager.Instance.PlaySFX(slideSound, slideSoundVolume);
             Debug.Log("?? เล่นเสียงผ่าน AudioManager");
         }
         else if (audioSource != null)
         {
-            // ใช้ AudioSource
             audioSource.PlayOneShot(slideSound, slideSoundVolume);
             Debug.Log("?? เล่นเสียงผ่าน AudioSource");
         }

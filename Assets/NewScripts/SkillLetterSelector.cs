@@ -1,14 +1,33 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
 
 public class SkillLetterSelector : MonoBehaviour
 {
-    public Transform uiAnchor;       // จุดบนหัว Player
-    public GameObject letterPrefab;  // Prefab ของ Image UI (SkillLetterUI)
-    public Canvas mainCanvas;        // Canvas หลัก
-    public float cycleSpeed = 2f;    // ความเร็วหมุนตัวอักษร
+    public Transform uiAnchor;
+    public GameObject letterPrefab;
+    public Canvas mainCanvas;
+    public float cycleSpeed = 2f;
+
+    [Header("⭐ Animation Settings")]
+    [Tooltip("ระยะเวลาที่ตัวอักษรค่อยๆ โผล่ขึ้นมา")]
+    public float fadeInDuration = 0.3f;
+    [Tooltip("ดีเลย์ระหว่างตัวอักษรแต่ละตัว")]
+    public float letterDelay = 0.1f;
+    [Tooltip("เอฟเฟกต์การโผล่: None, Fade, Scale, Both, SlideDown, Pop")]
+    public AnimationType animationType = AnimationType.Both;
+
+    public enum AnimationType
+    {
+        None,
+        Fade,
+        Scale,
+        Both,
+        SlideDown,
+        Pop
+    }
 
     private List<char> letters = new List<char>();
     private List<char> remaining = new List<char>();
@@ -18,29 +37,29 @@ public class SkillLetterSelector : MonoBehaviour
     private float timer = 0f;
     private bool isActive = false;
     private bool qteStarted = false;
+    private bool isQTERunning = false;
 
     private List<GameObject> letterUIs = new List<GameObject>();
-    private List<SkillLetterUI> letterImages = new List<SkillLetterUI>(); // ใช้รูปภาพแทน Text
+    private List<SkillLetterUI> letterImages = new List<SkillLetterUI>();
 
     private PlayerSkillManager manager;
-    public Vector3[] customOffsets;   // ใส่ใน Inspector
-    public float letterSpacing = 100f; // fallback ถ้า customOffsets ไม่พอ
+    public Vector3[] customOffsets;
+    public float letterSpacing = 100f;
 
-    // ===== Input System - รองรับทั้ง Keyboard + Gamepad =====
     private InputAction mixAction;
 
     void Start()
     {
         manager = GetComponent<PlayerSkillManager>();
 
-        // ===== สร้าง Input Action สำหรับปุ่ม F และ Gamepad =====
+        // สร้าง Input Action สำหรับปุ่ม F และ Gamepad
         mixAction = new InputAction("Mix", type: InputActionType.Button);
-        mixAction.AddBinding("<Keyboard>/f");              // Keyboard: F
-        mixAction.AddBinding("<Gamepad>/buttonWest");      // Xbox: X, PS: Square □
+        mixAction.AddBinding("<Keyboard>/f");
+        mixAction.AddBinding("<Gamepad>/buttonWest");
 
         mixAction.Enable();
 
-        Debug.Log("✅ SkillLetterSelector Started - F (Keyboard) / X/Square (Gamepad) Ready!");
+        Debug.Log("✅ SkillLetterSelector Started!");
     }
 
     private void OnEnable()
@@ -62,7 +81,7 @@ public class SkillLetterSelector : MonoBehaviour
     {
         if (!isActive) return;
 
-        // หมุนสลับรูปตัวอักษรเรื่อย ๆ
+        // ให้ตัวอักษรกระพริบอยู่เสมอ
         timer += Time.deltaTime;
         if (timer >= 1f / cycleSpeed && remaining.Count > 0)
         {
@@ -75,30 +94,33 @@ public class SkillLetterSelector : MonoBehaviour
             }
         }
 
-        // ===== เริ่ม QTE เมื่อกด F หรือปุ่ม Gamepad =====
+        // เช็คว่ากด F/X และยังไม่มี QTE ทำงานอยู่
         if (mixAction.WasPressedThisFrame() && remaining.Count > 0)
         {
-            if (!qteStarted)
+            if (!isQTERunning)
             {
                 qteStarted = true;
+                isQTERunning = true;
                 StartQTE();
-                Debug.Log("🎯 กดปุ่ม Mix -> เริ่ม QTE!");
+                Debug.Log("🎯 กดปุ่ม F/X -> เริ่ม QTE! (ล็อคปุ่ม T แล้ว)");
+            }
+            else
+            {
+                Debug.Log("⚠️ QTE กำลังทำงานอยู่ - ไม่สามารถเริ่ม QTE ใหม่ได้!");
             }
         }
 
-        // อัปเดตตำแหน่ง UI เหนือหัว player
+        // อัปเดตตำแหน่ง UI บนหัว
         for (int i = 0; i < letterUIs.Count; i++)
         {
             Vector3 offset;
 
-            // ถ้ามี custom offset สำหรับตัวนี้ → ใช้เลย
             if (customOffsets != null && i < customOffsets.Length)
             {
                 offset = customOffsets[i];
             }
             else
             {
-                // ถ้าไม่มีก็ fallback ใช้ spacing เดิม
                 offset = new Vector3(i * letterSpacing, 0f, 0f);
             }
 
@@ -109,25 +131,65 @@ public class SkillLetterSelector : MonoBehaviour
 
     public void StartSelection(string skillID)
     {
+        // 🔒 ถ้า QTE กำลังทำงานอยู่ → บล็อคไม่ให้กด T
+        if (isQTERunning)
+        {
+            Debug.Log("⚠️ QTE กำลังทำงานอยู่ - ไม่สามารถกด T ได้!");
+            return;
+        }
+
+        // 🔒 ถ้ายังมีตัวอักษรอยู่บนหัว → บล็อคไม่ให้กด T ซ้ำ
+        if (isActive)
+        {
+            Debug.Log("⚠️ ตัวอักษรยังอยู่บนหัว - ต้องกด F/X เพื่อเริ่ม QTE ก่อน!");
+            return;
+        }
+
         letters = new List<char>(skillID.ToCharArray());
         remaining = new List<char>(letters);
         originalLetters = new List<char>(letters);
 
-        // ลบ UI เดิม
-        foreach (var ui in letterUIs) Destroy(ui);
+        // ลบ UI เดิมถ้ามี
+        foreach (var ui in letterUIs)
+        {
+            if (ui != null) Destroy(ui);
+        }
         letterUIs.Clear();
         letterImages.Clear();
 
-        // สร้าง LetterUI จาก prefab
+        StartCoroutine(SpawnLettersWithAnimation());
+
+        currentIndex = 0;
+        isActive = true;
+        qteStarted = false;
+        isQTERunning = false;
+
+        Debug.Log("🔤 เริ่ม Selection สำหรับ Skill: " + skillID + " (กด F/X เพื่อเริ่ม QTE)");
+    }
+
+    private IEnumerator SpawnLettersWithAnimation()
+    {
         for (int i = 0; i < letters.Count; i++)
         {
             GameObject go = Instantiate(letterPrefab, mainCanvas.transform);
             go.transform.localScale = Vector3.one;
 
+            // ตั้งตำแหน่งทันทีก่อนแสดงผล
+            Vector3 offset;
+            if (customOffsets != null && i < customOffsets.Length)
+            {
+                offset = customOffsets[i];
+            }
+            else
+            {
+                offset = new Vector3(i * letterSpacing, 0f, 0f);
+            }
+            Vector3 screenPos = Camera.main.WorldToScreenPoint(uiAnchor.position) + offset;
+            go.transform.position = screenPos;
+
             SkillLetterUI ui = go.GetComponent<SkillLetterUI>();
             if (ui != null)
             {
-                // ดึง database จาก QTEManager
                 QTEManager qte = FindObjectOfType<QTEManager>();
                 if (qte != null)
                     ui.iconDB = qte.iconDB;
@@ -136,18 +198,104 @@ public class SkillLetterSelector : MonoBehaviour
 
                 letterUIs.Add(go);
                 letterImages.Add(ui);
+
+                StartCoroutine(AnimateLetter(go, i));
             }
             else
             {
                 Debug.LogError("SkillLetterUI not found on letterPrefab!");
             }
+
+            yield return new WaitForSeconds(letterDelay);
+        }
+    }
+
+    private IEnumerator AnimateLetter(GameObject letter, int index)
+    {
+        if (letter == null) yield break;
+
+        CanvasGroup canvasGroup = letter.GetComponent<CanvasGroup>();
+        if (canvasGroup == null)
+            canvasGroup = letter.AddComponent<CanvasGroup>();
+
+        RectTransform rect = letter.GetComponent<RectTransform>();
+        Vector3 originalScale = rect.localScale;
+        Vector3 originalPos = rect.localPosition;
+
+        float elapsed = 0f;
+
+        switch (animationType)
+        {
+            case AnimationType.Fade:
+                canvasGroup.alpha = 0f;
+                break;
+
+            case AnimationType.Scale:
+                rect.localScale = Vector3.zero;
+                break;
+
+            case AnimationType.Both:
+                canvasGroup.alpha = 0f;
+                rect.localScale = Vector3.zero;
+                break;
+
+            case AnimationType.SlideDown:
+                canvasGroup.alpha = 0f;
+                rect.localPosition = originalPos + new Vector3(0, 100f, 0);
+                break;
+
+            case AnimationType.Pop:
+                rect.localScale = Vector3.zero;
+                break;
+
+            case AnimationType.None:
+                yield break;
         }
 
-        currentIndex = 0;
-        isActive = true;
-        qteStarted = false;
+        while (elapsed < fadeInDuration)
+        {
+            if (letter == null || canvasGroup == null || rect == null)
+                yield break;
 
-        Debug.Log("🔤 เริ่ม Selection สำหรับ Skill: " + skillID);
+            elapsed += Time.deltaTime;
+            float t = elapsed / fadeInDuration;
+
+            switch (animationType)
+            {
+                case AnimationType.Fade:
+                    canvasGroup.alpha = Mathf.Lerp(0f, 1f, t);
+                    break;
+
+                case AnimationType.Scale:
+                    rect.localScale = Vector3.Lerp(Vector3.zero, originalScale, t);
+                    break;
+
+                case AnimationType.Both:
+                    canvasGroup.alpha = Mathf.Lerp(0f, 1f, t);
+                    rect.localScale = Vector3.Lerp(Vector3.zero, originalScale, t);
+                    break;
+
+                case AnimationType.SlideDown:
+                    canvasGroup.alpha = Mathf.Lerp(0f, 1f, t);
+                    rect.localPosition = Vector3.Lerp(originalPos + new Vector3(0, 100f, 0), originalPos, t);
+                    break;
+
+                case AnimationType.Pop:
+                    float elasticT = Mathf.Sin(t * Mathf.PI * 0.5f);
+                    float overshoot = 1f + (Mathf.Sin(t * Mathf.PI * 2f) * 0.2f * (1f - t));
+                    rect.localScale = originalScale * elasticT * overshoot;
+                    break;
+            }
+
+            yield return null;
+        }
+
+        if (letter != null && canvasGroup != null && rect != null)
+        {
+            canvasGroup.alpha = 1f;
+            rect.localScale = originalScale;
+            rect.localPosition = originalPos;
+        }
     }
 
     private void StartQTE()
@@ -169,26 +317,102 @@ public class SkillLetterSelector : MonoBehaviour
         }
     }
 
-    // ลบ Letter UI ทีละตัวเมื่อ QTE สำเร็จ
     public void RemoveOneLetterUI()
     {
         if (letterUIs.Count == 0) return;
 
-        Destroy(letterUIs[0]);
+        StartCoroutine(FadeOutAndDestroy(letterUIs[0]));
+
         letterUIs.RemoveAt(0);
         letterImages.RemoveAt(0);
 
         if (letterUIs.Count == 0)
         {
             isActive = false;
+            isQTERunning = false;
             Debug.Log("✅ QTE เสร็จสิ้น - ทุก Letter UI ถูกลบแล้ว");
         }
     }
 
-    // ===== ฟังก์ชันเสริม: รีเซ็ต QTE =====
+    // ⚠️ ถูกเรียกเมื่อกดผิด → ลบตัวอักษรบนหัว + ปลดล็อคปุ่ม T
+    public void OnQTEFailed()
+    {
+        Debug.Log("🔴 OnQTEFailed() ถูกเรียก!");
+
+        // 🛑 หยุด Coroutine ทั้งหมด
+        StopAllCoroutines();
+
+        // ❌ ลบตัวอักษรทั้งหมดบนหัวทันที
+        foreach (var ui in letterUIs)
+        {
+            if (ui != null)
+            {
+                Destroy(ui);
+                Debug.Log("🗑️ ลบ Letter UI");
+            }
+        }
+        letterUIs.Clear();
+        letterImages.Clear();
+
+        // 🔄 รีเซ็ตข้อมูล
+        remaining.Clear();
+        letters.Clear();
+        originalLetters.Clear();
+
+        // 🔓 ปลดล็อคปุ่ม T ให้กดใหม่ได้
+        isQTERunning = false;
+        qteStarted = false;
+        isActive = false;
+        currentIndex = 0;
+        timer = 0f;
+
+        Debug.Log("❌ QTE ล้มเหลว - ลบตัวอักษรและหยุดกระพริบแล้ว (กด T เพื่อเริ่มใหม่)");
+    }
+
+    private IEnumerator FadeOutAndDestroy(GameObject letter)
+    {
+        if (letter == null) yield break;
+
+        CanvasGroup canvasGroup = letter.GetComponent<CanvasGroup>();
+        if (canvasGroup == null)
+            canvasGroup = letter.AddComponent<CanvasGroup>();
+
+        RectTransform rect = letter.GetComponent<RectTransform>();
+        Vector3 startScale = rect.localScale;
+
+        float elapsed = 0f;
+        float duration = 0.2f;
+
+        while (elapsed < duration)
+        {
+            if (letter == null || canvasGroup == null || rect == null)
+                yield break;
+
+            elapsed += Time.deltaTime;
+            float t = elapsed / duration;
+
+            canvasGroup.alpha = Mathf.Lerp(1f, 0f, t);
+            rect.localScale = Vector3.Lerp(startScale, Vector3.zero, t);
+
+            yield return null;
+        }
+
+        if (letter != null)
+            Destroy(letter);
+    }
+
+    public bool IsQTERunning()
+    {
+        return isQTERunning;
+    }
+
+    public bool IsActive()
+    {
+        return isActive;
+    }
+
     public void ResetQTE()
     {
-        // ลบ UI ทั้งหมด
         foreach (var ui in letterUIs)
         {
             if (ui != null) Destroy(ui);
@@ -199,6 +423,7 @@ public class SkillLetterSelector : MonoBehaviour
 
         isActive = false;
         qteStarted = false;
+        isQTERunning = false;
         currentIndex = 0;
         timer = 0f;
 
