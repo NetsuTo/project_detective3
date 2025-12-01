@@ -33,7 +33,7 @@ public class IntroVideoPlayer : MonoBehaviour
         SetupInputActions();
         skipAction?.Enable();
 
-        Debug.Log("? IntroVideoPlayer - Input System Ready (Keyboard + Gamepad)!");
+        Debug.Log("?? IntroVideoPlayer - Input System Ready (Keyboard + Gamepad)!");
     }
 
     private void SetupInputActions()
@@ -67,18 +67,19 @@ public class IntroVideoPlayer : MonoBehaviour
             LoadGameScene();
         }
 
-        // แสดงข้อความข้ามวิดีโอถ้ามี
+        // ? แสดงข้อความข้ามวิดีโอตลอด (ไม่ซ่อน)
         if (skipText != null)
         {
             skipText.SetActive(allowSkip);
         }
 
-        // ซ่อน Progress Bar ตอนเริ่ม
+        // ? แสดง Progress UI ตลอด (ไม่ซ่อน)
         if (holdProgressUI != null)
         {
-            holdProgressUI.SetActive(false);
+            holdProgressUI.SetActive(allowSkip);
         }
 
+        // เริ่มต้นหลอดที่ 0%
         if (holdProgressBar != null)
         {
             holdProgressBar.fillAmount = 0f;
@@ -92,7 +93,7 @@ public class IntroVideoPlayer : MonoBehaviour
         // อ่านค่า Input (กดค้างหรือไม่)
         bool isPressed = skipAction.IsPressed();
 
-        // ? Fallback สำหรับ Old Input System
+        // ?? Fallback สำหรับ Old Input System
         if (Keyboard.current == null && Gamepad.current == null)
         {
             isPressed = Input.GetKey(KeyCode.Space);
@@ -104,9 +105,6 @@ public class IntroVideoPlayer : MonoBehaviour
             if (!isHolding)
             {
                 isHolding = true;
-                if (holdProgressUI != null)
-                    holdProgressUI.SetActive(true);
-
                 Debug.Log("? กำลังกดค้างเพื่อข้าม...");
             }
 
@@ -126,19 +124,16 @@ public class IntroVideoPlayer : MonoBehaviour
         }
         else
         {
-            // ปล่อยปุ่ม ? รีเซ็ต
+            // ปล่อยปุ่ม ?? รีเซ็ตหลอดเท่านั้น (ไม่ซ่อน UI)
             if (isHolding)
             {
                 isHolding = false;
                 holdTimer = 0f;
 
-                if (holdProgressUI != null)
-                    holdProgressUI.SetActive(false);
-
                 if (holdProgressBar != null)
                     holdProgressBar.fillAmount = 0f;
 
-                Debug.Log("?? ปล่อยปุ่ม - รีเซ็ต");
+                Debug.Log("?? ปล่อยปุ่ม - รีเซ็ตหลอด");
             }
         }
     }
