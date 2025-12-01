@@ -25,8 +25,11 @@ public class TargetZone : MonoBehaviour
     [System.Serializable]
     public class ElementRequirement
     {
+        [Tooltip("ชื่อธาตุ เช่น 'Water (H2O)'")]
         public string elementName;
-        public List<KeyCode> sequence = new List<KeyCode>();
+
+        [Tooltip("ลำดับธาตุ เช่น H, H, O (ใช้ตัวอักษร)")]
+        public List<string> sequence = new List<string>();
     }
 
     void Awake()
@@ -125,7 +128,7 @@ public class TargetZone : MonoBehaviour
         if (matchedIndex >= 0)
         {
             ElementRequirement matched = requiredElements[matchedIndex];
-            Debug.Log($"🎯 พบธาตุที่ {matchedIndex + 1}: {matched.elementName}");
+            Debug.Log($"🎯 พบธาตุที่ {matchedIndex + 1}: {matched.elementName} ({string.Join("-", matched.sequence)})");
 
             playerInventory.ConsumeSkill(matched.sequence);
 

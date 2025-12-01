@@ -1419,7 +1419,10 @@ MonoBehaviour:
   invisibleTime: 3
   startDelay: 0.5
   showWarning: 1
-  warningTime: 0.5
+  warningTime: 1
+  blinkSpeed: 3
+  shrinkDuration: 0.3
+  shrinkScale: 0.1
 --- !u!1 &22175327
 GameObject:
   m_ObjectHideFlags: 0
@@ -5504,7 +5507,11 @@ MonoBehaviour:
   miniGame: {fileID: 1346371830}
   requiredElements:
   - elementName: NNOO
-    sequence: 6e0000006e0000006f0000006f000000
+    sequence:
+    - N
+    - N
+    - O
+    - O
   onAllElementsCompleted:
     m_PersistentCalls:
       m_Calls: []
@@ -7351,13 +7358,13 @@ MonoBehaviour:
   displayText: {fileID: 1106496629}
   displayImage: {fileID: 1549666389}
   failSymbol: {fileID: 1096196335}
-  failSymbolDuration: 2
+  failSymbolDuration: 1
   arrowScale: 0.6
   pressDuration: 0.1
   pressScale: 0.85
   popDuration: 0.2
   fadeInDuration: 0.15
-  flashColor: {r: 0, g: 1, b: 0, a: 1}
+  flashColor: {r: 0.3207547, g: 0.3207547, b: 0.3207547, a: 1}
   flashIntensity: 0.7
   inspectorSequence: 120100001401000012010000140100001101000012010000
   keySpriteMappings:
@@ -10525,13 +10532,13 @@ MonoBehaviour:
   displayText: {fileID: 1106496629}
   displayImage: {fileID: 1549666389}
   failSymbol: {fileID: 1096196335}
-  failSymbolDuration: 2
+  failSymbolDuration: 1
   arrowScale: 0.6
   pressDuration: 0.1
   pressScale: 0.85
   popDuration: 0.2
   fadeInDuration: 0.15
-  flashColor: {r: 0, g: 1, b: 0, a: 1}
+  flashColor: {r: 0.3207547, g: 0.3207547, b: 0.3207547, a: 1}
   flashIntensity: 0.7
   inspectorSequence: 120100001301000014010000120100001101000013010000
   keySpriteMappings:
@@ -12024,13 +12031,13 @@ MonoBehaviour:
   displayText: {fileID: 1106496629}
   displayImage: {fileID: 1549666389}
   failSymbol: {fileID: 1096196335}
-  failSymbolDuration: 2
+  failSymbolDuration: 1
   arrowScale: 0.6
   pressDuration: 0.1
   pressScale: 0.85
   popDuration: 0.2
   fadeInDuration: 0.15
-  flashColor: {r: 0.3018868, g: 0.3018868, b: 0.3018868, a: 1}
+  flashColor: {r: 0.3207547, g: 0.3207547, b: 0.3207547, a: 1}
   flashIntensity: 0.7
   inspectorSequence: 11010000130100001201000014010000
   keySpriteMappings:
@@ -38367,7 +38374,10 @@ MonoBehaviour:
   invisibleTime: 2
   startDelay: 0.5
   showWarning: 1
-  warningTime: 0.5
+  warningTime: 1
+  blinkSpeed: 3
+  shrinkDuration: 0.3
+  shrinkScale: 0.1
 --- !u!1 &534128887
 GameObject:
   m_ObjectHideFlags: 0
@@ -42282,13 +42292,13 @@ MonoBehaviour:
   displayText: {fileID: 1106496629}
   displayImage: {fileID: 1549666389}
   failSymbol: {fileID: 1096196335}
-  failSymbolDuration: 2
+  failSymbolDuration: 1
   arrowScale: 0.6
   pressDuration: 0.1
   pressScale: 0.85
   popDuration: 0.2
   fadeInDuration: 0.15
-  flashColor: {r: 0, g: 1, b: 0, a: 1}
+  flashColor: {r: 0.3207547, g: 0.3207547, b: 0.3207547, a: 1}
   flashIntensity: 0.7
   inspectorSequence: 1101000013010000120100001101000012010000
   keySpriteMappings:
@@ -61028,13 +61038,13 @@ MonoBehaviour:
   displayText: {fileID: 1106496629}
   displayImage: {fileID: 1549666389}
   failSymbol: {fileID: 1096196335}
-  failSymbolDuration: 2
+  failSymbolDuration: 1
   arrowScale: 0.6
   pressDuration: 0.1
   pressScale: 0.85
   popDuration: 0.2
   fadeInDuration: 0.15
-  flashColor: {r: 0, g: 1, b: 0, a: 1}
+  flashColor: {r: 0.3207547, g: 0.3207547, b: 0.3207547, a: 1}
   flashIntensity: 0.7
   inspectorSequence: 120100001401000011010000110100001301000012010000
   keySpriteMappings:
@@ -62884,11 +62894,24 @@ MonoBehaviour:
   miniGame: {fileID: 1412319332}
   requiredElements:
   - elementName: HHO
-    sequence: 68000000680000006f000000
+    sequence:
+    - H
+    - H
+    - O
   - elementName: NNOO
-    sequence: 6e0000006e0000006f0000006f000000
+    sequence:
+    - N
+    - N
+    - O
+    - O
   - elementName: HNOHSO
-    sequence: 680000006e0000006f00000068000000730000006f000000
+    sequence:
+    - H
+    - N
+    - O
+    - H
+    - S
+    - O
   onAllElementsCompleted:
     m_PersistentCalls:
       m_Calls:
@@ -69149,7 +69172,10 @@ MonoBehaviour:
   miniGame: {fileID: 600750555}
   requiredElements:
   - elementName: HHO
-    sequence: 68000000680000006f000000
+    sequence:
+    - H
+    - H
+    - O
   onAllElementsCompleted:
     m_PersistentCalls:
       m_Calls: []
@@ -82201,7 +82227,11 @@ MonoBehaviour:
   miniGame: {fileID: 754678144}
   requiredElements:
   - elementName: NNOO
-    sequence: 6e0000006e0000006f0000006f000000
+    sequence:
+    - N
+    - N
+    - O
+    - O
   onAllElementsCompleted:
     m_PersistentCalls:
       m_Calls: []
@@ -83704,7 +83734,10 @@ MonoBehaviour:
   miniGame: {fileID: 123453440}
   requiredElements:
   - elementName: HHO
-    sequence: 68000000680000006f000000
+    sequence:
+    - H
+    - H
+    - O
   onAllElementsCompleted:
     m_PersistentCalls:
       m_Calls: []
@@ -92470,13 +92503,13 @@ MonoBehaviour:
   displayText: {fileID: 1106496629}
   displayImage: {fileID: 1549666389}
   failSymbol: {fileID: 1096196335}
-  failSymbolDuration: 2
+  failSymbolDuration: 1
   arrowScale: 0.6
   pressDuration: 0.1
   pressScale: 0.85
   popDuration: 0.2
   fadeInDuration: 0.15
-  flashColor: {r: 0, g: 1, b: 0, a: 1}
+  flashColor: {r: 0.3207547, g: 0.3207547, b: 0.3207547, a: 1}
   flashIntensity: 0.7
   inspectorSequence: 120100001401000012010000140100001301000011010000
   keySpriteMappings:
@@ -94492,7 +94525,11 @@ MonoBehaviour:
   miniGame: {fileID: 194662160}
   requiredElements:
   - elementName: NNOO
-    sequence: 6e0000006e0000006f0000006f000000
+    sequence:
+    - N
+    - N
+    - O
+    - O
   onAllElementsCompleted:
     m_PersistentCalls:
       m_Calls: []
@@ -96857,13 +96894,13 @@ MonoBehaviour:
   displayText: {fileID: 1106496629}
   displayImage: {fileID: 1549666389}
   failSymbol: {fileID: 1096196335}
-  failSymbolDuration: 2
+  failSymbolDuration: 1
   arrowScale: 0.6
   pressDuration: 0.1
   pressScale: 0.85
   popDuration: 0.2
   fadeInDuration: 0.15
-  flashColor: {r: 0, g: 1, b: 0, a: 1}
+  flashColor: {r: 0.3207547, g: 0.3207547, b: 0.3207547, a: 1}
   flashIntensity: 0.7
   inspectorSequence: 110100001301000014010000110100001301000012010000
   keySpriteMappings:
@@ -100968,7 +101005,10 @@ MonoBehaviour:
   invisibleTime: 2
   startDelay: 0.25
   showWarning: 1
-  warningTime: 0.5
+  warningTime: 1
+  blinkSpeed: 3
+  shrinkDuration: 0.3
+  shrinkScale: 0.1
 --- !u!1 &1412319331
 GameObject:
   m_ObjectHideFlags: 0
@@ -101001,13 +101041,13 @@ MonoBehaviour:
   displayText: {fileID: 1106496629}
   displayImage: {fileID: 1549666389}
   failSymbol: {fileID: 1096196335}
-  failSymbolDuration: 2
-  arrowScale: 0.5
+  failSymbolDuration: 1
+  arrowScale: 0.6
   pressDuration: 0.1
   pressScale: 0.85
   popDuration: 0.2
   fadeInDuration: 0.15
-  flashColor: {r: 0, g: 1, b: 0, a: 1}
+  flashColor: {r: 0.3207547, g: 0.3207547, b: 0.3207547, a: 1}
   flashIntensity: 0.7
   inspectorSequence: 11010000130100001201000014010000110100001201000011010000
   keySpriteMappings:
@@ -101195,6 +101235,9 @@ MonoBehaviour:
   startDelay: 0.7
   showWarning: 1
   warningTime: 0.5
+  blinkSpeed: 3
+  shrinkDuration: 0.3
+  shrinkScale: 0.1
 --- !u!1 &1422888401
 GameObject:
   m_ObjectHideFlags: 0
@@ -102129,11 +102172,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2908075746234812187, guid: 8a7e7f6601b72774cb5e7b8a3f382286, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -62.1
+      value: -60.78
       objectReference: {fileID: 0}
     - target: {fileID: 2908075746234812187, guid: 8a7e7f6601b72774cb5e7b8a3f382286, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -23.62
+      value: -23.34
       objectReference: {fileID: 0}
     - target: {fileID: 2908075746234812187, guid: 8a7e7f6601b72774cb5e7b8a3f382286, type: 3}
       propertyPath: m_LocalPosition.z
@@ -109128,7 +109171,10 @@ MonoBehaviour:
   miniGame: {fileID: 235292686}
   requiredElements:
   - elementName: HHO
-    sequence: 68000000680000006f000000
+    sequence:
+    - H
+    - H
+    - O
   onAllElementsCompleted:
     m_PersistentCalls:
       m_Calls: []
@@ -131723,6 +131769,10 @@ MonoBehaviour:
   bottleParent: {fileID: 891910341}
   bottlePrefab: {fileID: 2689941309453408804, guid: da9549fbb3f0deb4cac82ef0e898544b, type: 3}
   miniGameManager: {fileID: 235292686}
+  recipeDatabase: {fileID: 11400000, guid: 966d778119be18545bd121b9d6ad57c7, type: 2}
+  defaultColor: {r: 1, g: 1, b: 1, a: 1}
+  defaultSprite: {fileID: 0}
+  bottleScale: 0.6
 --- !u!114 &1876815152
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -132285,7 +132335,11 @@ MonoBehaviour:
   miniGame: {fileID: 1257205031}
   requiredElements:
   - elementName: NNOO
-    sequence: 6e0000006e0000006f0000006f000000
+    sequence:
+    - N
+    - N
+    - O
+    - O
   onAllElementsCompleted:
     m_PersistentCalls:
       m_Calls: []
@@ -150797,7 +150851,10 @@ MonoBehaviour:
   invisibleTime: 2
   startDelay: 1
   showWarning: 1
-  warningTime: 0.5
+  warningTime: 1
+  blinkSpeed: 3
+  shrinkDuration: 0.3
+  shrinkScale: 0.1
 --- !u!65 &4347289966955821793
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -152204,7 +152261,10 @@ MonoBehaviour:
   invisibleTime: 2
   startDelay: 0.5
   showWarning: 1
-  warningTime: 0.5
+  warningTime: 1
+  blinkSpeed: 3
+  shrinkDuration: 0.3
+  shrinkScale: 0.1
 --- !u!65 &5123488024445191521
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -152630,7 +152690,10 @@ MonoBehaviour:
   invisibleTime: 2
   startDelay: 0.5
   showWarning: 1
-  warningTime: 0.5
+  warningTime: 1
+  blinkSpeed: 3
+  shrinkDuration: 0.3
+  shrinkScale: 0.1
 --- !u!65 &5402013309183685632
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -162760,7 +162823,10 @@ MonoBehaviour:
   invisibleTime: 2
   startDelay: 0.3
   showWarning: 1
-  warningTime: 0.5
+  warningTime: 1
+  blinkSpeed: 3
+  shrinkDuration: 0.3
+  shrinkScale: 0.1
 --- !u!65 &8862722070513610496
 BoxCollider:
   m_ObjectHideFlags: 0
