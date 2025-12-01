@@ -7366,7 +7366,7 @@ MonoBehaviour:
   fadeInDuration: 0.15
   flashColor: {r: 0.3207547, g: 0.3207547, b: 0.3207547, a: 1}
   flashIntensity: 0.7
-  inspectorSequence: 120100001401000012010000140100001101000012010000
+  inspectorSequence: 110100001301000012010000140100001401000011010000
   keySpriteMappings:
   - key: 273
     sprite: {fileID: -105059788, guid: 1ea6309164c679e41a41d5e72d94a18f, type: 3}
@@ -10540,7 +10540,7 @@ MonoBehaviour:
   fadeInDuration: 0.15
   flashColor: {r: 0.3207547, g: 0.3207547, b: 0.3207547, a: 1}
   flashIntensity: 0.7
-  inspectorSequence: 120100001301000014010000120100001101000013010000
+  inspectorSequence: 130100001101000014010000130100001401000012010000
   keySpriteMappings:
   - key: 273
     sprite: {fileID: -105059788, guid: 1ea6309164c679e41a41d5e72d94a18f, type: 3}
@@ -23673,7 +23673,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: -701331926, guid: 84e221f477936484c8af99ea014fe0b5, type: 3}
+  m_Sprite: {fileID: 439158641, guid: 4a716abc9b593aa4397a29e35169d86c, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -23694,7 +23694,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: -0.16, y: 1.9866419, z: 2.040269}
-  m_LocalScale: {x: 0.15, y: 0.2, z: 0.2}
+  m_LocalScale: {x: 0.15, y: 0.25, z: 0.25}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1216055400}
@@ -38439,7 +38439,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 207816319, guid: da9629c2d4c1fdd488158941929e088f, type: 3}
+  m_Sprite: {fileID: 2074942480, guid: 4a716abc9b593aa4397a29e35169d86c, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -42300,7 +42300,7 @@ MonoBehaviour:
   fadeInDuration: 0.15
   flashColor: {r: 0.3207547, g: 0.3207547, b: 0.3207547, a: 1}
   flashIntensity: 0.7
-  inspectorSequence: 1101000013010000120100001101000012010000
+  inspectorSequence: 1301000012010000110100001401000012010000
   keySpriteMappings:
   - key: 273
     sprite: {fileID: -105059788, guid: 1ea6309164c679e41a41d5e72d94a18f, type: 3}
@@ -52897,7 +52897,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: -1574635894, guid: 37f01c7c01eaf294c951a1e17083a9ec, type: 3}
+  m_Sprite: {fileID: -876380471, guid: 4a716abc9b593aa4397a29e35169d86c, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -53156,6 +53156,10 @@ MonoBehaviour:
   detectionRange: 2
   bubblePrefab: {fileID: 0}
   pressEIndicator: {fileID: 9150289}
+  skipButtonSprite: {fileID: 0}
+  skipButtonSize: {x: 50, y: 50}
+  skipButtonOffset: {x: -10, y: 0}
+  showSkipButton: 1
   objectsToSpawn:
   - {fileID: 1912682839}
   activateObjects: 1
@@ -55554,7 +55558,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: -532316088, guid: 37f01c7c01eaf294c951a1e17083a9ec, type: 3}
+  m_Sprite: {fileID: -1747074338, guid: 4a716abc9b593aa4397a29e35169d86c, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -55575,7 +55579,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: -0.02, y: 1.74, z: 2.040269}
-  m_LocalScale: {x: 0.15, y: 0.2, z: 0.2}
+  m_LocalScale: {x: 0.2, y: 0.25, z: 0.25}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1456165915}
@@ -61046,7 +61050,7 @@ MonoBehaviour:
   fadeInDuration: 0.15
   flashColor: {r: 0.3207547, g: 0.3207547, b: 0.3207547, a: 1}
   flashIntensity: 0.7
-  inspectorSequence: 120100001401000011010000110100001301000012010000
+  inspectorSequence: 120100001401000012010000110100001301000012010000
   keySpriteMappings:
   - key: 273
     sprite: {fileID: -105059788, guid: 1ea6309164c679e41a41d5e72d94a18f, type: 3}
@@ -66825,7 +66829,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 951412578, guid: 383d3d12cef47d243921517b14daf67b, type: 3}
+  m_Sprite: {fileID: 669703635, guid: 998d1b65b0e1e7e408274b9aed5a5428, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -92763,7 +92767,7 @@ MonoBehaviour:
   fadeInDuration: 0.15
   flashColor: {r: 0.3207547, g: 0.3207547, b: 0.3207547, a: 1}
   flashIntensity: 0.7
-  inspectorSequence: 120100001401000012010000140100001301000011010000
+  inspectorSequence: 110100001401000013010000140100001201000011010000
   keySpriteMappings:
   - key: 273
     sprite: {fileID: -105059788, guid: 1ea6309164c679e41a41d5e72d94a18f, type: 3}
@@ -97154,7 +97158,7 @@ MonoBehaviour:
   fadeInDuration: 0.15
   flashColor: {r: 0.3207547, g: 0.3207547, b: 0.3207547, a: 1}
   flashIntensity: 0.7
-  inspectorSequence: 110100001301000014010000110100001301000012010000
+  inspectorSequence: 130100001101000012010000140100001301000011010000
   keySpriteMappings:
   - key: 273
     sprite: {fileID: -105059788, guid: 1ea6309164c679e41a41d5e72d94a18f, type: 3}
@@ -97954,6 +97958,10 @@ MonoBehaviour:
   detectionRange: 2
   bubblePrefab: {fileID: 0}
   pressEIndicator: {fileID: 9150289}
+  skipButtonSprite: {fileID: -1596899047, guid: 538d9132ca650f747bb098c0d62c1663, type: 3}
+  skipButtonSize: {x: 100, y: 100}
+  skipButtonOffset: {x: -20, y: -35}
+  showSkipButton: 1
   objectsToSpawn:
   - {fileID: 0}
   activateObjects: 1
@@ -101301,7 +101309,7 @@ MonoBehaviour:
   fadeInDuration: 0.15
   flashColor: {r: 0.3207547, g: 0.3207547, b: 0.3207547, a: 1}
   flashIntensity: 0.7
-  inspectorSequence: 11010000130100001201000014010000110100001201000011010000
+  inspectorSequence: 1201000013010000130100001401000011010000120100001301000014010000
   keySpriteMappings:
   - key: 273
     sprite: {fileID: -105059788, guid: 1ea6309164c679e41a41d5e72d94a18f, type: 3}
@@ -102424,11 +102432,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2908075746234812187, guid: 8a7e7f6601b72774cb5e7b8a3f382286, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -60.78
+      value: -61.65
       objectReference: {fileID: 0}
     - target: {fileID: 2908075746234812187, guid: 8a7e7f6601b72774cb5e7b8a3f382286, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -23.34
+      value: -23.21
       objectReference: {fileID: 0}
     - target: {fileID: 2908075746234812187, guid: 8a7e7f6601b72774cb5e7b8a3f382286, type: 3}
       propertyPath: m_LocalPosition.z
@@ -105471,7 +105479,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 1578488468, guid: 37f01c7c01eaf294c951a1e17083a9ec, type: 3}
+  m_Sprite: {fileID: 1757316626, guid: 4a716abc9b593aa4397a29e35169d86c, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -131783,7 +131791,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 1354538553, guid: 37f01c7c01eaf294c951a1e17083a9ec, type: 3}
+  m_Sprite: {fileID: -2013193710, guid: 4a716abc9b593aa4397a29e35169d86c, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0

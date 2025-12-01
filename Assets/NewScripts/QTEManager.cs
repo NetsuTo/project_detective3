@@ -47,6 +47,9 @@ public class QTEManager : MonoBehaviour
     private bool isActive = false;
     public LetterIconDatabase iconDB;
 
+    // ⭐ สถานะการล็อค - ตรวจสอบได้จากภายนอก
+    public bool IsQTEActive => isActive;
+
     void Start()
     {
         sfxSource = gameObject.AddComponent<AudioSource>();
@@ -68,6 +71,7 @@ public class QTEManager : MonoBehaviour
         EndQTE();
 
         isActive = true;
+        Debug.Log("🔒 QTE เริ่มแล้ว - ล็อคการผสมธาตุ (กด T)");
 
         foreach (var key in keySequence)
         {
@@ -124,7 +128,6 @@ public class QTEManager : MonoBehaviour
         GameObject barGO = Instantiate(timingBarPrefab, qteParent.root);
         currentTimingBar = barGO.GetComponent<TimingBar>();
 
-        // 🎲 เริ่ม TimingBar รอบแรก (จะสุ่ม Target อัตโนมัติ)
         currentTimingBar.StartTiming(OnTimingComplete);
 
         Debug.Log("🎯 สร้าง TimingBar ใหม่ + สุ่ม Target รอบแรก");
@@ -180,7 +183,6 @@ public class QTEManager : MonoBehaviour
             }
             else
             {
-                // 🎲🎲🎲 สำคัญ! เรียก StartTiming() ใหม่ทุกรอบ → Target จะสุ่มตำแหน่งใหม่ทุกครั้ง! 🎲🎲🎲
                 if (currentTimingBar != null)
                 {
                     Debug.Log($"🎲 ต่อรอบที่ {currentIndex + 1}/{sequence.Count} → สุ่ม Target ใหม่!");
@@ -192,7 +194,6 @@ public class QTEManager : MonoBehaviour
         {
             Debug.Log("❌ QTE Failed!");
 
-            // ⭐⭐⭐ เพิ่มส่วนนี้ - เรียก OnQTEFailed() เพื่อลบตัวอักษรบนหัว ⭐⭐⭐
             SkillLetterSelector selector = FindObjectOfType<SkillLetterSelector>();
             if (selector != null)
             {
@@ -211,6 +212,7 @@ public class QTEManager : MonoBehaviour
     void EndQTE()
     {
         isActive = false;
+        Debug.Log("🔓 QTE จบแล้ว - ปลดล็อคการผสมธาตุ");
 
         PlayerSkillManager manager = FindObjectOfType<PlayerSkillManager>();
         if (manager != null)

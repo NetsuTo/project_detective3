@@ -17,7 +17,7 @@ public class PlayerInput : MonoBehaviour
         // สร้าง Input Actions
         SetupInputActions();
 
-        // ? Enable ทันทีใน Awake
+        // Enable ทันทีใน Awake
         selectPrevAction?.Enable();
         selectNextAction?.Enable();
         confirmSkillAction?.Enable();
@@ -48,7 +48,7 @@ public class PlayerInput : MonoBehaviour
         confirmSkillAction.performed += OnConfirmSkillPerformed;
     }
 
-    // ?? อ่าน Input ทุกเฟรมด้วย Update() (วิธีสำรอง - สำหรับ Old Input System)
+    // อ่าน Input ทุกเฟรมด้วย Update() (วิธีสำรอง - สำหรับ Old Input System)
     private void Update()
     {
         // ถ้า Input System ไม่ทำงาน ให้ใช้ GetKeyDown แทน
@@ -105,15 +105,30 @@ public class PlayerInput : MonoBehaviour
 
     private void OnConfirmSkillPerformed(InputAction.CallbackContext ctx)
     {
+        // ?? เช็คว่ามินิเกมลูกศร (ElementMiniGame) กำลังทำงานอยู่หรือไม่
+        if (ElementMiniGameManager.activeMiniGame != null)
+        {
+            Debug.Log("?? ไม่สามารถกด T ได้ - มินิเกมลูกศรกำลังทำงานอยู่!");
+            return;
+        }
+
+        // ?? เช็คว่า QTE กำลังทำงานหรือไม่ - ล็อคปุ่ม T
+        SkillLetterSelector selector = GetComponent<SkillLetterSelector>();
+        if (selector != null && !selector.CanPressT)
+        {
+            Debug.Log("?? ไม่สามารถกด T ได้ - QTE กำลังทำงานอยู่หรือตัวอักษรยังอยู่บนหัว!");
+            return;
+        }
+
         // ?? ตรวจสอบว่ามีขวดยาอยู่แล้วหรือไม่
         SkillInventory inv = FindObjectOfType<SkillInventory>();
         if (inv != null && inv.HasAnyBottle())
         {
-            Debug.Log("?? ไม่สามารถเริ่ม Mix ได้ เพราะยังมีขวดใน Inventory อยู่แล้ว");
-            return; // ?? หยุดการทำงาน ไม่ให้แสดงตัวอักษรบนหัว
+            Debug.Log("? ไม่สามารถเริ่ม Mix ได้ เพราะยังมีขวดใน Inventory อยู่แล้ว");
+            return; // หยุดการทำงาน ไม่ให้แสดงตัวอักษรบนหัว
         }
 
-        // ? ถ้าไม่มีขวด ให้ Confirm Skill ได้
+        // ? ถ้าไม่มีขวดและไม่มี QTE ให้ Confirm Skill ได้
         if (manager != null && manager.GetSkills().Count > 0)
         {
             Debug.Log("? เริ่ม Mix Skill (T / B/Circle)");

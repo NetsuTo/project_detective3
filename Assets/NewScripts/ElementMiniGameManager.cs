@@ -277,9 +277,10 @@ public class ElementMiniGameManager : MonoBehaviour
     /// </summary>
     private KeyCode GetPressedDirectionKey()
     {
-        // ===== Keyboard Input =====
+        // ===== Keyboard Input (Arrow Keys + WASD) =====
         if (Keyboard.current != null)
         {
+            // Arrow Keys
             if (Keyboard.current.upArrowKey.wasPressedThisFrame)
                 return KeyCode.UpArrow;
             if (Keyboard.current.downArrowKey.wasPressedThisFrame)
@@ -287,6 +288,16 @@ public class ElementMiniGameManager : MonoBehaviour
             if (Keyboard.current.leftArrowKey.wasPressedThisFrame)
                 return KeyCode.LeftArrow;
             if (Keyboard.current.rightArrowKey.wasPressedThisFrame)
+                return KeyCode.RightArrow;
+
+            // WASD Keys
+            if (Keyboard.current.wKey.wasPressedThisFrame)
+                return KeyCode.UpArrow;
+            if (Keyboard.current.sKey.wasPressedThisFrame)
+                return KeyCode.DownArrow;
+            if (Keyboard.current.aKey.wasPressedThisFrame)
+                return KeyCode.LeftArrow;
+            if (Keyboard.current.dKey.wasPressedThisFrame)
                 return KeyCode.RightArrow;
         }
 
@@ -352,10 +363,17 @@ public class ElementMiniGameManager : MonoBehaviour
         // ===== Fallback: Old Input System =====
         if (Keyboard.current == null && Gamepad.current == null)
         {
+            // Arrow Keys
             if (Input.GetKeyDown(KeyCode.UpArrow)) return KeyCode.UpArrow;
             if (Input.GetKeyDown(KeyCode.DownArrow)) return KeyCode.DownArrow;
             if (Input.GetKeyDown(KeyCode.LeftArrow)) return KeyCode.LeftArrow;
             if (Input.GetKeyDown(KeyCode.RightArrow)) return KeyCode.RightArrow;
+
+            // WASD Keys
+            if (Input.GetKeyDown(KeyCode.W)) return KeyCode.UpArrow;
+            if (Input.GetKeyDown(KeyCode.S)) return KeyCode.DownArrow;
+            if (Input.GetKeyDown(KeyCode.A)) return KeyCode.LeftArrow;
+            if (Input.GetKeyDown(KeyCode.D)) return KeyCode.RightArrow;
         }
 
         return KeyCode.None;

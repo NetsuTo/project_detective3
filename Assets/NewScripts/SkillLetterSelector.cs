@@ -48,6 +48,9 @@ public class SkillLetterSelector : MonoBehaviour
 
     private InputAction mixAction;
 
+    // ⭐ Property สำหรับเช็คจากภายนอก (PlayerSkillManager จะเช็คตัวนี้)
+    public bool CanPressT => !isActive && !isQTERunning;
+
     void Start()
     {
         manager = GetComponent<PlayerSkillManager>();
@@ -102,7 +105,7 @@ public class SkillLetterSelector : MonoBehaviour
                 qteStarted = true;
                 isQTERunning = true;
                 StartQTE();
-                Debug.Log("🎯 กดปุ่ม F/X -> เริ่ม QTE! (ล็อคปุ่ม T แล้ว)");
+                Debug.Log("🎯 กดปุ่ม F/X -> เริ่ม QTE! (🔒 ล็อคปุ่ม T แล้ว)");
             }
             else
             {
@@ -131,6 +134,14 @@ public class SkillLetterSelector : MonoBehaviour
 
     public void StartSelection(string skillID)
     {
+        // 🔒 เช็ค QTEManager ว่า QTE กำลังทำงานอยู่หรือไม่
+        QTEManager qte = FindObjectOfType<QTEManager>();
+        if (qte != null && qte.IsQTEActive)
+        {
+            Debug.Log("⚠️ QTE กำลังทำงานอยู่ที่ QTEManager - ไม่สามารถกด T ได้!");
+            return;
+        }
+
         // 🔒 ถ้า QTE กำลังทำงานอยู่ → บล็อคไม่ให้กด T
         if (isQTERunning)
         {
@@ -330,7 +341,7 @@ public class SkillLetterSelector : MonoBehaviour
         {
             isActive = false;
             isQTERunning = false;
-            Debug.Log("✅ QTE เสร็จสิ้น - ทุก Letter UI ถูกลบแล้ว");
+            Debug.Log("✅ QTE เสร็จสิ้น - ทุก Letter UI ถูกลบแล้ว (🔓 ปลดล็อคปุ่ม T)");
         }
     }
 
@@ -366,7 +377,7 @@ public class SkillLetterSelector : MonoBehaviour
         currentIndex = 0;
         timer = 0f;
 
-        Debug.Log("❌ QTE ล้มเหลว - ลบตัวอักษรและหยุดกระพริบแล้ว (กด T เพื่อเริ่มใหม่)");
+        Debug.Log("❌ QTE ล้มเหลว - ลบตัวอักษรและหยุดกระพริบแล้ว (🔓 กด T ได้แล้ว)");
     }
 
     private IEnumerator FadeOutAndDestroy(GameObject letter)
@@ -427,6 +438,6 @@ public class SkillLetterSelector : MonoBehaviour
         currentIndex = 0;
         timer = 0f;
 
-        Debug.Log("🔄 รีเซ็ต SkillLetterSelector");
+        Debug.Log("🔄 รีเซ็ต SkillLetterSelector (🔓 ปลดล็อคปุ่ม T)");
     }
 }

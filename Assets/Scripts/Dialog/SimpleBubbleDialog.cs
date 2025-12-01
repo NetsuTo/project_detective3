@@ -62,6 +62,16 @@ public class SimpleBubbleDialog : MonoBehaviour
     public GameObject bubblePrefab;
     public GameObject pressEIndicator;
 
+    [Header("🎮 Skip Button UI")]
+    [Tooltip("รูป Sprite สำหรับปุ่ม Skip")]
+    public Sprite skipButtonSprite;
+    [Tooltip("ขนาดของรูปปุ่ม")]
+    public Vector2 skipButtonSize = new Vector2(50, 50);
+    [Tooltip("ระยะห่างจากขอบขวาของ Bubble (X ติดลบ = เข้าไปในบับเบิ้ล)")]
+    public Vector2 skipButtonOffset = new Vector2(-10, 0);
+    [Tooltip("แสดงรูปปุ่ม Skip หรือไม่")]
+    public bool showSkipButton = true;
+
     [Header("Object ที่จะโผล่หลังคุยเสร็จ")]
     public GameObject[] objectsToSpawn;
     public bool activateObjects = true;
@@ -75,6 +85,7 @@ public class SimpleBubbleDialog : MonoBehaviour
     public GameObject[] newEffects;
 
     private GameObject bubbleInstance;
+    private GameObject skipButtonInstance;
     private Text bubbleText;
     private TextMeshProUGUI bubbleTextTMP;
     private bool playerInRange = false;
@@ -90,13 +101,11 @@ public class SimpleBubbleDialog : MonoBehaviour
     private bool isUnlocked = false;
     private bool hasDialogCompleted = false;
 
-    // ===== Input System Actions - รองรับ Keyboard + Gamepad =====
     private InputAction interactAction;
     private InputAction continueAction;
 
     void Awake()
     {
-        // สร้าง Input Actions
         SetupInputActions();
         interactAction?.Enable();
         continueAction?.Enable();
@@ -106,16 +115,14 @@ public class SimpleBubbleDialog : MonoBehaviour
 
     private void SetupInputActions()
     {
-        // ===== Interact (E / Button North) สำหรับเริ่มบทสนทนา =====
         interactAction = new InputAction("Interact", type: InputActionType.Button);
         interactAction.AddBinding("<Keyboard>/e");
-        interactAction.AddBinding("<Gamepad>/buttonNorth");  // Xbox: Y, PS: Triangle
+        interactAction.AddBinding("<Gamepad>/buttonNorth");
         interactAction.performed += OnInteractPerformed;
 
-        // ===== Continue (Space / Button South) สำหรับข้ามข้อความ =====
         continueAction = new InputAction("Continue", type: InputActionType.Button);
         continueAction.AddBinding("<Keyboard>/space");
-        continueAction.AddBinding("<Gamepad>/buttonSouth");  // Xbox: A, PS: Cross
+        continueAction.AddBinding("<Gamepad>/buttonSouth");
         continueAction.performed += OnContinuePerformed;
     }
 
@@ -170,7 +177,6 @@ public class SimpleBubbleDialog : MonoBehaviour
 
     void Update()
     {
-        // ตรวจสอบการปลดล็อค
         if (!isUnlocked && requiredZone != null)
         {
             if (requiredZone.GetCompletedCount() >= requiredCompletedCount)
@@ -179,7 +185,6 @@ public class SimpleBubbleDialog : MonoBehaviour
             }
         }
 
-        // ✅ Fallback สำหรับ Old Input System (ถ้าไม่มี Input System)
         if (Keyboard.current == null && Gamepad.current == null)
         {
             if (playerInRange && Input.GetKeyDown(KeyCode.E) && !isShowingDialog)
@@ -206,7 +211,6 @@ public class SimpleBubbleDialog : MonoBehaviour
             }
         }
 
-        // อัพเดทตำแหน่ง Bubble
         if (bubbleInstance != null && Camera.main != null)
         {
             floatTimer += Time.deltaTime * floatSpeed;
@@ -266,7 +270,6 @@ public class SimpleBubbleDialog : MonoBehaviour
         continueAction?.Disable();
     }
 
-    // ===== Input Actions Callbacks =====
     private void OnInteractPerformed(InputAction.CallbackContext ctx)
     {
         if (!playerInRange || isShowingDialog) return;
@@ -410,6 +413,7 @@ public class SimpleBubbleDialog : MonoBehaviour
             pressEIndicator.SetActive(false);
 
         CreateBubble();
+        CreateSkipButton();
         StartCoroutine(TypeText(dialogLines[currentLineIndex]));
     }
 
@@ -537,6 +541,36 @@ public class SimpleBubbleDialog : MonoBehaviour
         Debug.Log("✅ สร้างบับเบิ้ลสำเร็จ");
     }
 
+    void CreateSkipButton()
+    {
+        if (!showSkipButton || bubbleInstance == null || skipButtonSprite == null)
+        {
+            if (showSkipButton && skipButtonSprite == null)
+            {
+                Debug.LogWarning("⚠️ ไม่มี Skip Button Sprite! กรุณาใส่รูปใน Inspector");
+            }
+            return;
+        }
+
+        skipButtonInstance = new GameObject("SkipButton");
+        skipButtonInstance.transform.SetParent(bubbleInstance.transform, false);
+
+        RectTransform rectTransform = skipButtonInstance.AddComponent<RectTransform>();
+        rectTransform.sizeDelta = skipButtonSize;
+
+        // วางไว้มุมขวาของ Bubble
+        rectTransform.anchorMin = new Vector2(1, 0.5f);
+        rectTransform.anchorMax = new Vector2(1, 0.5f);
+        rectTransform.pivot = new Vector2(1, 0.5f);
+        rectTransform.anchoredPosition = skipButtonOffset;
+
+        Image skipImage = skipButtonInstance.AddComponent<Image>();
+        skipImage.sprite = skipButtonSprite;
+        skipImage.preserveAspect = true;
+
+        Debug.Log("✅ สร้าง Skip Button สำเร็จ");
+    }
+
     IEnumerator TypeText(string text)
     {
         if (bubbleText == null && bubbleTextTMP == null)
@@ -662,6 +696,11 @@ public class SimpleBubbleDialog : MonoBehaviour
         if (bubbleInstance != null)
         {
             Destroy(bubbleInstance);
+        }
+
+        if (skipButtonInstance != null)
+        {
+            Destroy(skipButtonInstance);
         }
 
         if (playerInRange && pressEIndicator != null)

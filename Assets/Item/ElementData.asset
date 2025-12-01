@@ -18,7 +18,7 @@ MonoBehaviour:
     - H
     - H
     - O
-    bottleSprite: {fileID: -1608620783, guid: 422bd3eafbd52154495d8074dec6f519, type: 3}
+    bottleSprite: {fileID: 1991682026, guid: 538d9132ca650f747bb098c0d62c1663, type: 3}
     bottleColor: {r: 1, g: 1, b: 1, a: 1}
     particleEffect: {fileID: 0}
   - elementName: NNOO
@@ -27,7 +27,7 @@ MonoBehaviour:
     - N
     - O
     - O
-    bottleSprite: {fileID: 2077863341, guid: 8ae1908d9fb55d74bb3d31acfcb78920, type: 3}
+    bottleSprite: {fileID: -634387117, guid: 538d9132ca650f747bb098c0d62c1663, type: 3}
     bottleColor: {r: 1, g: 1, b: 1, a: 1}
     particleEffect: {fileID: 0}
   - elementName: HNOHSO
@@ -38,6 +38,6 @@ MonoBehaviour:
     - H
     - S
     - O
-    bottleSprite: {fileID: -1608620783, guid: 422bd3eafbd52154495d8074dec6f519, type: 3}
+    bottleSprite: {fileID: 2032454742, guid: 538d9132ca650f747bb098c0d62c1663, type: 3}
     bottleColor: {r: 1, g: 1, b: 1, a: 1}
     particleEffect: {fileID: 0}
