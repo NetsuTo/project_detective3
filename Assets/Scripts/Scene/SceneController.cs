@@ -28,8 +28,20 @@ public class SceneController : MonoBehaviour
             skipText.color = color;
         }
 
-        // ตรวจสอบการกด Space
+        // ตรวจสอบการกด Space (Keyboard) หรือ South Button (Gamepad)
+        bool skipPressed = false;
+
         if (Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame)
+        {
+            skipPressed = true;
+        }
+
+        if (Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame)
+        {
+            skipPressed = true;
+        }
+
+        if (skipPressed)
         {
             LoadScene();
         }
