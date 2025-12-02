@@ -49,7 +49,11 @@ public class TutorialBook : MonoBehaviour
     [Header("?? ระบบปลดล็อคหน้า")]
     [Tooltip("ภาพที่จะแสดงเมื่อหน้านั้นยังล็อคอยู่")]
     [SerializeField]
-    private Sprite lockedPageSprite;
+    private Sprite lockedPageSprite; // ? เก็บไว้เผื่อใช้เป็นค่า default
+
+    [Tooltip("ภาพ Locked แยกตามหน้า (ถ้าไม่ใส่จะใช้ lockedPageSprite)")]
+    [SerializeField]
+    private List<Sprite> lockedPageSprites = new List<Sprite>(); // ? ใหม่!
 
     [Tooltip("เริ่มต้นปลดล็อคไว้กี่หน้า (0 = ไม่มีหน้าเลย, 1 = ปกอย่างเดียว)")]
     [SerializeField]
@@ -71,6 +75,10 @@ public class TutorialBook : MonoBehaviour
     [Tooltip("เสียงแจ้งเตือนปลดล็อค")]
     [SerializeField]
     private AudioClip unlockNotificationSound;
+
+    [Range(0f, 1f)] // ? เพิ่มบรรทัดนี้
+    [SerializeField]
+    private float unlockNotificationVolume = 0.8f; // ? เพิ่มบรรทัดนี้
 
     [Tooltip("ระยะเวลาที่ไอคอนจะเด้งเมื่อปลดล็อค")]
     [SerializeField]
@@ -270,11 +278,11 @@ public class TutorialBook : MonoBehaviour
         {
             if (AudioManager.Instance != null)
             {
-                AudioManager.Instance.PlaySFX(unlockNotificationSound, 0.8f);
+                AudioManager.Instance.PlaySFX(unlockNotificationSound, unlockNotificationVolume); // ? ใช้ตัวแปรใหม่
             }
             else if (audioSource != null)
             {
-                audioSource.PlayOneShot(unlockNotificationSound, 0.8f);
+                audioSource.PlayOneShot(unlockNotificationSound, unlockNotificationVolume); // ? ใช้ตัวแปรใหม่
             }
         }
     }
@@ -665,46 +673,74 @@ public class TutorialBook : MonoBehaviour
                 bookFrameObject.SetActive(true);
             }
 
-            int leftIndex = currentRightPageIndex - 1;
-            int rightIndex = currentRightPageIndex;
 
-            // ?? หน้าซ้าย - แสดงล็อคหรือปลดล็อค
+            int leftIndex;
+            int rightIndex;
+
+            // ถ้าหน้าปัจจุบันเป็นเลขคี่ ? อยู่ซ้าย
+            if (currentRightPageIndex % 2 == 1)
+            {
+                leftIndex = currentRightPageIndex;
+                rightIndex = currentRightPageIndex + 1;
+            }
+            else // ถ้าเป็นเลขคู่ ? อยู่ขวา
+            {
+                leftIndex = currentRightPageIndex - 1;
+                rightIndex = currentRightPageIndex;
+            }
+
             if (leftIndex > 0 && leftIndex <= pageSprites.Count)
             {
                 leftPageImage.gameObject.SetActive(true);
 
                 if (IsPageUnlocked(leftIndex))
                 {
-                    leftPageImage.sprite = pageSprites[leftIndex - 1];
+                    leftPageImage.sprite = pageSprites[leftIndex - 1]; // แสดงภาพจริง
                 }
                 else
                 {
-                    leftPageImage.sprite = lockedPageSprite;
+                    // ใช้ภาพ Locked เฉพาะของหน้านี้ (ถ้ามี) ไม่งั้นใช้ภาพ default
+                    int lockedIndex = leftIndex - 1;
+                    if (lockedIndex < lockedPageSprites.Count && lockedPageSprites[lockedIndex] != null)
+                    {
+                        leftPageImage.sprite = lockedPageSprites[lockedIndex];
+                    }
+                    else
+                    {
+                        leftPageImage.sprite = lockedPageSprite; // ใช้ภาพ default
+                    }
                 }
-            }
-            else
-            {
-                leftPageImage.gameObject.SetActive(false);
-            }
 
-            // ?? หน้าขวา - แสดงล็อคหรือปลดล็อค
+                leftPageImage.color = Color.white;
+            }
+            else leftPageImage.gameObject.SetActive(false);
+
+            // ---------- RIGHT PAGE ----------
             if (rightIndex > 0 && rightIndex <= pageSprites.Count)
             {
                 rightPageImage.gameObject.SetActive(true);
 
                 if (IsPageUnlocked(rightIndex))
                 {
-                    rightPageImage.sprite = pageSprites[rightIndex - 1];
+                    rightPageImage.sprite = pageSprites[rightIndex - 1]; // แสดงภาพจริง
                 }
                 else
                 {
-                    rightPageImage.sprite = lockedPageSprite;
+                    // ใช้ภาพ Locked เฉพาะของหน้านี้ (ถ้ามี) ไม่งั้นใช้ภาพ default
+                    int lockedIndex = rightIndex - 1;
+                    if (lockedIndex < lockedPageSprites.Count && lockedPageSprites[lockedIndex] != null)
+                    {
+                        rightPageImage.sprite = lockedPageSprites[lockedIndex];
+                    }
+                    else
+                    {
+                        rightPageImage.sprite = lockedPageSprite; // ใช้ภาพ default
+                    }
                 }
+
+                rightPageImage.color = Color.white;
             }
-            else
-            {
-                rightPageImage.gameObject.SetActive(false);
-            }
+            else rightPageImage.gameObject.SetActive(false);
         }
 
         // ?? ปุ่ม Prev
@@ -764,8 +800,37 @@ public class TutorialBook : MonoBehaviour
         // ปลดล็อคหน้าตามปกติ
         UnlockPage(pageNumber);
 
+        // ?? คำนวณ currentRightPageIndex ให้ถูกต้องตามตำแหน่งซ้าย/ขวา
+        // - หน้าคี่ (1, 3, 5...) ? ไปหน้าขวา = pageNumber + 1 (แสดงที่ซ้าย)
+        // - หน้าคู่ (2, 4, 6...) ? ไปหน้าขวา = pageNumber (แสดงที่ขวา)
+        if (pageNumber % 2 == 1)
+        {
+            // หน้าคี่ ? ต้องอยู่ซ้าย ? currentRightPageIndex = pageNumber + 1
+            currentRightPageIndex = pageNumber + 1;
+        }
+        else
+        {
+            // หน้าคู่ ? ต้องอยู่ขวา ? currentRightPageIndex = pageNumber
+            currentRightPageIndex = pageNumber;
+        }
+
+        // แต่ถ้า currentRightPageIndex เกินจำนวนหน้าทั้งหมด ให้ปรับกลับมา
+        if (currentRightPageIndex > pageSprites.Count)
+        {
+            currentRightPageIndex = pageSprites.Count;
+        }
+
+        // อัพเดทการแสดงผลทันที (ถ้าหนังสือเปิดอยู่)
+        if (isBookOpen)
+        {
+            UpdatePageDisplay();
+        }
+
         // เริ่มสั่นไอคอน
         StartIconShake();
+
+        string side = (pageNumber % 2 == 1) ? "ซ้าย" : "ขวา";
+        Debug.Log($"?? ปลดล็อคหน้า {pageNumber} - จะแสดงที่ฝั่ง{side} (currentRightPageIndex={currentRightPageIndex})");
     }
 
     public void StartIconShake()

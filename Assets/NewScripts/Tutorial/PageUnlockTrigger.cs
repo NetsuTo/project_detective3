@@ -1,22 +1,22 @@
 using UnityEngine;
 
 /// <summary>
-/// Trigger Zone สำหรับปลดล็อคหน้าหนังสือ
+/// Trigger Zone สำหรับปลดล็อคหน้าหนังสือ (รองรับหลายหน้าพร้อมกัน)
 /// เมื่อชนจะทำให้ไอคอนหนังสือ UI สั่น จนกว่าจะเปิดหนังสือดู
 /// </summary>
 [RequireComponent(typeof(Collider))]
 public class PageUnlockTrigger : MonoBehaviour
 {
     [Header("?? การตั้งค่าปลดล็อค")]
-    [Tooltip("หน้าที่จะปลดล็อคเมื่อผู้เล่นเข้ามาในพื้นที่นี้")]
+    [Tooltip("หน้าที่จะปลดล็อคเมื่อผู้เล่นเข้ามาในพื้นที่นี้ (สามารถใส่หลายหน้าได้)")]
     [SerializeField]
-    private int pageNumberToUnlock = 1;
+    private int[] pageNumbersToUnlock = new int[] { 1 }; // ? เปลี่ยนเป็น Array
 
     [Tooltip("ปลดล็อคครั้งเดียวแล้วทำลาย Trigger?")]
     [SerializeField]
     private bool destroyAfterUnlock = true;
 
-    [Tooltip("ระยะเวลารอก่อนทำลาย (วินาที)")]
+    [Tooltip("ระ?ะเวลารอก่อนทำลาย (วินาที)")]
     [SerializeField]
     private float destroyDelay = 0.5f;
 
@@ -52,13 +52,14 @@ public class PageUnlockTrigger : MonoBehaviour
 
         if (showDebugLogs)
         {
-            Debug.Log($"? PageUnlockTrigger พร้อม: จะปลดล็อคหน้า {pageNumberToUnlock}");
+            string pageList = string.Join(", ", pageNumbersToUnlock);
+            Debug.Log($"? PageUnlockTrigger พร้อม: จะปลดล็อคหน้า [{pageList}]");
         }
     }
 
     void Update()
     {
-        // เช็คว่าผู้เล่นเปิดหนังสือหรือยัง ? ถ้าเปิดแล้วให้หยุดสั่นและทำลาย Trigger
+        // เช็คว่าผู้เล่นเปิดหนังสือหรือยัง ?? ถ้าเปิดแล้วให้หยุดสั่นและทำลาย Trigger
         if (hasTriggered && tutorialBook != null && tutorialBook.IsBookOpen())
         {
             StopShakingAndDestroy();
@@ -74,7 +75,7 @@ public class PageUnlockTrigger : MonoBehaviour
         }
 
         // ปลดล็อคหน้า
-        UnlockPage();
+        UnlockPages();
     }
 
     void OnTriggerEnter2D(Collider2D other)
@@ -85,10 +86,10 @@ public class PageUnlockTrigger : MonoBehaviour
             return;
         }
 
-        UnlockPage();
+        UnlockPages();
     }
 
-    private void UnlockPage()
+    private void UnlockPages() // ? เปลี่ยนชื่อฟังก์ชัน
     {
         if (tutorialBook == null || hasTriggered)
         {
@@ -97,12 +98,24 @@ public class PageUnlockTrigger : MonoBehaviour
 
         hasTriggered = true;
 
-        // เรียกใช้ฟังก์ชันปลดล็อค และเริ่มสั่นไอคอน UI
-        tutorialBook.UnlockPageWithShake(pageNumberToUnlock);
+        // ปลดล็อคทุกหน้าที่กำหนดไว้
+        foreach (int pageNumber in pageNumbersToUnlock)
+        {
+            if (pageNumber > 0)
+            {
+                tutorialBook.UnlockPageWithShake(pageNumber);
+
+                if (showDebugLogs)
+                {
+                    Debug.Log($"?? ปลดล็อคหน้า {pageNumber}");
+                }
+            }
+        }
 
         if (showDebugLogs)
         {
-            Debug.Log($"?? Trigger ถูกเรียกใช้: ปลดล็อคหน้า {pageNumberToUnlock} + เริ่มสั่นไอคอน UI");
+            string pageList = string.Join(", ", pageNumbersToUnlock);
+            Debug.Log($"?? Trigger ถูกเรียกใช้: ปลดล็อคหน้า [{pageList}] + เริ่มสั่นไอคอน UI");
         }
     }
 
@@ -125,7 +138,7 @@ public class PageUnlockTrigger : MonoBehaviour
 
             if (showDebugLogs)
             {
-                Debug.Log($"??? Trigger จะถูกทำลายใน {destroyDelay} วินาที");
+                Debug.Log($"?? Trigger จะถูกทำลายใน {destroyDelay} วินาที");
             }
         }
 
@@ -156,9 +169,10 @@ public class PageUnlockTrigger : MonoBehaviour
 
         // แสดงข้อความ
 #if UNITY_EDITOR
+        string pageList = string.Join(", ", pageNumbersToUnlock);
         UnityEditor.Handles.Label(
             transform.position + Vector3.up * 0.5f,
-            $"?? Unlock Page {pageNumberToUnlock}",
+            $"?? Unlock Pages [{pageList}]",
             new GUIStyle()
             {
                 normal = new GUIStyleState() { textColor = Color.green },

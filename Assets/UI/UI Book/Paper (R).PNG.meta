@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 21444cbe2c0cf2c488f908efb69d01ec
+guid: b2aefd05ab7c40849b98e80cf4e11b4f
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -110,13 +110,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: How to 1_0
+      name: Paper (R)_2
       rect:
         serializedVersion: 2
-        x: 462
-        y: 606
-        width: 1176
-        height: 1440
+        x: 1593
+        y: 571
+        width: 1181
+        height: 1480
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -125,8 +125,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 51fbdc11f3ac9534fbe18d25a5695610
-      internalID: -687216497
+      spriteID: 1200e4f959d9752459cf53299f0d6f51
+      internalID: -524791792
       vertices: []
       indices: 
       edges: []
@@ -135,7 +135,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: f7bd204ab3545ce49a12ca524da50cd4
+    spriteID: 62bce33046f276e439c7bb8dc228a972
     internalID: 0
     vertices: []
     indices: 
@@ -145,9 +145,15 @@ TextureImporter:
     spriteCustomMetadata:
       entries:
       - key: SpriteEditor.SliceSettings
-        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.0,"y":0.0},"autoSlicingMethod":1,"spriteAlignment":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      How to 1_0: -687216497
+      Paper (R)_0: -952235073
+      Paper (R)_1: 1653088445
+      Paper (R)_2: -524791792
+      Paper (R)_3: -1999225892
+      Paper (R)_4: 333818536
+      Paper (R)_5: -159793075
+      Paper (R)_6: 1318067580
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

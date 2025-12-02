@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: ca7c96189704ffb4297da663c7beed35
+guid: 5a661f45e4ca5004c8e111cf23e6d452
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -110,13 +110,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: How to 2_2
+      name: How to 1 (2)_0
       rect:
         serializedVersion: 2
-        x: 1593
-        y: 574
-        width: 1181
-        height: 1477
+        x: 462
+        y: 606
+        width: 1176
+        height: 1440
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -125,8 +125,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: bde66638026c41e4c90c1f9b4188e8a0
-      internalID: 412833399
+      spriteID: 270f2249e9fc2404dab7a9c011ef2dcf
+      internalID: -1739583164
       vertices: []
       indices: 
       edges: []
@@ -135,7 +135,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 11f2eb0b090850c4ba9ed96e291a6d42
+    spriteID: 5391788f11b237948addfae468cda8be
     internalID: 0
     vertices: []
     indices: 
@@ -145,15 +145,9 @@ TextureImporter:
     spriteCustomMetadata:
       entries:
       - key: SpriteEditor.SliceSettings
-        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.0,"y":0.0},"autoSlicingMethod":1,"spriteAlignment":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      How to 2_0: 1108560036
-      How to 2_1: -491755249
-      How to 2_2: 412833399
-      How to 2_3: -1406605503
-      How to 2_4: -860623102
-      How to 2_5: -1686557080
-      How to 2_6: -1357928910
+      How to 1 (2)_0: -1739583164
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

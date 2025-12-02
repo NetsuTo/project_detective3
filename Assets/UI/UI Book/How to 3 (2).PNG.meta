@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: d62b1cd3e39ae114580b67dfa3b9cf5d
+guid: 18e9d296773b3b44f9f507d882a6ef64
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -110,13 +110,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: How to 4_2
+      name: How to 3 (2)_0
       rect:
         serializedVersion: 2
-        x: 1593
-        y: 577
-        width: 1181
-        height: 1474
+        x: 462
+        y: 606
+        width: 1176
+        height: 1440
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -125,8 +125,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: f27c6ab2dcdac5d45be8ff033b5c4c1f
-      internalID: -688770380
+      spriteID: 5c195404bfe0c6c40a7e160e97bce4ef
+      internalID: 1837678355
       vertices: []
       indices: 
       edges: []
@@ -135,7 +135,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: f00111414590e1a438614c151f19d54f
+    spriteID: 351c3bdc27caa1341a7fe10496be93d4
     internalID: 0
     vertices: []
     indices: 
@@ -145,15 +145,9 @@ TextureImporter:
     spriteCustomMetadata:
       entries:
       - key: SpriteEditor.SliceSettings
-        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.0,"y":0.0},"autoSlicingMethod":1,"spriteAlignment":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      How to 4_0: 1387884438
-      How to 4_1: 1138484796
-      How to 4_2: -688770380
-      How to 4_3: -104681088
-      How to 4_4: 79680389
-      How to 4_5: 1373784756
-      How to 4_6: 1469842972
+      How to 3 (2)_0: 1837678355
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
