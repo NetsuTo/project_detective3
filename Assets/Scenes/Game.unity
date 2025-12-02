@@ -73698,7 +73698,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -911002311, guid: 9b83d14daaf830d4d872a86e4b77bb92, type: 3}
+  m_Sprite: {fileID: -815314078, guid: 1039efab0507af6489f7e14e1810822e, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -99330,7 +99330,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: -5, y: 0}
-  m_SizeDelta: {x: 250, y: 280}
+  m_SizeDelta: {x: 249.5, y: 280}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1375750024
 CanvasRenderer:
@@ -100136,8 +100136,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -245, y: 0}
-  m_SizeDelta: {x: 240, y: 270}
+  m_AnchoredPosition: {x: -242.09409, y: 0}
+  m_SizeDelta: {x: 245.8118, y: 270}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1389252343
 CanvasRenderer:
@@ -119159,8 +119159,8 @@ MonoBehaviour:
   shakeNotificationDuration: 0.3
   shakeStrength: 0.5
   shakeVibrato: 2
-  unlockNotificationSound: {fileID: 8300000, guid: 81054ead8bd740648bc33e7815e86f0a, type: 3}
-  unlockNotificationVolume: 0.2
+  unlockNotificationSound: {fileID: 8300000, guid: 3a1aec1ad4cc05d4cb7dbcb5bae3050d, type: 3}
+  unlockNotificationVolume: 0.05
   bounceScale: 1.2
   pauseGameWhenOpen: 1
   pageTurnSound: {fileID: 8300000, guid: 8510ff4a47121904bae68ce192d34bf7, type: 3}

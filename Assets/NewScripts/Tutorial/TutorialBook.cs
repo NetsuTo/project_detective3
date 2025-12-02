@@ -843,20 +843,19 @@ public class TutorialBook : MonoBehaviour
         RectTransform iconRT = bookIconUI.GetComponent<RectTransform>();
         if (iconRT == null) return;
 
-        // สั่นแบบ Loop ไม่รู้จบ
-        iconRT.DOShakePosition(
-            duration: 999f, // สั่นนานมากๆ (จนกว่าจะหยุดด้วยตัวเอง)
-            strength: 10f,
-            vibrato: 20,
-            randomness: 90,
-            snapping: false,
-            fadeOut: false
-        )
-        .SetLoops(-1, LoopType.Restart) // Loop ไม่รู้จบ
-        .SetUpdate(true)
-        .SetTarget(bookIconUI);
+        Vector3 originalScale = iconRT.localScale;
 
-        Debug.Log("? เริ่มสั่นไอคอนหนังสือ UI");
+        // ซูมเข้าออกแบบนุ่มนวล Loop ไม่รู้จบ
+        Sequence pulseSeq = DOTween.Sequence();
+
+        pulseSeq.Append(iconRT.DOScale(originalScale * 1.15f, 0.6f).SetEase(Ease.InOutSine));
+        pulseSeq.Append(iconRT.DOScale(originalScale, 0.6f).SetEase(Ease.InOutSine));
+
+        pulseSeq.SetLoops(-1, LoopType.Restart)
+                .SetUpdate(true)
+                .SetTarget(bookIconUI);
+
+        Debug.Log("?? เริ่มซูมไอคอนหนังสือ UI");
     }
 
     public void StopIconShake()
