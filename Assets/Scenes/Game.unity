@@ -53536,7 +53536,7 @@ MonoBehaviour:
   pressEIndicator: {fileID: 9150289}
   skipButtonSprite: {fileID: 1320784197, guid: 3dde05b11b6dc5847adeba9234f33028, type: 3}
   skipButtonSize: {x: 100, y: 100}
-  skipButtonOffset: {x: -20, y: 35}
+  skipButtonOffset: {x: -20, y: -35}
   showSkipButton: 1
   objectsToSpawn:
   - {fileID: 1912682839}
