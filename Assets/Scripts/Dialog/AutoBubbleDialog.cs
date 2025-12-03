@@ -114,6 +114,7 @@ public class AutoBubbleDialog : MonoBehaviour
                 {
                     Vector3 playerScreenPos = Camera.main.WorldToScreenPoint(player.transform.position);
 
+                    // ? เช็คว่าผู้เล่นอยู่หน้ากล้อง
                     if (playerScreenPos.z > 0 && playerScreenPos.z < screenPos.z)
                     {
                         float distance = Vector2.Distance(
@@ -122,6 +123,25 @@ public class AutoBubbleDialog : MonoBehaviour
                         );
 
                         if (distance < 150f)
+                        {
+                            isBlockingPlayer = true;
+                        }
+                    }
+
+                    // ? เพิ่มการเช็คว่าหัวผู้เล่นสูงกว่าบับเบิ้ลหรือไม่
+                    Vector3 playerHeadPos = player.transform.position + Vector3.up * 2f; // ? ปรับค่านี้ตามความสูงของตัวละคร
+                    Vector3 playerHeadScreenPos = Camera.main.WorldToScreenPoint(playerHeadPos);
+
+                    // ถ้าหัวผู้เล่นใกล้บับเบิ้ล (กระโดด) ให้ซ่อนบับเบิ้ล
+                    if (playerHeadScreenPos.z > 0)
+                    {
+                        float headDistance = Vector2.Distance(
+                            new Vector2(screenPos.x, screenPos.y),
+                            new Vector2(playerHeadScreenPos.x, playerHeadScreenPos.y)
+                        );
+
+                        // ? ถ้าหัวใกล้บับเบิ้ลเกินไป ให้ซ่อน
+                        if (headDistance < 200f)
                         {
                             isBlockingPlayer = true;
                         }
@@ -191,9 +211,9 @@ public class AutoBubbleDialog : MonoBehaviour
 
     void StartDialog()
     {
-        if (dialogLines.Length == 0)
+        if (dialogLines == null || dialogLines.Length == 0)
         {
-            Debug.LogError("? ไม่มีข้อความ!");
+            Debug.LogError("?? ไม่มีข้อความ!");
             return;
         }
 
@@ -208,135 +228,251 @@ public class AutoBubbleDialog : MonoBehaviour
         hasPlayed = true;
 
         CreateBubble();
+
+        // ? เช็คว่าสร้างบับเบิ้ลสำเร็จหรือไม่
+        if (bubbleInstance == null)
+        {
+            Debug.LogError("?? ไม่สามารถสร้างบับเบิ้ลได้! ยกเลิกการแสดงบทสนทนา");
+            isShowingDialog = false;
+            return;
+        }
+
+        // ? เช็คว่ามี Text Component หรือไม่
+        if (bubbleText == null && bubbleTextTMP == null)
+        {
+            Debug.LogError("?? ไม่พบ Text Component! ยกเลิกการแสดงบทสนทนา");
+            isShowingDialog = false;
+            if (bubbleInstance != null)
+            {
+                Destroy(bubbleInstance);
+            }
+            return;
+        }
+
         StartCoroutine(TypeText(dialogLines[currentLineIndex]));
     }
 
     void CreateBubble()
     {
+        // ? ตรวจสอบ Canvas ก่อนทำอะไร
         if (mainCanvas == null)
         {
             mainCanvas = FindObjectOfType<Canvas>();
             if (mainCanvas == null)
             {
-                Debug.LogError("? ไม่พบ Canvas!");
+                Debug.LogError("?? ไม่พบ Canvas! กรุณาสร้าง Canvas ในฉาก (GameObject -> UI -> Canvas)");
                 return;
             }
         }
 
-        if (bubblePrefab != null)
+        // ? ทำลาย bubbleInstance เก่าถ้ามี
+        if (bubbleInstance != null)
         {
-            bubbleInstance = Instantiate(bubblePrefab, mainCanvas.transform);
-
-            if (useTextMeshPro)
-            {
-                bubbleTextTMP = bubbleInstance.GetComponentInChildren<TextMeshProUGUI>();
-                if (bubbleTextTMP == null)
-                {
-                    Debug.LogWarning("?? ไม่พบ TextMeshPro ใน Prefab! จะใช้ UI.Text แทน");
-                    bubbleText = bubbleInstance.GetComponentInChildren<Text>();
-                    useTextMeshPro = false;
-                }
-            }
-            else
-            {
-                bubbleText = bubbleInstance.GetComponentInChildren<Text>();
-            }
+            Destroy(bubbleInstance);
+            bubbleInstance = null;
         }
-        else
+
+        try
         {
-            bubbleInstance = new GameObject("SpeechBubble");
-            bubbleInstance.transform.SetParent(mainCanvas.transform, false);
-
-            RectTransform rectTransform = bubbleInstance.AddComponent<RectTransform>();
-            rectTransform.sizeDelta = bubbleSize;
-            rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
-            rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
-            rectTransform.pivot = new Vector2(0.5f, 0.5f);
-
-            Image bg = bubbleInstance.AddComponent<Image>();
-
-            if (bubbleSprite != null)
+            if (bubblePrefab != null)
             {
-                bg.sprite = bubbleSprite;
-                bg.type = Image.Type.Sliced;
-                bg.color = Color.white;
-            }
-            else
-            {
-                bg.color = bubbleColor;
-            }
+                // ใช้ Prefab
+                bubbleInstance = Instantiate(bubblePrefab, mainCanvas.transform);
 
-            GameObject textObj = new GameObject("Text");
-            textObj.transform.SetParent(bubbleInstance.transform, false);
-
-            RectTransform textRect = textObj.AddComponent<RectTransform>();
-            textRect.anchorMin = Vector2.zero;
-            textRect.anchorMax = Vector2.one;
-            textRect.offsetMin = new Vector2(padding, padding + textVerticalOffset);
-            textRect.offsetMax = new Vector2(-padding, -padding + textVerticalOffset);
-
-            // สร้าง TextMeshPro หรือ Text ธรรมดา
-            if (useTextMeshPro)
-            {
-                bubbleTextTMP = textObj.AddComponent<TextMeshProUGUI>();
-
-                // ใช้ฟอนต์ที่กำหนด หรือใช้ default
-                if (customFontTMP != null)
+                if (bubbleInstance == null)
                 {
-                    bubbleTextTMP.font = customFontTMP;
-                    Debug.Log($"? ใช้ฟอนต์ TMP: {customFontTMP.name}");
+                    Debug.LogError("?? ไม่สามารถสร้าง bubbleInstance จาก Prefab ได้!");
+                    return;
                 }
 
-                bubbleTextTMP.fontSize = fontSize;
-                bubbleTextTMP.color = textColor;
-                bubbleTextTMP.alignment = TextAlignmentOptions.Center;
-                bubbleTextTMP.enableWordWrapping = true;
-                bubbleTextTMP.overflowMode = TextOverflowModes.Overflow;
-                bubbleTextTMP.richText = true;
-            }
-            else
-            {
-                bubbleText = textObj.AddComponent<Text>();
-
-                // ใช้ฟอนต์ที่กำหนด หรือใช้ default
-                if (customFont != null)
+                // ? เพิ่ม Canvas Component ให้บับเบิ้ล
+                Canvas bubbleCanvas = bubbleInstance.GetComponent<Canvas>();
+                if (bubbleCanvas == null)
                 {
-                    bubbleText.font = customFont;
-                    Debug.Log($"? ใช้ฟอนต์: {customFont.name}");
+                    bubbleCanvas = bubbleInstance.AddComponent<Canvas>();
+                }
+
+                if (bubbleCanvas != null)
+                {
+                    bubbleCanvas.overrideSorting = true;
+                    bubbleCanvas.sortingOrder = -1;
+                }
+
+                // เพิ่ม GraphicRaycaster ถ้ายังไม่มี
+                if (bubbleInstance.GetComponent<GraphicRaycaster>() == null)
+                {
+                    bubbleInstance.AddComponent<GraphicRaycaster>();
+                }
+
+                // หา Text Component
+                if (useTextMeshPro)
+                {
+                    bubbleTextTMP = bubbleInstance.GetComponentInChildren<TextMeshProUGUI>();
+                    if (bubbleTextTMP == null)
+                    {
+                        Debug.LogWarning("?? ไม่พบ TextMeshPro ใน Prefab! จะใช้ UI.Text แทน");
+                        bubbleText = bubbleInstance.GetComponentInChildren<Text>();
+                        useTextMeshPro = false;
+                    }
                 }
                 else
                 {
-                    Font defaultFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-                    if (defaultFont == null)
-                    {
-                        defaultFont = Resources.GetBuiltinResource<Font>("Arial.ttf");
-                    }
-                    bubbleText.font = defaultFont;
-                    Debug.Log("?? ใช้ฟอนต์ default (Arial)");
+                    bubbleText = bubbleInstance.GetComponentInChildren<Text>();
+                }
+            }
+            else
+            {
+                // สร้างบับเบิ้ลใหม่ทั้งหมด
+                bubbleInstance = new GameObject("SpeechBubble");
+
+                if (bubbleInstance == null)
+                {
+                    Debug.LogError("?? ไม่สามารถสร้าง GameObject ได้!");
+                    return;
                 }
 
-                bubbleText.fontSize = fontSize;
-                bubbleText.color = textColor;
-                bubbleText.alignment = textAlignment;
-                bubbleText.horizontalOverflow = HorizontalWrapMode.Wrap;
-                bubbleText.verticalOverflow = VerticalWrapMode.Overflow;
+                bubbleInstance.transform.SetParent(mainCanvas.transform, false);
+
+                // เพิ่ม Canvas Component
+                Canvas bubbleCanvas = bubbleInstance.AddComponent<Canvas>();
+                if (bubbleCanvas != null)
+                {
+                    bubbleCanvas.overrideSorting = true;
+                    bubbleCanvas.sortingOrder = -1;
+                }
+
+                // เพิ่ม GraphicRaycaster
+                GraphicRaycaster raycaster = bubbleInstance.AddComponent<GraphicRaycaster>();
+
+                // เพิ่ม RectTransform
+                RectTransform rectTransform = bubbleInstance.GetComponent<RectTransform>();
+                if (rectTransform == null)
+                {
+                    rectTransform = bubbleInstance.AddComponent<RectTransform>();
+                }
+
+                if (rectTransform != null)
+                {
+                    rectTransform.sizeDelta = bubbleSize;
+                    rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
+                    rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+                    rectTransform.pivot = new Vector2(0.5f, 0.5f);
+                }
+
+                // เพิ่ม Background Image
+                Image bg = bubbleInstance.AddComponent<Image>();
+                if (bg != null)
+                {
+                    if (bubbleSprite != null)
+                    {
+                        bg.sprite = bubbleSprite;
+                        bg.type = Image.Type.Sliced;
+                        bg.color = Color.white;
+                    }
+                    else
+                    {
+                        bg.color = bubbleColor;
+                    }
+                }
+
+                // สร้าง Text Object
+                GameObject textObj = new GameObject("Text");
+                if (textObj != null)
+                {
+                    textObj.transform.SetParent(bubbleInstance.transform, false);
+
+                    RectTransform textRect = textObj.AddComponent<RectTransform>();
+                    if (textRect != null)
+                    {
+                        textRect.anchorMin = Vector2.zero;
+                        textRect.anchorMax = Vector2.one;
+                        textRect.offsetMin = new Vector2(padding, padding + textVerticalOffset);
+                        textRect.offsetMax = new Vector2(-padding, -padding + textVerticalOffset);
+                    }
+
+                    // สร้าง TextMeshPro หรือ Text ธรรมดา
+                    if (useTextMeshPro)
+                    {
+                        bubbleTextTMP = textObj.AddComponent<TextMeshProUGUI>();
+
+                        if (bubbleTextTMP != null)
+                        {
+                            if (customFontTMP != null)
+                            {
+                                bubbleTextTMP.font = customFontTMP;
+                                Debug.Log($"? ใช้ฟอนต์ TMP: {customFontTMP.name}");
+                            }
+
+                            bubbleTextTMP.fontSize = fontSize;
+                            bubbleTextTMP.color = textColor;
+                            bubbleTextTMP.alignment = TextAlignmentOptions.Center;
+                            bubbleTextTMP.enableWordWrapping = true;
+                            bubbleTextTMP.overflowMode = TextOverflowModes.Overflow;
+                            bubbleTextTMP.richText = true;
+                        }
+                    }
+                    else
+                    {
+                        bubbleText = textObj.AddComponent<Text>();
+
+                        if (bubbleText != null)
+                        {
+                            if (customFont != null)
+                            {
+                                bubbleText.font = customFont;
+                                Debug.Log($"? ใช้ฟอนต์: {customFont.name}");
+                            }
+                            else
+                            {
+                                Font defaultFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+                                if (defaultFont == null)
+                                {
+                                    defaultFont = Resources.GetBuiltinResource<Font>("Arial.ttf");
+                                }
+
+                                if (defaultFont != null)
+                                {
+                                    bubbleText.font = defaultFont;
+                                    Debug.Log("?? ใช้ฟอนต์ default (Arial)");
+                                }
+                            }
+
+                            bubbleText.fontSize = fontSize;
+                            bubbleText.color = textColor;
+                            bubbleText.alignment = textAlignment;
+                            bubbleText.horizontalOverflow = HorizontalWrapMode.Wrap;
+                            bubbleText.verticalOverflow = VerticalWrapMode.Overflow;
+                            bubbleText.supportRichText = true;
+                        }
+                    }
+                }
+            }
+
+            // เปิดใช้งาน Rich Text
+            if (useTextMeshPro && bubbleTextTMP != null)
+            {
+                bubbleTextTMP.richText = true;
+                Debug.Log("? เปิด Rich Text สำหรับ TextMeshPro");
+            }
+            else if (bubbleText != null)
+            {
                 bubbleText.supportRichText = true;
+                Debug.Log("? เปิด Rich Text สำหรับ UI.Text");
+            }
+
+            Debug.Log($"? สร้างบับเบิ้ลสำเร็จ!");
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"?? เกิด Error ตอนสร้างบับเบิ้ล: {e.Message}\n{e.StackTrace}");
+
+            // ทำลาย bubbleInstance ถ้ามีปัญหา
+            if (bubbleInstance != null)
+            {
+                Destroy(bubbleInstance);
+                bubbleInstance = null;
             }
         }
-
-        // ?? เปิดใช้งาน Rich Text
-        if (useTextMeshPro && bubbleTextTMP != null)
-        {
-            bubbleTextTMP.richText = true;
-            Debug.Log("? เปิด Rich Text สำหรับ TextMeshPro");
-        }
-        else if (bubbleText != null)
-        {
-            bubbleText.supportRichText = true;
-            Debug.Log("? เปิด Rich Text สำหรับ UI.Text");
-        }
-
-        Debug.Log("? สร้างบับเบิ้ลสำเร็จ");
     }
 
     IEnumerator TypeText(string text)

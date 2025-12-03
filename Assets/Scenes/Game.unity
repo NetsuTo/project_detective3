@@ -29471,7 +29471,15 @@ MonoBehaviour:
   normalSliderFillColor: {r: 1, g: 1, b: 1, a: 1}
   selectedButtonColor: {r: 0.6, g: 0.6, b: 0.6, a: 1}
   normalButtonColor: {r: 1, g: 1, b: 1, a: 0}
-  miniGameManager: {fileID: 0}
+  miniGameManagers:
+  - {fileID: 235292686}
+  - {fileID: 600750555}
+  - {fileID: 1257205031}
+  - {fileID: 194662160}
+  - {fileID: 754678144}
+  - {fileID: 1346371830}
+  - {fileID: 123453440}
+  - {fileID: 1412319332}
 --- !u!1 &444091064
 GameObject:
   m_ObjectHideFlags: 0

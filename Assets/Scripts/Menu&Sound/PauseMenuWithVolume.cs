@@ -18,6 +18,9 @@ public class PauseMenuWithVolume : MonoBehaviour
     [Tooltip("ล็อคการกด Input อื่นๆ เมื่อเปิด Pause Menu")]
     [SerializeField]
     private bool lockInputWhenPaused = true;
+    // ? เพิ่ม 2 ตัวแปรนี้
+    public static bool blockPauseTemporarily = false;
+    public static float blockPauseUntilTime = 0f; // ? เพิ่มตัวนี้
 
     [Header("สีของ Slider")]
     [Tooltip("สีของ Handle เมื่อเลือก")]
@@ -40,11 +43,8 @@ public class PauseMenuWithVolume : MonoBehaviour
     public Color normalButtonColor = new Color(1f, 1f, 1f, 0f);
 
     [Header("References")]
-    [Tooltip("ลาก ElementMiniGameManager มาใส่ที่นี่")]
-    public ElementMiniGameManager miniGameManager; // ? เพิ่มตัวนี้
-
-    // ? เพิ่ม flag สำหรับบล็อค Pause ชั่วคราว
-    public static bool blockPauseTemporarily = false;
+    [Tooltip("ลาก ElementMiniGameManager ทั้งหมดมาใส่ที่นี่")]
+    public ElementMiniGameManager[] miniGameManagers; // ? ใส่ได้หลายตัว
 
     private bool isPaused = false;
     private int selectedIndex = 0;
@@ -73,7 +73,6 @@ public class PauseMenuWithVolume : MonoBehaviour
     void Start()
     {
         pauseMenuUI.SetActive(false);
-
         totalElements = buttons.Length + 2;
 
         if (AudioManager.Instance != null)
@@ -88,18 +87,17 @@ public class PauseMenuWithVolume : MonoBehaviour
         playerController = FindObjectOfType<PlayerController>();
         skillSelector = FindObjectOfType<SkillLetterSelector>();
 
-        // ? ถ้าไม่ได้ลากมาใส่ ให้หาเอง
-        if (miniGameManager == null)
+        // ? ถ้าไม่ได้ลากมาใส่ ให้หาทั้งหมดในฉาก
+        if (miniGameManagers == null || miniGameManagers.Length == 0)
         {
-            miniGameManager = FindObjectOfType<ElementMiniGameManager>();
+            miniGameManagers = FindObjectsOfType<ElementMiniGameManager>();
+            Debug.Log($"?? พบ MiniGame {miniGameManagers.Length} ตัวในฉาก");
         }
 
-        // สร้าง Input Actions
         SetupInputActions();
-
         UpdateUIHighlight();
 
-        Debug.Log("?? PauseMenu Started - Keyboard + Gamepad Ready!");
+        Debug.Log("? PauseMenu Started - Keyboard + Gamepad Ready!");
     }
 
     private void SetupInputActions()
@@ -166,28 +164,36 @@ public class PauseMenuWithVolume : MonoBehaviour
     void Update()
     {
         // ===== อ่าน Pause Input ตลอดเวลา =====
-        bool pausePressed = pauseAction.IsPressed();
+        bool pausePressed = pauseAction.WasPressedThisFrame();
 
-        if (pausePressed && !pauseWasPressed)
+        if (pausePressed)
         {
-            // ? เช็ค flag ก่อน - ถ้าถูกบล็อคไว้ให้ return ทันที
-            if (blockPauseTemporarily)
+            // ? เช็คเวลาก่อน - ถ้ายังไม่ถึงเวลาให้บล็อค
+            if (Time.time < blockPauseUntilTime)
             {
-                Debug.Log("? Pause ถูกบล็อคชั่วคราว");
-                pauseWasPressed = pausePressed;
+                Debug.Log($"?? Pause ถูกบล็อคชั่วคราว (รออีก {(blockPauseUntilTime - Time.time):F2} วินาที)");
                 return;
             }
 
-            // ? เช็ค MiniGame ก่อน - ถ้าเปิดอยู่ห้ามเปิด Pause
-            if (miniGameManager != null)
+            // ? เช็ค flag ก่อน - ถ้าถูกบล็อคไว้ให้ return ทันที
+            if (blockPauseTemporarily)
             {
-                bool miniGameActive = miniGameManager.IsMiniGameActive();
+                Debug.Log("?? Pause ถูกบล็อคชั่วคราว");
+                return;
+            }
 
-                if (miniGameActive)
+            // ? เช็คทุก MiniGame ว่ามีตัวไหนเปิดอยู่หรือไม่
+            bool anyMiniGameActive = false;
+            if (miniGameManagers != null)
+            {
+                foreach (var mgr in miniGameManagers)
                 {
-                    Debug.Log("?? MiniGame กำลังเปิดอยู่ - ไม่เปิด Pause (ปล่อยให้ MiniGame จัดการ ESC)");
-                    pauseWasPressed = pausePressed;
-                    return; // ไม่เปิด Pause Menu
+                    if (mgr != null && mgr.IsMiniGameActive())
+                    {
+                        anyMiniGameActive = true;
+                        Debug.Log($"?? MiniGame [{mgr.name}] กำลังเปิดอยู่ - ไม่เปิด Pause");
+                        return;
+                    }
                 }
             }
 
@@ -195,8 +201,7 @@ public class PauseMenuWithVolume : MonoBehaviour
             if (skillSelector != null && !skillSelector.CanOpenPause)
             {
                 Debug.Log("?? มีสกิลอยู่ - กด Esc เพื่อยกเลิกสกิลก่อน");
-                pauseWasPressed = pausePressed;
-                return; // ไม่เปิด Pause Menu
+                return;
             }
 
             // เช็คว่า Tutorial Book เปิดอยู่หรือไม่
@@ -213,7 +218,6 @@ public class PauseMenuWithVolume : MonoBehaviour
                     PauseGame();
             }
         }
-        pauseWasPressed = pausePressed;
 
         // ===== อ่าน Navigation Input เมื่อ Pause =====
         if (isPaused)

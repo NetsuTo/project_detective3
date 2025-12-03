@@ -232,8 +232,9 @@ public class ElementMiniGameManager : MonoBehaviour
         // ✅ ตั้ง flag ให้ Coroutine อื่นหยุดทำงาน
         isCancelling = true;
 
-        // ✅ บล็อค Pause Menu ทันที
+        // ✅ บล็อค Pause Menu ทันทีก่อนเริ่ม Coroutine
         PauseMenuWithVolume.blockPauseTemporarily = true;
+        PauseMenuWithVolume.blockPauseUntilTime = Time.time + 0.5f; // ⭐ เพิ่มตรงนี้ - บล็อคทันที
 
         // ✅ บังคับซ่อน failSymbol ก่อนหยุด Coroutine
         if (failSymbol != null)
@@ -270,7 +271,6 @@ public class ElementMiniGameManager : MonoBehaviour
             callingZone.ReturnLastUsedSkill();
         }
 
-        // ❌ ไม่เรียก onFailEvent (เพราะเป็น Cancel ไม่ใช่ Fail)
         onCompleteCallback?.Invoke(false);
         onCompleteCallback = null;
         callingZone = null;
@@ -292,17 +292,16 @@ public class ElementMiniGameManager : MonoBehaviour
             playerController.UnlockMovement();
         }
 
-        // ✅ รอให้ ESC ถูกปล่อย (2 frames)
-        yield return null;
-        yield return null;
+        // ⭐ ลบบรรทัดนี้ออก - เพราะตั้งค่าไว้ก่อนหน้านี้แล้ว
+        // PauseMenuWithVolume.blockPauseUntilTime = Time.time + 0.3f;
 
-        // ✅ ตอนนี้ค่อยปิด MiniGame และปลดบล็อค Pause
+        // ปิด MiniGame
         isActive = false;
         activeMiniGame = null;
-        isCancelling = false; // ✅ รีเซ็ต flag
+        isCancelling = false;
         PauseMenuWithVolume.blockPauseTemporarily = false;
 
-        Debug.Log("📖 Cancel เสร็จแล้ว - ปลดบล็อค Pause แล้ว");
+        Debug.Log($"📖 [{name}] Cancel เสร็จแล้ว");
     }
 
     /// <summary>
