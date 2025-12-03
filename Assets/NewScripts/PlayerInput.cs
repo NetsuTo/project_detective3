@@ -27,51 +27,66 @@ public class PlayerInput : MonoBehaviour
 
     private void SetupInputActions()
     {
-        // ===== เลือก Skill ก่อนหน้า - รองรับ Z และ D-Pad Up =====
+        // ===== เลือก Skill ก่อนหน้า - Z และ Right Stick Up =====
         selectPrevAction = new InputAction("SelectPrev", type: InputActionType.Button);
         selectPrevAction.AddBinding("<Keyboard>/z");
-        selectPrevAction.AddBinding("<Gamepad>/dpad/up");
-        selectPrevAction.AddBinding("<Gamepad>/leftStick/up");
+        selectPrevAction.AddBinding("<Gamepad>/rightStick/up");  // ? เปลี่ยนเป็น Right Stick
         selectPrevAction.performed += OnSelectPrevPerformed;
 
-        // ===== เลือก Skill ถัดไป - รองรับ C และ D-Pad Down =====
+        // ===== เลือก Skill ถัดไป - C และ Right Stick Down =====
         selectNextAction = new InputAction("SelectNext", type: InputActionType.Button);
         selectNextAction.AddBinding("<Keyboard>/c");
-        selectNextAction.AddBinding("<Gamepad>/dpad/down");
-        selectNextAction.AddBinding("<Gamepad>/leftStick/down");
+        selectNextAction.AddBinding("<Gamepad>/rightStick/down");  // ? เปลี่ยนเป็น Right Stick
         selectNextAction.performed += OnSelectNextPerformed;
 
-        // ===== ยืนยัน Skill - รองรับ T และ Button East (B/Circle) =====
+        // ===== ยืนยัน Skill - T และ Button East (B/Circle) =====
         confirmSkillAction = new InputAction("ConfirmSkill", type: InputActionType.Button);
         confirmSkillAction.AddBinding("<Keyboard>/t");
-        confirmSkillAction.AddBinding("<Gamepad>/buttonEast");  // Xbox: B, PS: Circle
+        confirmSkillAction.AddBinding("<Gamepad>/buttonEast");  // B/Circle (เหมือนเดิม)
         confirmSkillAction.performed += OnConfirmSkillPerformed;
     }
 
     // อ่าน Input ทุกเฟรมด้วย Update() (วิธีสำรอง - สำหรับ Old Input System)
     private void Update()
     {
-        // ?? Debug: แสดงสถานะ Input (ลบได้เมื่อแน่ใจว่าทำงาน)
-        if (Gamepad.current != null && Gamepad.current.buttonEast.wasPressedThisFrame)
+        // ?? Fallback: ตรวจสอบ Gamepad โดยตรง
+        if (Gamepad.current != null)
         {
-            Debug.Log("?? Gamepad buttonEast (B/Circle) ถูกกด!");
-        }
-
-        // ถ้า Input System ไม่ทำงาน ให้ใช้ GetKeyDown แทน
-        if (Keyboard.current == null && Gamepad.current == null)
-        {
-            // ใช้ Input Manager (Old Input System) แทน
-            if (Input.GetKeyDown(KeyCode.Z))
+            // Right Stick Up (เลือกก่อนหน้า)
+            if (Gamepad.current.rightStick.up.wasPressedThisFrame)
             {
                 OnSelectPrevPerformed(default);
             }
-            if (Input.GetKeyDown(KeyCode.C))
+
+            // Right Stick Down (เลือกถัดไป)
+            if (Gamepad.current.rightStick.down.wasPressedThisFrame)
             {
                 OnSelectNextPerformed(default);
             }
-            if (Input.GetKeyDown(KeyCode.T))
+
+            // Button East (ยืนยัน)
+            if (Gamepad.current.buttonEast.wasPressedThisFrame)
             {
                 OnConfirmSkillPerformed(default);
+            }
+        }
+
+        // ?? Fallback: ตรวจสอบ Keyboard โดยตรง
+        if (Keyboard.current != null)
+        {
+            if (Keyboard.current.tKey.wasPressedThisFrame)
+            {
+                OnConfirmSkillPerformed(default);
+            }
+
+            if (Keyboard.current.zKey.wasPressedThisFrame)
+            {
+                OnSelectPrevPerformed(default);
+            }
+
+            if (Keyboard.current.cKey.wasPressedThisFrame)
+            {
+                OnSelectNextPerformed(default);
             }
         }
     }
