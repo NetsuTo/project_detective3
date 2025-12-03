@@ -67,7 +67,7 @@ public class SkillLetterSelector : MonoBehaviour
         // ⭐ สร้าง Input Action สำหรับปุ่ม Esc (ยกเลิกสกิล)
         cancelAction = new InputAction("Cancel", type: InputActionType.Button);
         cancelAction.AddBinding("<Keyboard>/escape");
-        cancelAction.AddBinding("<Gamepad>/buttonEast"); // ปุ่ม B/Circle บน Gamepad
+        cancelAction.AddBinding("<Gamepad>/start"); // ปุ่ม B/Circle บน Gamepad
         cancelAction.Enable();
 
         Debug.Log("✅ SkillLetterSelector Started!");

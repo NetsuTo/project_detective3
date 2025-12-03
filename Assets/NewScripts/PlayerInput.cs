@@ -30,13 +30,13 @@ public class PlayerInput : MonoBehaviour
         // ===== เลือก Skill ก่อนหน้า - Z และ Right Stick Up =====
         selectPrevAction = new InputAction("SelectPrev", type: InputActionType.Button);
         selectPrevAction.AddBinding("<Keyboard>/z");
-        selectPrevAction.AddBinding("<Gamepad>/rightStick/up");  // ? เปลี่ยนเป็น Right Stick
+        selectPrevAction.AddBinding("<Gamepad>/rightStick/left");  // ? เปลี่ยนเป็น Right Stick
         selectPrevAction.performed += OnSelectPrevPerformed;
 
         // ===== เลือก Skill ถัดไป - C และ Right Stick Down =====
         selectNextAction = new InputAction("SelectNext", type: InputActionType.Button);
         selectNextAction.AddBinding("<Keyboard>/c");
-        selectNextAction.AddBinding("<Gamepad>/rightStick/down");  // ? เปลี่ยนเป็น Right Stick
+        selectNextAction.AddBinding("<Gamepad>/rightStick/right");  // ? เปลี่ยนเป็น Right Stick
         selectNextAction.performed += OnSelectNextPerformed;
 
         // ===== ยืนยัน Skill - T และ Button East (B/Circle) =====
