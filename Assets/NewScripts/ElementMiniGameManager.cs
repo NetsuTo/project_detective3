@@ -146,24 +146,26 @@ public class ElementMiniGameManager : MonoBehaviour
 
     void Update()
     {
-        if (!isActive || activeMiniGame != this || isRetrying || isCancelling) // ✅ เพิ่ม isCancelling
+        if (!isActive || activeMiniGame != this || isRetrying || isCancelling)
             return;
 
         // ===== 🆕 ระบบ ESC Cancel + คืนสกิล =====
+
+        // ⌨️ Keyboard: กด Esc
         if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
         {
             CancelAndReturnSkill();
             return;
         }
 
-        // Gamepad: กด Select/Back เพื่อ Cancel
-        if (Gamepad.current != null && Gamepad.current.selectButton.wasPressedThisFrame)
+        // 🎮 Gamepad: กด Start Button (เหมือน Pause Menu)
+        if (Gamepad.current != null && Gamepad.current.startButton.wasPressedThisFrame)
         {
             CancelAndReturnSkill();
             return;
         }
 
-        // Fallback: Old Input System
+        // 🔧 Fallback: Old Input System
         if (Keyboard.current == null && Gamepad.current == null)
         {
             if (Input.GetKeyDown(KeyCode.Escape))
