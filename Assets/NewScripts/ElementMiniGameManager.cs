@@ -93,10 +93,14 @@ public class ElementMiniGameManager : MonoBehaviour
     private bool isActive = false;
     private Action<bool> onCompleteCallback = null;
     private bool isRetrying = false;
+    private bool isCancelling = false; // ✅ เพิ่มตัวนี้
     private AudioSource audioSource;
     private Vector3 originalImageScale;
     private Vector3 originalImagePosition;
     private Color originalImageColor;
+
+    // ✅ เพิ่มตัวแปรสำหรับคืนสกิล
+    private TargetZone callingZone = null;
 
     // ===== Input System - Gamepad Support =====
     private bool[] keyWasPressed = new bool[4]; // สำหรับ Up, Down, Left, Right
@@ -142,8 +146,32 @@ public class ElementMiniGameManager : MonoBehaviour
 
     void Update()
     {
-        if (!isActive || activeMiniGame != this || isRetrying)
+        if (!isActive || activeMiniGame != this || isRetrying || isCancelling) // ✅ เพิ่ม isCancelling
             return;
+
+        // ===== 🆕 ระบบ ESC Cancel + คืนสกิล =====
+        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+        {
+            CancelAndReturnSkill();
+            return;
+        }
+
+        // Gamepad: กด Select/Back เพื่อ Cancel
+        if (Gamepad.current != null && Gamepad.current.selectButton.wasPressedThisFrame)
+        {
+            CancelAndReturnSkill();
+            return;
+        }
+
+        // Fallback: Old Input System
+        if (Keyboard.current == null && Gamepad.current == null)
+        {
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                CancelAndReturnSkill();
+                return;
+            }
+        }
 
         if (currentSequence == null || currentSequence.Count == 0) return;
 
@@ -191,11 +219,99 @@ public class ElementMiniGameManager : MonoBehaviour
     }
 
     /// <summary>
+    /// 🆕 Cancel MiniGame + คืนสกิลให้ผู้เล่น
+    /// </summary>
+    private void CancelAndReturnSkill()
+    {
+        if (!isActive) return;
+
+        Debug.Log("❌ Cancel MiniGame ด้วย ESC → คืนสกิล");
+
+        // ✅ ตั้ง flag ให้ Coroutine อื่นหยุดทำงาน
+        isCancelling = true;
+
+        // ✅ บล็อค Pause Menu ทันที
+        PauseMenuWithVolume.blockPauseTemporarily = true;
+
+        // ✅ บังคับซ่อน failSymbol ก่อนหยุด Coroutine
+        if (failSymbol != null)
+            failSymbol.SetActive(false);
+
+        // ✅ หยุดทุก Coroutine
+        StopAllCoroutines();
+
+        // ✅ บังคับซ่อน UI ทั้งหมดทันที
+        HideDisplay();
+
+        if (displayImage != null)
+        {
+            displayImage.transform.localScale = originalImageScale;
+            displayImage.transform.localPosition = originalImagePosition;
+            displayImage.color = originalImageColor;
+            displayImage.gameObject.SetActive(false);
+        }
+
+        if (displayText != null)
+        {
+            displayText.gameObject.SetActive(false);
+        }
+
+        // ✅ ใช้ Coroutine เพื่อรอ frames ก่อนปลดล็อค
+        StartCoroutine(CancelSequence());
+    }
+
+    private IEnumerator CancelSequence()
+    {
+        // ✅ คืนสกิลให้ TargetZone
+        if (callingZone != null)
+        {
+            callingZone.ReturnLastUsedSkill();
+        }
+
+        // ❌ ไม่เรียก onFailEvent (เพราะเป็น Cancel ไม่ใช่ Fail)
+        onCompleteCallback?.Invoke(false);
+        onCompleteCallback = null;
+        callingZone = null;
+
+        // ปิดหนังสือ
+        if (bookAnimation != null && !string.IsNullOrEmpty(closeAnimationClip))
+            bookAnimation.Play(closeAnimationClip);
+        else if (bookAnimator != null && !string.IsNullOrEmpty(closeAnimationTrigger))
+            bookAnimator.SetTrigger(closeAnimationTrigger);
+
+        yield return new WaitForSeconds(closeAnimationDuration);
+
+        if (bookModel != null)
+            bookModel.SetActive(false);
+
+        if (playerController != null)
+        {
+            playerController.StopCastingAnimation();
+            playerController.UnlockMovement();
+        }
+
+        // ✅ รอให้ ESC ถูกปล่อย (2 frames)
+        yield return null;
+        yield return null;
+
+        // ✅ ตอนนี้ค่อยปิด MiniGame และปลดบล็อค Pause
+        isActive = false;
+        activeMiniGame = null;
+        isCancelling = false; // ✅ รีเซ็ต flag
+        PauseMenuWithVolume.blockPauseTemporarily = false;
+
+        Debug.Log("📖 Cancel เสร็จแล้ว - ปลดบล็อค Pause แล้ว");
+    }
+
+    /// <summary>
     /// 🎮 เอฟเฟกต์เหมือนกดปุ่ม: กดลง → เด้งกลับ → ลูกศรใหม่ Fade In
     /// </summary>
     private IEnumerator ButtonPressEffect()
     {
         if (displayImage == null) yield break;
+
+        // ✅ เช็คก่อนเริ่ม
+        if (isCancelling) yield break;
 
         float elapsed = 0f;
         Vector3 startScale = displayImage.transform.localScale;
@@ -204,6 +320,9 @@ public class ElementMiniGameManager : MonoBehaviour
         // ===== ขั้นที่ 1: กดลง (Press Down) =====
         while (elapsed < pressDuration)
         {
+            // ✅ เช็คทุก frame
+            if (isCancelling) yield break;
+
             elapsed += Time.deltaTime;
             float t = elapsed / pressDuration;
 
@@ -222,6 +341,9 @@ public class ElementMiniGameManager : MonoBehaviour
         elapsed = 0f;
         while (elapsed < popDuration)
         {
+            // ✅ เช็คทุก frame
+            if (isCancelling) yield break;
+
             elapsed += Time.deltaTime;
             float t = elapsed / popDuration;
 
@@ -234,6 +356,9 @@ public class ElementMiniGameManager : MonoBehaviour
             yield return null;
         }
 
+        // ✅ เช็คก่อนรีเซ็ต
+        if (isCancelling) yield break;
+
         // รีเซ็ตค่า
         displayImage.transform.localScale = startScale;
         displayImage.color = originalImageColor;
@@ -242,6 +367,9 @@ public class ElementMiniGameManager : MonoBehaviour
         displayImage.gameObject.SetActive(false);
 
         yield return new WaitForSeconds(0.05f);
+
+        // ✅ เช็คก่อนแสดงลูกศรใหม่
+        if (isCancelling) yield break;
 
         // ===== ขั้นที่ 4: แสดงลูกศรใหม่ + Fade In =====
         if (currentIndex < currentSequence.Count)
@@ -257,6 +385,9 @@ public class ElementMiniGameManager : MonoBehaviour
             elapsed = 0f;
             while (elapsed < fadeInDuration)
             {
+                // ✅ เช็คทุก frame
+                if (isCancelling) yield break;
+
                 elapsed += Time.deltaTime;
                 float t = elapsed / fadeInDuration;
 
@@ -266,6 +397,9 @@ public class ElementMiniGameManager : MonoBehaviour
 
                 yield return null;
             }
+
+            // ✅ เช็คก่อนตั้งค่าสุดท้าย
+            if (isCancelling) yield break;
 
             // ตั้งค่าสุดท้าย
             displayImage.color = originalImageColor;
@@ -379,12 +513,15 @@ public class ElementMiniGameManager : MonoBehaviour
         return KeyCode.None;
     }
 
-    public void StartMiniGame(List<KeyCode> sequence, Action<bool> callback)
+    // ✅ แก้ไขให้รับ TargetZone เพื่อคืนสกิล
+    public void StartMiniGame(List<KeyCode> sequence, Action<bool> callback, TargetZone zone = null)
     {
         if (activeMiniGame != null && activeMiniGame != this)
             activeMiniGame.ForceStop();
 
         activeMiniGame = this;
+        callingZone = zone; // ✅ เก็บไว้เพื่อคืนสกิล
+        isCancelling = false; // ✅ รีเซ็ต flag
 
         if (playerController != null)
         {
@@ -442,7 +579,7 @@ public class ElementMiniGameManager : MonoBehaviour
         UpdateDisplay();
         StartCoroutine(DelayInputActivation());
 
-        Debug.Log($"🎮 [MiniGame] เริ่มเกม - Sequence: {SeqToString(currentSequence)} (Arrow Keys / D-Pad / Left Stick)");
+        Debug.Log($"🎮 [MiniGame] เริ่มเกม - Sequence: {SeqToString(currentSequence)} (กด ESC เพื่อยกเลิก)");
     }
 
     public void ForceStop()
@@ -450,7 +587,9 @@ public class ElementMiniGameManager : MonoBehaviour
         if (!isActive) return;
 
         isActive = false;
+        isCancelling = false;
         onCompleteCallback = null;
+        callingZone = null;
         HideDisplay();
         StopAllCoroutines();
 
@@ -481,6 +620,7 @@ public class ElementMiniGameManager : MonoBehaviour
     {
         isActive = false;
         activeMiniGame = null;
+        callingZone = null; // ✅ ไม่คืนสกิลเพราะสำเร็จแล้ว
         HideDisplay();
 
         onSuccessEvent?.Invoke();
@@ -496,6 +636,7 @@ public class ElementMiniGameManager : MonoBehaviour
     {
         isActive = false;
         activeMiniGame = null;
+        callingZone = null; // ✅ ไม่คืนสกิลเพราะล้มเหลว
         HideDisplay();
         ShowFailSymbolSafe();
 
@@ -572,6 +713,8 @@ public class ElementMiniGameManager : MonoBehaviour
 
     private void Retry()
     {
+        if (isCancelling) return; // ✅ ป้องกันไม่ให้เรียกตอน Cancel
+
         Debug.Log($"🔄 กดผิด! รีเซ็ตลำดับ...");
         ShowFailSymbolSafe();
         StartCoroutine(RetrySequence());
@@ -637,8 +780,22 @@ public class ElementMiniGameManager : MonoBehaviour
 
     private IEnumerator ShowFailSymbolCoroutine()
     {
+        if (isCancelling) yield break; // ✅ เช็คก่อนเริ่ม
+
         failSymbol.SetActive(true);
-        yield return new WaitForSeconds(failSymbolDuration);
+
+        float elapsed = 0f;
+        while (elapsed < failSymbolDuration)
+        {
+            if (isCancelling) // ✅ เช็คทุก frame
+            {
+                failSymbol.SetActive(false); // ซ่อนทันที
+                yield break;
+            }
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
         failSymbol.SetActive(false);
     }
 
@@ -646,5 +803,54 @@ public class ElementMiniGameManager : MonoBehaviour
     {
         if (seq == null || seq.Count == 0) return "";
         return string.Join("", seq);
+    }
+
+    /// <summary>
+    /// ✅ ตรวจสอบว่า MiniGame กำลังเปิดอยู่หรือไม่
+    /// </summary>
+    public bool IsMiniGameActive()
+    {
+        return isActive;
+    }
+
+    /// <summary>
+    /// 🔄 คืนสกิลกลับเข้า Inventory (เรียกจาก TargetZone)
+    /// </summary>
+    public void RestoreSkillFromBottle(List<string> sequence)
+    {
+        if (sequence == null || sequence.Count == 0)
+        {
+            Debug.LogWarning("⚠️ Sequence ว่างเปล่า");
+            return;
+        }
+
+        // แปลง string sequence เป็น KeyCode
+        List<KeyCode> keySequence = new List<KeyCode>();
+        foreach (string s in sequence)
+        {
+            if (System.Enum.TryParse(s, out KeyCode key))
+            {
+                keySequence.Add(key);
+            }
+        }
+
+        if (keySequence.Count == 0)
+        {
+            Debug.LogWarning("⚠️ ไม่สามารถแปลง sequence เป็น KeyCode ได้");
+            return;
+        }
+
+        // เติมกลับเข้า currentSequence
+        currentSequence.Clear();
+        currentSequence.AddRange(keySequence);
+        currentIndex = 0;
+
+        Debug.Log($"🔄 คืนสกิล: {string.Join("-", sequence)} | KeyCode: {SeqToString(currentSequence)}");
+
+        // อัพเดท UI
+        if (isActive)
+        {
+            UpdateDisplay();
+        }
     }
 }

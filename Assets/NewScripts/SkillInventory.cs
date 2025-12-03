@@ -61,15 +61,16 @@ public class SkillInventory : MonoBehaviour
     private void OnEnable() => useSkillAction?.Enable();
     private void OnDisable() => useSkillAction?.Disable();
 
+    // ✅ แก้ไขใหม่ - ไม่ต้องทำอะไร เพราะการใช้สกิลจะเกิดที่ TargetZone
     private void OnUseSkillPerformed(InputAction.CallbackContext ctx)
     {
         if (storedSkills.Count > 0)
         {
-            Debug.Log("🎯 ใช้สกิล (R / RT/R2)");
+            Debug.Log($"📦 มีขวดอยู่ {storedSkills.Count} ขวด - พร้อมใช้ใน TargetZone");
         }
         else
         {
-            Debug.Log("⚠️ ไม่มีสกิลในขวดให้ใช้");
+            Debug.Log("⚠️ ไม่มีขวดในคลัง");
         }
     }
 
@@ -192,6 +193,16 @@ public class SkillInventory : MonoBehaviour
         AddMixedSkill(stringSeq);
     }
 
+    // ✅ ดึงข้อมูลขวดแรกโดยไม่ลบ (สำหรับ TargetZone)
+    public List<string> GetFirstBottleSequence()
+    {
+        if (storedSkills.Count > 0)
+        {
+            return new List<string>(storedSkills[0]);
+        }
+        return null;
+    }
+
     // ตรวจว่ามี skill ตรงกับ seq หรือไม่
     public bool HasSkill(List<string> seq)
     {
@@ -274,6 +285,20 @@ public class SkillInventory : MonoBehaviour
             if (a[i] != b[i]) return false;
         }
         return true;
+    }
+
+    // ✅ เพิ่ม method นี้เพื่อรองรับโค้ดเก่าที่เรียกใช้
+    public void AddSkill(List<string> sequence)
+    {
+        if (sequence == null || sequence.Count == 0)
+        {
+            Debug.LogWarning("⚠️ พยายามเพิ่มสกิลที่เป็น null หรือว่างเปล่า");
+            return;
+        }
+
+        // ✅ เรียก AddMixedSkill แทน (เพื่อให้ทำงานเหมือนเดิม)
+        AddMixedSkill(sequence);
+        Debug.Log($"✅ เพิ่มสกิลเข้าขวด: {string.Join("-", sequence)}");
     }
 
     void OnDestroy()

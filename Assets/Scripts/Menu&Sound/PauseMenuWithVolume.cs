@@ -39,11 +39,18 @@ public class PauseMenuWithVolume : MonoBehaviour
     [Tooltip("สีของปุ่มปกติ")]
     public Color normalButtonColor = new Color(1f, 1f, 1f, 0f);
 
+    [Header("References")]
+    [Tooltip("ลาก ElementMiniGameManager มาใส่ที่นี่")]
+    public ElementMiniGameManager miniGameManager; // ? เพิ่มตัวนี้
+
+    // ? เพิ่ม flag สำหรับบล็อค Pause ชั่วคราว
+    public static bool blockPauseTemporarily = false;
+
     private bool isPaused = false;
     private int selectedIndex = 0;
     private int totalElements;
     private PlayerController playerController;
-    private SkillLetterSelector skillSelector; // ? เพิ่มการอ้างอิง SkillLetterSelector
+    private SkillLetterSelector skillSelector;
 
     // ===== Input System Actions - รองรับ Keyboard + Gamepad =====
     private InputAction pauseAction;
@@ -79,14 +86,20 @@ public class PauseMenuWithVolume : MonoBehaviour
         musicVolumeSlider.onValueChanged.AddListener(OnMusicVolumeChanged);
 
         playerController = FindObjectOfType<PlayerController>();
-        skillSelector = FindObjectOfType<SkillLetterSelector>(); // ? หา SkillLetterSelector
+        skillSelector = FindObjectOfType<SkillLetterSelector>();
+
+        // ? ถ้าไม่ได้ลากมาใส่ ให้หาเอง
+        if (miniGameManager == null)
+        {
+            miniGameManager = FindObjectOfType<ElementMiniGameManager>();
+        }
 
         // สร้าง Input Actions
         SetupInputActions();
 
         UpdateUIHighlight();
 
-        Debug.Log("? PauseMenu Started - Keyboard + Gamepad Ready!");
+        Debug.Log("?? PauseMenu Started - Keyboard + Gamepad Ready!");
     }
 
     private void SetupInputActions()
@@ -157,10 +170,31 @@ public class PauseMenuWithVolume : MonoBehaviour
 
         if (pausePressed && !pauseWasPressed)
         {
-            // ? เช็คว่ามีสกิลอยู่หรือไม่ก่อน
+            // ? เช็ค flag ก่อน - ถ้าถูกบล็อคไว้ให้ return ทันที
+            if (blockPauseTemporarily)
+            {
+                Debug.Log("? Pause ถูกบล็อคชั่วคราว");
+                pauseWasPressed = pausePressed;
+                return;
+            }
+
+            // ? เช็ค MiniGame ก่อน - ถ้าเปิดอยู่ห้ามเปิด Pause
+            if (miniGameManager != null)
+            {
+                bool miniGameActive = miniGameManager.IsMiniGameActive();
+
+                if (miniGameActive)
+                {
+                    Debug.Log("?? MiniGame กำลังเปิดอยู่ - ไม่เปิด Pause (ปล่อยให้ MiniGame จัดการ ESC)");
+                    pauseWasPressed = pausePressed;
+                    return; // ไม่เปิด Pause Menu
+                }
+            }
+
+            // เช็คว่ามีสกิลอยู่หรือไม่
             if (skillSelector != null && !skillSelector.CanOpenPause)
             {
-                Debug.Log("?? มีสกิลอยู่ - กด Esc เพื่อยกเลิกสกิลก่อน (SkillLetterSelector จัดการให้แล้ว)");
+                Debug.Log("?? มีสกิลอยู่ - กด Esc เพื่อยกเลิกสกิลก่อน");
                 pauseWasPressed = pausePressed;
                 return; // ไม่เปิด Pause Menu
             }

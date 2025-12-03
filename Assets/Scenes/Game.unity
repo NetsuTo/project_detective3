@@ -29471,6 +29471,7 @@ MonoBehaviour:
   normalSliderFillColor: {r: 1, g: 1, b: 1, a: 1}
   selectedButtonColor: {r: 0.6, g: 0.6, b: 0.6, a: 1}
   normalButtonColor: {r: 1, g: 1, b: 1, a: 0}
+  miniGameManager: {fileID: 0}
 --- !u!1 &444091064
 GameObject:
   m_ObjectHideFlags: 0
@@ -137042,6 +137043,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 674834000878464846, guid: 187065839ac862c43a2c21944408dfa7, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 893098390, guid: 999f55441889e274a95a6ea1e7ce8637, type: 3}
     - target: {fileID: 1920966365408896682, guid: 187065839ac862c43a2c21944408dfa7, type: 3}
       propertyPath: m_AnchoredPosition.x
       value: -7

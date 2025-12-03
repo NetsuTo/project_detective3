@@ -51,6 +51,12 @@ public class PlayerInput : MonoBehaviour
     // อ่าน Input ทุกเฟรมด้วย Update() (วิธีสำรอง - สำหรับ Old Input System)
     private void Update()
     {
+        // ?? Debug: แสดงสถานะ Input (ลบได้เมื่อแน่ใจว่าทำงาน)
+        if (Gamepad.current != null && Gamepad.current.buttonEast.wasPressedThisFrame)
+        {
+            Debug.Log("?? Gamepad buttonEast (B/Circle) ถูกกด!");
+        }
+
         // ถ้า Input System ไม่ทำงาน ให้ใช้ GetKeyDown แทน
         if (Keyboard.current == null && Gamepad.current == null)
         {

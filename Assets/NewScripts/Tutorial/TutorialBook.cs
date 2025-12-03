@@ -330,6 +330,22 @@ public class TutorialBook : MonoBehaviour
         prevPageAction?.Disable();
     }
 
+    private bool IsMiniGameActive()
+    {
+        // ค้นหา MiniGame ทั้งหมดในฉาก
+        ElementMiniGameManager[] miniGames = FindObjectsOfType<ElementMiniGameManager>();
+
+        foreach (var miniGame in miniGames)
+        {
+            if (miniGame.IsMiniGameActive())
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     void Update()
     {
         bool togglePressed = toggleBookAction.IsPressed();
@@ -349,6 +365,11 @@ public class TutorialBook : MonoBehaviour
                 if (selector != null && !selector.CanOpenBook)
                 {
                     Debug.Log("?? ไม่สามารถเปิด Tutorial Book ได้ - สกิลกำลังทำงานอยู่!");
+                }
+                // ? เพิ่มการเช็ค MiniGame ตรงนี้
+                else if (IsMiniGameActive())
+                {
+                    Debug.Log("?? ไม่สามารถเปิด Tutorial Book ได้ - กำลังเล่นมินิเกมอยู่!");
                 }
                 else
                 {

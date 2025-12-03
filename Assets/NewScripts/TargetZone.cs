@@ -19,6 +19,9 @@ public class TargetZone : MonoBehaviour
     private SkillInventory playerInventory;
     private HashSet<int> completedElements = new HashSet<int>();
 
+    // ✅ เพิ่มตัวแปรเก็บสกิลชั่วคราว
+    private List<string> lastUsedSkill = null;
+
     // ===== Input System Actions - รองรับ Keyboard + Gamepad =====
     private InputAction useSkillAction;
 
@@ -72,7 +75,7 @@ public class TargetZone : MonoBehaviour
 
             if (requiredElements.Count > 0)
             {
-                Debug.Log($"💡 กด R หรือ RT/R2 เพื่อใช้สกิล");
+                Debug.Log($"💡 กด R หรือ RT/R2 เพื่อใช้สกิล | กด ESC เพื่อยกเลิก");
             }
         }
     }
@@ -130,14 +133,19 @@ public class TargetZone : MonoBehaviour
             ElementRequirement matched = requiredElements[matchedIndex];
             Debug.Log($"🎯 พบธาตุที่ {matchedIndex + 1}: {matched.elementName} ({string.Join("-", matched.sequence)})");
 
+            // ✅ เก็บสกิลไว้ก่อนใช้ (สำหรับคืนตอน Cancel)
+            lastUsedSkill = new List<string>(matched.sequence);
+
             playerInventory.ConsumeSkill(matched.sequence);
 
+            // ✅ ส่ง 'this' (TargetZone) ไปด้วยเพื่อให้คืนสกิลได้
             miniGame.StartMiniGame(null, (success) =>
             {
                 if (success)
                 {
                     Debug.Log($"✅ ผ่านมินิเกมของ {matched.elementName}");
                     completedElements.Add(matchedIndex);
+                    lastUsedSkill = null; // ✅ สำเร็จแล้ว ไม่ต้องคืน
 
                     if (completedElements.Count >= requiredElements.Count)
                     {
@@ -153,14 +161,32 @@ public class TargetZone : MonoBehaviour
                 {
                     Debug.Log($"💥 ล้มเหลวในมินิเกมของ {matched.elementName}");
                     miniGame.ShowFailSymbolSafe();
+                    lastUsedSkill = null; // ❌ ล้มเหลว ไม่คืนสกิล
                 }
-            });
+            }, this); // ✅ ส่ง TargetZone ไปด้วย
         }
         else
         {
             Debug.Log("❌ ธาตุในขวดไม่ตรงกับที่ต้องการ หรือเสร็จไปแล้ว");
             miniGame.ShowFailSymbolSafe();
             playerInventory.ConsumeFirstSkill();
+        }
+    }
+
+    /// <summary>
+    /// ✅ คืนสกิลที่ใช้ล่าสุด (เรียกจาก MiniGame เมื่อกด ESC)
+    /// </summary>
+    public void ReturnLastUsedSkill()
+    {
+        if (lastUsedSkill != null && playerInventory != null)
+        {
+            playerInventory.AddSkill(lastUsedSkill);
+            Debug.Log($"🔄 คืนสกิล: {string.Join("-", lastUsedSkill)}");
+            lastUsedSkill = null;
+        }
+        else
+        {
+            Debug.LogWarning("⚠️ ไม่มีสกิลที่จะคืน (lastUsedSkill = null)");
         }
     }
 
@@ -185,6 +211,7 @@ public class TargetZone : MonoBehaviour
     public void ResetZone()
     {
         completedElements.Clear();
+        lastUsedSkill = null;
         Debug.Log("🔄 Reset Zone");
     }
 

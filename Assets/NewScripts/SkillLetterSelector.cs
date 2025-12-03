@@ -435,13 +435,8 @@ public class SkillLetterSelector : MonoBehaviour
             Debug.Log("🛑 ยกเลิก QTE แล้ว");
         }
 
-        // ⭐ ซ่อน + รีเซ็ต SkillBar ให้กลับมากดใหม่ได้
-        SkillBarUI skillBar = FindObjectOfType<SkillBarUI>();
-        if (skillBar != null)
-        {
-            skillBar.HideSkillBar(); // ⭐ เรียกฟังก์ชันซ่อนที่มีอยู่แล้ว
-            Debug.Log("👻 ซ่อน SkillBar แล้ว");
-        }
+        // ⭐ ไม่ต้องซ่อน SkillBar - ให้แสดงอยู่ตามปกติ
+        // (SkillBar ควรแสดงให้ผู้เล่นเลือกสกิลใหม่ได้ทันที)
 
         // ⭐ ปลดล็อค Skill ใน PlayerSkillManager (สำคัญมาก!)
         if (manager != null)
