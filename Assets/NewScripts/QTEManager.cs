@@ -54,6 +54,8 @@ public class QTEManager : MonoBehaviour
     {
         sfxSource = gameObject.AddComponent<AudioSource>();
         sfxSource.playOnAwake = false;
+
+        Debug.Log("✅ QTEManager Started! (ไม่ต้องกด WASD - ใช้แค่ F/X และ Esc/B)");
     }
 
     public void StartQTE(List<KeyCode> keySequence)
@@ -207,6 +209,51 @@ public class QTEManager : MonoBehaviour
 
             EndQTE();
         }
+    }
+
+    // ⭐ ฟังก์ชันยกเลิก QTE (เรียกจาก SkillLetterSelector เมื่อกด Esc/B)
+    public void CancelQTE()
+    {
+        if (!isActive)
+        {
+            Debug.Log("⚠️ QTE ไม่ได้ทำงานอยู่ - ไม่ต้องยกเลิก");
+            return;
+        }
+
+        Debug.Log("🛑 CancelQTE() - หยุด QTE + TimingBar ทันที");
+
+        // 🛑 หยุด TimingBar ทันที
+        if (currentTimingBar != null)
+        {
+            currentTimingBar.StopTiming();
+            Destroy(currentTimingBar.gameObject);
+            currentTimingBar = null;
+            Debug.Log("🗑️ ลบ TimingBar สำเร็จ");
+        }
+
+        // 🛑 หยุด Coroutine ทั้งหมด
+        StopAllCoroutines();
+
+        // ❌ ลบ QTE Slot ทั้งหมด
+        foreach (var slot in slotUIs)
+        {
+            if (slot != null)
+                Destroy(slot);
+        }
+        slotUIs.Clear();
+
+        // 🔄 รีเซ็ตข้อมูล
+        sequence.Clear();
+        currentIndex = 0;
+
+        // 🔓 ปลดล็อคระบบ
+        isActive = false;
+
+        PlayerSkillManager manager = FindObjectOfType<PlayerSkillManager>();
+        if (manager != null)
+            manager.UnlockSelectedSkill();
+
+        Debug.Log("✅ ยกเลิก QTE สำเร็จ (🔓 พร้อมใช้งานใหม่)");
     }
 
     void EndQTE()

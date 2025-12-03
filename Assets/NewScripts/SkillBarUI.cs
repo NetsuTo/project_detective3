@@ -77,6 +77,28 @@ public class SkillBarUI : MonoBehaviour
         }
     }
 
+    public void HideSkillBar()
+    {
+        skillSlotParent.gameObject.SetActive(false);
+        if (currentSelectionCircle != null)
+        {
+            Destroy(currentSelectionCircle);
+            currentSelectionCircle = null;
+        }
+        Debug.Log("👻 ซ่อน SkillBar");
+    }
+
+    // ⭐ เพิ่มฟังก์ชันนี้ด้วย (สำหรับแสดง SkillBar กลับมา)
+    public void ShowSkillBar()
+    {
+        if (manager != null && manager.GetSkills().Count > 0)
+        {
+            skillSlotParent.gameObject.SetActive(true);
+            UpdateUI();
+            Debug.Log("👁️ แสดง SkillBar");
+        }
+    }
+
     public void ConsumeSelectedSkill()
     {
         if (manager == null) return;

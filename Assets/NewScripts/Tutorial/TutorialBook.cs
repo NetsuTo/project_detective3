@@ -336,14 +336,24 @@ public class TutorialBook : MonoBehaviour
 
         if (togglePressed && !toggleWasPressed)
         {
+            // ?? เช็คว่า Pause Menu เปิดอยู่หรือไม่
             PauseMenuWithVolume pauseMenu = FindObjectOfType<PauseMenuWithVolume>();
             if (pauseMenu != null && pauseMenu.IsPaused())
             {
                 Debug.Log("?? ไม่สามารถเปิด Tutorial Book ได้ - Pause Menu เปิดอยู่");
             }
+            // ? เพิ่มตรงนี้ - เช็คว่ามีสกิลโผล่อยู่หรือไม่
             else
             {
-                ToggleBook();
+                SkillLetterSelector selector = FindObjectOfType<SkillLetterSelector>();
+                if (selector != null && !selector.CanOpenBook)
+                {
+                    Debug.Log("?? ไม่สามารถเปิด Tutorial Book ได้ - สกิลกำลังทำงานอยู่!");
+                }
+                else
+                {
+                    ToggleBook();
+                }
             }
         }
         toggleWasPressed = togglePressed;

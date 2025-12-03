@@ -105,6 +105,22 @@ public class PlayerInput : MonoBehaviour
 
     private void OnConfirmSkillPerformed(InputAction.CallbackContext ctx)
     {
+        // ?? เช็คว่าหนังสือ Tutorial เปิดอยู่หรือไม่
+        TutorialBook tutorialBook = FindObjectOfType<TutorialBook>();
+        if (tutorialBook != null && tutorialBook.IsBookOpen())
+        {
+            Debug.Log("?? ไม่สามารถกด T ได้ - Tutorial Book เปิดอยู่!");
+            return;
+        }
+
+        // ?? เช็คว่า Pause Menu เปิดอยู่หรือไม่
+        PauseMenuWithVolume pauseMenu = FindObjectOfType<PauseMenuWithVolume>();
+        if (pauseMenu != null && pauseMenu.IsPaused())
+        {
+            Debug.Log("?? ไม่สามารถกด T ได้ - Pause Menu เปิดอยู่!");
+            return;
+        }
+
         // ?? เช็คว่ามินิเกมลูกศร (ElementMiniGame) กำลังทำงานอยู่หรือไม่
         if (ElementMiniGameManager.activeMiniGame != null)
         {

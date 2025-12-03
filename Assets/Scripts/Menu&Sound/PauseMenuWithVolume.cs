@@ -43,6 +43,7 @@ public class PauseMenuWithVolume : MonoBehaviour
     private int selectedIndex = 0;
     private int totalElements;
     private PlayerController playerController;
+    private SkillLetterSelector skillSelector; // ? เพิ่มการอ้างอิง SkillLetterSelector
 
     // ===== Input System Actions - รองรับ Keyboard + Gamepad =====
     private InputAction pauseAction;
@@ -78,6 +79,7 @@ public class PauseMenuWithVolume : MonoBehaviour
         musicVolumeSlider.onValueChanged.AddListener(OnMusicVolumeChanged);
 
         playerController = FindObjectOfType<PlayerController>();
+        skillSelector = FindObjectOfType<SkillLetterSelector>(); // ? หา SkillLetterSelector
 
         // สร้าง Input Actions
         SetupInputActions();
@@ -155,7 +157,15 @@ public class PauseMenuWithVolume : MonoBehaviour
 
         if (pausePressed && !pauseWasPressed)
         {
-            // กด Pause ครั้งแรก
+            // ? เช็คว่ามีสกิลอยู่หรือไม่ก่อน
+            if (skillSelector != null && !skillSelector.CanOpenPause)
+            {
+                Debug.Log("?? มีสกิลอยู่ - กด Esc เพื่อยกเลิกสกิลก่อน (SkillLetterSelector จัดการให้แล้ว)");
+                pauseWasPressed = pausePressed;
+                return; // ไม่เปิด Pause Menu
+            }
+
+            // เช็คว่า Tutorial Book เปิดอยู่หรือไม่
             TutorialBook book = FindObjectOfType<TutorialBook>();
             if (book != null && book.IsBookOpen())
             {

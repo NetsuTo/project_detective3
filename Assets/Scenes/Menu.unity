@@ -1172,10 +1172,12 @@ MonoBehaviour:
   - {fileID: 1148762288}
   sfxVolumeSlider: {fileID: 783422466}
   musicVolumeSlider: {fileID: 691444905}
-  normalButtonColor: {r: 0.7, g: 0.7, b: 0.7, a: 0.5}
+  normalButtonColor: {r: 0.4156863, g: 0.4156863, b: 0.4156863, a: 0.5}
   selectedButtonColor: {r: 1, g: 1, b: 1, a: 1}
-  normalSliderColor: {r: 1, g: 1, b: 1, a: 1}
-  selectedSliderColor: {r: 0.3490566, g: 0.3490566, b: 0.3490566, a: 1}
+  normalSliderHandleColor: {r: 1, g: 1, b: 1, a: 1}
+  selectedSliderHandleColor: {r: 0.41509432, g: 0.41509432, b: 0.41509432, a: 1}
+  normalSliderFillColor: {r: 1, g: 1, b: 1, a: 1}
+  selectedSliderFillColor: {r: 0.4156863, g: 0.4156863, b: 0.4156863, a: 1}
 --- !u!4 &1148070631
 Transform:
   m_ObjectHideFlags: 0
