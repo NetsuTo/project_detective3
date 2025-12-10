@@ -28,19 +28,19 @@ public class SkillPickup : MonoBehaviour
         SetupInputActions();
         interactAction?.Enable();
 
-        Debug.Log("? SkillPickup Started - Keyboard + Gamepad Ready!");
+        Debug.Log("?? SkillPickup Started - Keyboard + Gamepad Ready!");
     }
 
     private void SetupInputActions()
     {
-        // ===== Interact - รองรับ E และ Button North (Y/Triangle) =====
+        // ===== Interact - รองรับ E และ Button West (X/Square) =====
         interactAction = new InputAction("Interact", type: InputActionType.Button);
         interactAction.AddBinding("<Keyboard>/e");
-        interactAction.AddBinding("<Gamepad>/buttonNorth");  // Xbox: Y, PS: Triangle
+        interactAction.AddBinding("<Gamepad>/buttonWest");  // Xbox: X, PS: Square
         interactAction.performed += OnInteractPerformed;
     }
 
-    // ? Update() สำหรับ Fallback (Old Input System)
+    // ?? Update() สำหรับ Fallback (Old Input System)
     void Update()
     {
         if (!playerInRange) return;
@@ -50,7 +50,7 @@ public class SkillPickup : MonoBehaviour
         {
             if (Input.GetKeyDown(KeyCode.E))
             {
-                Debug.Log("?? [Old Input] กด E");
+                Debug.Log("??? [Old Input] กด E");
                 OnInteractPerformed(default);
             }
         }
@@ -70,7 +70,7 @@ public class SkillPickup : MonoBehaviour
     {
         if (!playerInRange) return;
 
-        Debug.Log("?? กด Interact (E / Y/Triangle) - เริ่มเก็บสกิล");
+        Debug.Log("? กด Interact (E / X/Square) - เริ่มเก็บสกิล");
 
         if (playerController != null)
         {
@@ -94,7 +94,7 @@ public class SkillPickup : MonoBehaviour
                 }
                 else
                 {
-                    Debug.Log("?? ไม่สามารถเก็บสกิลได้ หรือ Inventory เต็ม");
+                    Debug.Log("? ไม่สามารถเก็บสกิลได้ หรือ Inventory เต็ม");
                 }
             });
         }
@@ -126,7 +126,7 @@ public class SkillPickup : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             Debug.Log($"?? Player เข้ามาในระยะ Pickup Skill [{skillID}]");
-            Debug.Log("?? กด E หรือ Y/Triangle เพื่อเก็บ");
+            Debug.Log("?? กด E หรือ X/Square เพื่อเก็บ");
 
             playerInRange = true;
             playerController = other.GetComponent<PlayerController>();

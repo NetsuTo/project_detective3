@@ -11,7 +11,7 @@ public class CrystalBubbleDialog : MonoBehaviour
     [TextArea(2, 5)]
     public string[] dialogLines;
 
-    [Header("?? การเน้นคำ (Highlight)")]
+    [Header("? การเน้นคำ (Highlight)")]
     public bool enableHighlight = true;
     [Tooltip("คำที่ต้องการเน้น (case-insensitive)")]
     public string[] highlightWords;
@@ -37,7 +37,7 @@ public class CrystalBubbleDialog : MonoBehaviour
     public TextAnchor textAlignment = TextAnchor.MiddleCenter;
     public float textVerticalOffset = 0f;
 
-    [Header("?? ฟอนต์")]
+    [Header("? ฟอนต์")]
     [Tooltip("ลากฟอนต์จาก Project มาใส่ตรงนี้")]
     public Font customFont;
     public TMP_FontAsset customFontTMP;
@@ -64,33 +64,24 @@ public class CrystalBubbleDialog : MonoBehaviour
     private bool isTyping = false;
     private SimplePatrol npcPatrol;
 
-    // ===== Input System Actions - รองรับ Keyboard + Gamepad =====
+    // ? ใช้ Input Action เดียวสำหรับทั้งเริ่มและข้ามบทสนทนา
     private InputAction interactAction;
-    private InputAction continueAction;
 
     void Awake()
     {
-        // สร้าง Input Actions
         SetupInputActions();
         interactAction?.Enable();
-        continueAction?.Enable();
 
         Debug.Log("? CrystalBubbleDialog - Input System Ready (Keyboard + Gamepad)!");
     }
 
     private void SetupInputActions()
     {
-        // ===== Interact (E / Button North) สำหรับเริ่มบทสนทนา =====
+        // ? ปุ่มเดียวสำหรับทั้งเริ่มบทสนทนาและข้ามข้อความ
         interactAction = new InputAction("Interact", type: InputActionType.Button);
         interactAction.AddBinding("<Keyboard>/e");
         interactAction.AddBinding("<Gamepad>/buttonNorth");  // Xbox: Y, PS: Triangle
         interactAction.performed += OnInteractPerformed;
-
-        // ===== Continue (Space / Button South) สำหรับข้ามข้อความ =====
-        continueAction = new InputAction("Continue", type: InputActionType.Button);
-        continueAction.AddBinding("<Keyboard>/space");
-        continueAction.AddBinding("<Gamepad>/buttonSouth");  // Xbox: A, PS: Cross
-        continueAction.performed += OnContinuePerformed;
     }
 
     void Start()
@@ -133,7 +124,7 @@ public class CrystalBubbleDialog : MonoBehaviour
 
         if (enableHighlight && highlightWords.Length > 0)
         {
-            Debug.Log($"?? เปิดใช้งานการเน้นคำ: {string.Join(", ", highlightWords)}");
+            Debug.Log($"? เปิดใช้งานการเน้นคำ: {string.Join(", ", highlightWords)}");
         }
     }
 
@@ -142,21 +133,25 @@ public class CrystalBubbleDialog : MonoBehaviour
         // ? Fallback สำหรับ Old Input System
         if (Keyboard.current == null && Gamepad.current == null)
         {
-            if (playerInRange && Input.GetKeyDown(KeyCode.E) && !isShowingDialog)
+            if (playerInRange && Input.GetKeyDown(KeyCode.E))
             {
-                StartDialog();
-            }
-
-            if (isShowingDialog && Input.GetKeyDown(KeyCode.Space))
-            {
-                if (isTyping)
+                if (isShowingDialog)
                 {
-                    StopAllCoroutines();
-                    CompleteCurrentText();
+                    // ถ้ากำลังคุยอยู่ ? ข้ามข้อความ
+                    if (isTyping)
+                    {
+                        StopAllCoroutines();
+                        CompleteCurrentText();
+                    }
+                    else
+                    {
+                        NextLine();
+                    }
                 }
                 else
                 {
-                    NextLine();
+                    // ถ้ายังไม่ได้คุย ? เริ่มบทสนทนา
+                    StartDialog();
                 }
             }
         }
@@ -192,6 +187,23 @@ public class CrystalBubbleDialog : MonoBehaviour
                             isBlockingPlayer = true;
                         }
                     }
+
+                    // เช็คว่าหัวผู้เล่นสูงกว่าบับเบิ้ลหรือไม่
+                    Vector3 playerHeadPos = player.transform.position + Vector3.up * 2f;
+                    Vector3 playerHeadScreenPos = Camera.main.WorldToScreenPoint(playerHeadPos);
+
+                    if (playerHeadScreenPos.z > 0)
+                    {
+                        float headDistance = Vector2.Distance(
+                            new Vector2(screenPos.x, screenPos.y),
+                            new Vector2(playerHeadScreenPos.x, playerHeadScreenPos.y)
+                        );
+
+                        if (headDistance < 200f)
+                        {
+                            isBlockingPlayer = true;
+                        }
+                    }
                 }
             }
 
@@ -212,42 +224,43 @@ public class CrystalBubbleDialog : MonoBehaviour
     private void OnEnable()
     {
         interactAction?.Enable();
-        continueAction?.Enable();
     }
 
     private void OnDisable()
     {
         interactAction?.Disable();
-        continueAction?.Disable();
     }
 
-    // ===== Input Actions Callbacks =====
+    // ? Input Action Callback - ปุ่มเดียวทำหลายอย่าง
     private void OnInteractPerformed(InputAction.CallbackContext ctx)
     {
-        if (!playerInRange || isShowingDialog) return;
+        // ? ถ้ากำลังแสดงบทสนทนาอยู่
+        if (isShowingDialog)
+        {
+            // ถ้ากำลังพิมพ์อยู่ ? แสดงข้อความเต็ม
+            if (isTyping)
+            {
+                Debug.Log("? กด E/Y - แสดงข้อความเต็ม");
+                StopAllCoroutines();
+                CompleteCurrentText();
+            }
+            // ถ้าพิมพ์เสร็จแล้ว ? ไปประโยคถัดไป
+            else
+            {
+                Debug.Log("? กด E/Y - ไปประโยคถัดไป");
+                NextLine();
+            }
+            return;
+        }
 
-        Debug.Log("?? กด Interact (E / Y/Triangle) - เริ่มบทสนทนากับ Crystal");
+        // ? ถ้ายังไม่ได้เริ่มบทสนทนา
+        if (!playerInRange) return;
+
+        Debug.Log("?? กด E/Y - เริ่มบทสนทนากับ Crystal");
         StartDialog();
     }
 
-    private void OnContinuePerformed(InputAction.CallbackContext ctx)
-    {
-        if (!isShowingDialog) return;
-
-        Debug.Log("? กด Continue (Space / A/Cross)");
-
-        if (isTyping)
-        {
-            StopAllCoroutines();
-            CompleteCurrentText();
-        }
-        else
-        {
-            NextLine();
-        }
-    }
-
-    // ?? ฟังก์ชันเน้นคำในข้อความ
+    // ? ฟังก์ชันเน้นคำในข้อความ
     string ApplyHighlight(string text)
     {
         if (!enableHighlight || highlightWords == null || highlightWords.Length == 0)
@@ -326,7 +339,16 @@ public class CrystalBubbleDialog : MonoBehaviour
             pressEIndicator.SetActive(false);
 
         CreateBubble();
-        StartCoroutine(TypeText(dialogLines[currentLineIndex]));
+
+        if (bubbleInstance != null && (bubbleText != null || bubbleTextTMP != null))
+        {
+            StartCoroutine(TypeText(dialogLines[currentLineIndex]));
+        }
+        else
+        {
+            Debug.LogError("? ไม่สามารถสร้าง Bubble ได้!");
+            EndDialog();
+        }
     }
 
     void CreateBubble()
@@ -341,116 +363,140 @@ public class CrystalBubbleDialog : MonoBehaviour
             }
         }
 
-        if (bubblePrefab != null)
+        if (bubbleInstance != null)
         {
-            bubbleInstance = Instantiate(bubblePrefab, mainCanvas.transform);
-
-            if (useTextMeshPro)
-            {
-                bubbleTextTMP = bubbleInstance.GetComponentInChildren<TextMeshProUGUI>();
-                if (bubbleTextTMP == null)
-                {
-                    Debug.LogWarning("?? ไม่พบ TextMeshPro ใน Prefab! จะใช้ UI.Text แทน");
-                    bubbleText = bubbleInstance.GetComponentInChildren<Text>();
-                    useTextMeshPro = false;
-                }
-            }
-            else
-            {
-                bubbleText = bubbleInstance.GetComponentInChildren<Text>();
-            }
+            Destroy(bubbleInstance);
+            bubbleInstance = null;
         }
-        else
+
+        try
         {
-            bubbleInstance = new GameObject("SpeechBubble");
-            bubbleInstance.transform.SetParent(mainCanvas.transform, false);
-
-            RectTransform rectTransform = bubbleInstance.AddComponent<RectTransform>();
-            rectTransform.sizeDelta = bubbleSize;
-            rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
-            rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
-            rectTransform.pivot = new Vector2(0.5f, 0.5f);
-
-            Image bg = bubbleInstance.AddComponent<Image>();
-
-            if (bubbleSprite != null)
+            if (bubblePrefab != null)
             {
-                bg.sprite = bubbleSprite;
-                bg.type = Image.Type.Sliced;
-                bg.color = Color.white;
-            }
-            else
-            {
-                bg.color = bubbleColor;
-            }
+                bubbleInstance = Instantiate(bubblePrefab, mainCanvas.transform);
 
-            GameObject textObj = new GameObject("Text");
-            textObj.transform.SetParent(bubbleInstance.transform, false);
-
-            RectTransform textRect = textObj.AddComponent<RectTransform>();
-            textRect.anchorMin = Vector2.zero;
-            textRect.anchorMax = Vector2.one;
-            textRect.offsetMin = new Vector2(padding, padding + textVerticalOffset);
-            textRect.offsetMax = new Vector2(-padding, -padding + textVerticalOffset);
-
-            if (useTextMeshPro)
-            {
-                bubbleTextTMP = textObj.AddComponent<TextMeshProUGUI>();
-
-                if (customFontTMP != null)
+                if (bubbleInstance == null)
                 {
-                    bubbleTextTMP.font = customFontTMP;
-                    Debug.Log($"? ใช้ฟอนต์ TMP: {customFontTMP.name}");
+                    Debug.LogError("? ไม่สามารถสร้าง bubbleInstance จาก Prefab ได้!");
+                    return;
                 }
 
-                bubbleTextTMP.fontSize = fontSize;
-                bubbleTextTMP.color = textColor;
-                bubbleTextTMP.alignment = TextAlignmentOptions.Center;
-                bubbleTextTMP.enableWordWrapping = true;
-                bubbleTextTMP.overflowMode = TextOverflowModes.Overflow;
-                bubbleTextTMP.richText = true;
-            }
-            else
-            {
-                bubbleText = textObj.AddComponent<Text>();
-
-                if (customFont != null)
+                if (useTextMeshPro)
                 {
-                    bubbleText.font = customFont;
-                    Debug.Log($"? ใช้ฟอนต์: {customFont.name}");
+                    bubbleTextTMP = bubbleInstance.GetComponentInChildren<TextMeshProUGUI>();
+                    if (bubbleTextTMP == null)
+                    {
+                        Debug.LogWarning("?? ไม่พบ TextMeshPro ใน Prefab! จะใช้ UI.Text แทน");
+                        bubbleText = bubbleInstance.GetComponentInChildren<Text>();
+                        useTextMeshPro = false;
+                    }
                 }
                 else
                 {
-                    Font defaultFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-                    if (defaultFont == null)
-                    {
-                        defaultFont = Resources.GetBuiltinResource<Font>("Arial.ttf");
-                    }
-                    bubbleText.font = defaultFont;
-                    Debug.Log("?? ใช้ฟอนต์ default (Arial)");
+                    bubbleText = bubbleInstance.GetComponentInChildren<Text>();
+                }
+            }
+            else
+            {
+                bubbleInstance = new GameObject("SpeechBubble");
+                bubbleInstance.transform.SetParent(mainCanvas.transform, false);
+
+                RectTransform rectTransform = bubbleInstance.AddComponent<RectTransform>();
+                rectTransform.sizeDelta = bubbleSize;
+                rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
+                rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+                rectTransform.pivot = new Vector2(0.5f, 0.5f);
+
+                Image bg = bubbleInstance.AddComponent<Image>();
+
+                if (bubbleSprite != null)
+                {
+                    bg.sprite = bubbleSprite;
+                    bg.type = Image.Type.Sliced;
+                    bg.color = Color.white;
+                }
+                else
+                {
+                    bg.color = bubbleColor;
                 }
 
-                bubbleText.fontSize = fontSize;
-                bubbleText.color = textColor;
-                bubbleText.alignment = textAlignment;
-                bubbleText.horizontalOverflow = HorizontalWrapMode.Wrap;
-                bubbleText.verticalOverflow = VerticalWrapMode.Overflow;
+                GameObject textObj = new GameObject("Text");
+                textObj.transform.SetParent(bubbleInstance.transform, false);
+
+                RectTransform textRect = textObj.AddComponent<RectTransform>();
+                textRect.anchorMin = Vector2.zero;
+                textRect.anchorMax = Vector2.one;
+                textRect.offsetMin = new Vector2(padding, padding + textVerticalOffset);
+                textRect.offsetMax = new Vector2(-padding, -padding + textVerticalOffset);
+
+                if (useTextMeshPro)
+                {
+                    bubbleTextTMP = textObj.AddComponent<TextMeshProUGUI>();
+
+                    if (customFontTMP != null)
+                    {
+                        bubbleTextTMP.font = customFontTMP;
+                        Debug.Log($"? ใช้ฟอนต์ TMP: {customFontTMP.name}");
+                    }
+
+                    bubbleTextTMP.fontSize = fontSize;
+                    bubbleTextTMP.color = textColor;
+                    bubbleTextTMP.alignment = TextAlignmentOptions.Center;
+                    bubbleTextTMP.enableWordWrapping = true;
+                    bubbleTextTMP.overflowMode = TextOverflowModes.Overflow;
+                    bubbleTextTMP.richText = true;
+                }
+                else
+                {
+                    bubbleText = textObj.AddComponent<Text>();
+
+                    if (customFont != null)
+                    {
+                        bubbleText.font = customFont;
+                        Debug.Log($"? ใช้ฟอนต์: {customFont.name}");
+                    }
+                    else
+                    {
+                        Font defaultFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+                        if (defaultFont == null)
+                        {
+                            defaultFont = Resources.GetBuiltinResource<Font>("Arial.ttf");
+                        }
+                        bubbleText.font = defaultFont;
+                        Debug.Log("?? ใช้ฟอนต์ default (Arial)");
+                    }
+
+                    bubbleText.fontSize = fontSize;
+                    bubbleText.color = textColor;
+                    bubbleText.alignment = textAlignment;
+                    bubbleText.horizontalOverflow = HorizontalWrapMode.Wrap;
+                    bubbleText.verticalOverflow = VerticalWrapMode.Overflow;
+                    bubbleText.supportRichText = true;
+                }
+            }
+
+            if (useTextMeshPro && bubbleTextTMP != null)
+            {
+                bubbleTextTMP.richText = true;
+                Debug.Log("? เปิด Rich Text สำหรับ TextMeshPro");
+            }
+            else if (bubbleText != null)
+            {
                 bubbleText.supportRichText = true;
+                Debug.Log("? เปิด Rich Text สำหรับ UI.Text");
+            }
+
+            Debug.Log("? สร้างบับเบิ้ลสำเร็จ");
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"? เกิด Error ตอนสร้างบับเบิ้ล: {e.Message}");
+            if (bubbleInstance != null)
+            {
+                Destroy(bubbleInstance);
+                bubbleInstance = null;
             }
         }
-
-        if (useTextMeshPro && bubbleTextTMP != null)
-        {
-            bubbleTextTMP.richText = true;
-            Debug.Log("? เปิด Rich Text สำหรับ TextMeshPro");
-        }
-        else if (bubbleText != null)
-        {
-            bubbleText.supportRichText = true;
-            Debug.Log("? เปิด Rich Text สำหรับ UI.Text");
-        }
-
-        Debug.Log("? สร้างบับเบิ้ลสำเร็จ");
     }
 
     IEnumerator TypeText(string text)
@@ -480,13 +526,9 @@ public class CrystalBubbleDialog : MonoBehaviour
         {
             currentText += highlightedText[i];
 
-            if (highlightedText[i] != '<')
+            // ข้าม Rich Text tags
+            if (highlightedText[i] == '<')
             {
-                // ตัวอักษรปกติ
-            }
-            else
-            {
-                // ข้าม tag
                 while (i < highlightedText.Length && highlightedText[i] != '>')
                 {
                     i++;
@@ -511,6 +553,9 @@ public class CrystalBubbleDialog : MonoBehaviour
         }
 
         isTyping = false;
+        Debug.Log("? พิมพ์ข้อความเสร็จแล้ว - รอ " + displayDuration + " วินาทีก่อนไปต่ออัตโนมัติ");
+
+        // ? รอ displayDuration วินาที แล้วไปประโยคถัดไปอัตโนมัติ
         yield return new WaitForSeconds(displayDuration);
 
         if (isShowingDialog)
@@ -535,11 +580,14 @@ public class CrystalBubbleDialog : MonoBehaviour
             }
 
             isTyping = false;
-            StartCoroutine(WaitAfterComplete());
+            Debug.Log("? แสดงข้อความเต็มแล้ว - รอ " + displayDuration + " วินาทีก่อนไปต่ออัตโนมัติ");
+
+            // ? รอ displayDuration วินาที แล้วไปประโยคถัดไป
+            StartCoroutine(WaitThenNextLine());
         }
     }
 
-    IEnumerator WaitAfterComplete()
+    IEnumerator WaitThenNextLine()
     {
         yield return new WaitForSeconds(displayDuration);
 
@@ -567,6 +615,7 @@ public class CrystalBubbleDialog : MonoBehaviour
     void EndDialog()
     {
         isShowingDialog = false;
+        isTyping = false;
 
         if (playerController != null)
         {
@@ -612,7 +661,7 @@ public class CrystalBubbleDialog : MonoBehaviour
                 pressEIndicator.SetActive(true);
 
             Debug.Log("?? Player เข้ามาในระยะ Crystal Dialog");
-            Debug.Log("?? กด E / Y(Triangle) เพื่อคุย | Space / A(Cross) เพื่อข้าม");
+            Debug.Log("?? กด E / Y(Triangle) เพื่อคุยและข้าม");
         }
     }
 
@@ -640,11 +689,6 @@ public class CrystalBubbleDialog : MonoBehaviour
         {
             interactAction.performed -= OnInteractPerformed;
             interactAction.Dispose();
-        }
-        if (continueAction != null)
-        {
-            continueAction.performed -= OnContinuePerformed;
-            continueAction.Dispose();
         }
     }
 

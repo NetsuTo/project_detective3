@@ -6,13 +6,13 @@ using UnityEngine.InputSystem;
 public class TimingBar : MonoBehaviour
 {
     [Header("⭐ UI References")]
-    public RectTransform pointer;     // เข็ม
-    public RectTransform targetZone;  // Perfect zone
+    public RectTransform pointer;
+    public RectTransform targetZone;
     [Tooltip("RectTransform ของ Bar พื้นหลัง (ถ้าไม่ใส่จะใช้ transform หลัก)")]
     public RectTransform barBackground;
 
     [Header("⭐ Settings")]
-    public float speed = 200f;        // pixels/sec
+    public float speed = 200f;
     public bool loop = true;
     [Tooltip("ระยะห่างจากขอบ Bar ที่เข็มจะกลับทิศ (0 = ไปชนขอบพอดี)")]
     [Range(0f, 50f)]
@@ -24,7 +24,7 @@ public class TimingBar : MonoBehaviour
     [Tooltip("สุ่มตำแหน่ง Target Zone ทุกครั้งที่เริ่ม Timing")]
     public bool randomizeTarget = true;
     [Tooltip("แบบสุ่ม: Discrete = จุดเฉพาะ (ซ้าย/กลาง/ขวา), Continuous = ตำแหน่งไหนก็ได้")]
-    public RandomMode randomMode = RandomMode.Continuous; // ตั้งค่าเริ่มต้นเป็น Continuous
+    public RandomMode randomMode = RandomMode.Continuous;
     [Tooltip("ระยะห่างจากขอบ Bar เมื่อสุ่มแบบ Continuous (ป้องกัน Target ชิดขอบเกินไป)")]
     [Range(0f, 100f)]
     public float targetEdgePadding = 50f;
@@ -38,35 +38,35 @@ public class TimingBar : MonoBehaviour
 
     public enum RandomMode
     {
-        Discrete,   // ซ้าย-กลาง-ขวา
-        Continuous  // สุ่มต่อเนื่อง
+        Discrete,
+        Continuous
     }
 
     private float direction = 1f;
     private Action<bool> onComplete;
     private bool isActive = false;
     private bool isInitialized = false;
-    private float originalTargetWidth = 0f; // เก็บขนาดเดิมของ Target
+    private float originalTargetWidth = 0f;
 
-    // ===== Input System - รองรับทั้ง Keyboard + Gamepad =====
-    private InputAction mixAction;
+    // ===== ⭐ ใช้ปุ่มเดียวกับ PlayerInput - F และ B =====
+    private InputAction confirmAction;
 
     void Start()
     {
-        // ===== สร้าง Input Action สำหรับปุ่ม F และ Gamepad =====
-        mixAction = new InputAction("Mix", type: InputActionType.Button);
-        mixAction.AddBinding("<Keyboard>/f");              // Keyboard: F
-        mixAction.AddBinding("<Gamepad>/buttonWest");      // Xbox: X, PS: Square □
-        mixAction.Enable();
+        // ===== สร้าง Input Action สำหรับปุ่ม F และ Gamepad B =====
+        confirmAction = new InputAction("Confirm", type: InputActionType.Button);
+        confirmAction.AddBinding("<Keyboard>/f");
+        confirmAction.AddBinding("<Gamepad>/buttonEast");  // Xbox: B, PS: Circle
+        confirmAction.Enable();
 
-        // ⭐ เก็บขนาดเดิมของ Target Zone (ใช้ rect.width เพราะรองรับทุก Anchor)
+        // ⭐ เก็บขนาดเดิมของ Target Zone
         if (targetZone != null)
         {
             originalTargetWidth = targetZone.rect.width;
             Debug.Log($"💾 เก็บขนาดเดิมของ Target: {originalTargetWidth}");
         }
 
-        // ⭐ เริ่มต้นที่ตรงกลาง Bar (ครั้งแรกเท่านั้น)
+        // ⭐ เริ่มต้นที่ตรงกลาง Bar
         if (pointer != null && !isInitialized)
         {
             pointer.anchoredPosition = Vector2.zero;
@@ -75,22 +75,22 @@ public class TimingBar : MonoBehaviour
             Debug.Log("🎬 TimingBar เริ่มต้น - เข็มอยู่ตรงกลาง");
         }
 
-        Debug.Log("✅ TimingBar Started - F (Keyboard) / X/Square (Gamepad) Ready!");
+        Debug.Log("✅ TimingBar Started - F (Keyboard) / B/Circle (Gamepad) Ready!");
     }
 
     private void OnEnable()
     {
-        mixAction?.Enable();
+        confirmAction?.Enable();
     }
 
     private void OnDisable()
     {
-        mixAction?.Disable();
+        confirmAction?.Disable();
     }
 
     private void OnDestroy()
     {
-        mixAction?.Dispose();
+        confirmAction?.Dispose();
     }
 
     public void StartTiming(Action<bool> callback)
@@ -98,7 +98,7 @@ public class TimingBar : MonoBehaviour
         // ⭐ ป้องกันการเรียกซ้ำ
         if (isActive)
         {
-            Debug.LogWarning("⚠️ TimingBar กำลังทำงานอยู่แล้ว! ไม่สามารถเรียก StartTiming() ซ้ำได้");
+            Debug.LogWarning("⚠️ TimingBar กำลังทำงานอยู่แล้ว!");
             return;
         }
 
@@ -107,13 +107,13 @@ public class TimingBar : MonoBehaviour
         onComplete = callback;
         isActive = true;
 
-        // 🎲 สุ่มตำแหน่ง Target Zone (ถ้าเปิดใช้งาน)
+        // 🎲 สุ่มตำแหน่ง Target Zone
         if (randomizeTarget)
         {
             RandomizeTargetPosition();
         }
 
-        // ⭐ ถ้าเลือกรีเซ็ตตำแหน่ง ให้รีเซ็ต ไม่งั้นให้เคลื่อนที่ต่อ
+        // ⭐ รีเซ็ตหรือเคลื่อนที่ต่อ
         if (resetPositionOnStart)
         {
             pointer.anchoredPosition = Vector2.zero;
@@ -125,35 +125,31 @@ public class TimingBar : MonoBehaviour
             Debug.Log($"▶️ เข็มเคลื่อนที่ต่อจากตำแหน่ง {pointer.anchoredPosition.x:F2} ทิศทาง {(direction > 0 ? "ขวา →" : "ซ้าย ←")}");
         }
 
-        Debug.Log("⏱️ เริ่ม Timing Bar - กด F หรือ X/Square เพื่อหยุดเข็ม");
+        Debug.Log("⏱️ เริ่ม Timing Bar - กด F หรือ B/Circle เพื่อหยุดเข็ม");
     }
 
     void Update()
     {
         if (!isActive) return;
 
-        // move pointer
+        // เคลื่อนที่เข็ม
         pointer.anchoredPosition += Vector2.right * speed * direction * Time.deltaTime;
 
-        // reverse direction
+        // กลับทิศเมื่อชนขอบ
         if (loop)
         {
-            // ⭐ ใช้ barBackground แทน transform
             RectTransform bar = barBackground != null ? barBackground : (RectTransform)transform;
 
-            // ⭐ คำนวณขอบจริงๆ โดยคำนึงถึงความกว้างของเข็ม
             float pointerHalfWidth = pointer.rect.width / 2f;
             float maxX = (bar.rect.width / 2f) - edgePadding - pointerHalfWidth;
             float minX = -(bar.rect.width / 2f) + edgePadding + pointerHalfWidth;
 
-            // เช็คขอบขวา
             if (pointer.anchoredPosition.x > maxX)
             {
                 pointer.anchoredPosition = new Vector2(maxX, pointer.anchoredPosition.y);
                 direction *= -1f;
                 Debug.Log($"🔄 กลับทิศที่ขอบขวา: {maxX:F2} | ทิศทางใหม่: ซ้าย ←");
             }
-            // เช็คขอบซ้าย
             else if (pointer.anchoredPosition.x < minX)
             {
                 pointer.anchoredPosition = new Vector2(minX, pointer.anchoredPosition.y);
@@ -162,17 +158,16 @@ public class TimingBar : MonoBehaviour
             }
         }
 
-        // ===== ตรวจสอบปุ่ม F หรือ Gamepad ผ่าน Input System =====
-        if (mixAction.WasPressedThisFrame())
+        // ===== ⭐ ตรวจสอบปุ่ม F หรือ B =====
+        if (confirmAction.WasPressedThisFrame())
         {
             bool success = IsPointerInTarget();
 
-            // ⚠️ หยุดการเคลื่อนที่ก่อน แต่ไม่รีเซ็ตตำแหน่ง/ทิศทาง
             isActive = false;
 
             if (success)
             {
-                Debug.Log($"✅ Timing Perfect! ตำแหน่ง: {pointer.anchoredPosition.x:F2}, ทิศทาง: {(direction > 0 ? "ขวา →" : "ซ้าย ←")}");
+                Debug.Log($"✅ Timing Perfect! ตำแหน่ง: {pointer.anchoredPosition.x:F2}");
             }
             else
             {
@@ -181,7 +176,6 @@ public class TimingBar : MonoBehaviour
 
             onComplete?.Invoke(success);
 
-            // ⭐ สำคัญ: ไม่รีเซ็ตตำแหน่งหรือทิศทาง ให้เก็บไว้สำหรับรอบถัดไป
             Debug.Log($"💾 เก็บสถานะ: ตำแหน่ง {pointer.anchoredPosition.x:F2}, ทิศทาง {(direction > 0 ? "ขวา →" : "ซ้าย ←")}");
         }
     }
@@ -192,42 +186,31 @@ public class TimingBar : MonoBehaviour
         float targetLeft = targetZone.anchoredPosition.x - targetZone.rect.width / 2f;
         float targetRight = targetZone.anchoredPosition.x + targetZone.rect.width / 2f;
 
-        // 🐛 Debug ดูค่า
         Debug.Log($"🎯 Pointer: {pointerX:F2} | Target: [{targetLeft:F2}, {targetRight:F2}] | In Range: {pointerX >= targetLeft && pointerX <= targetRight}");
 
         return pointerX >= targetLeft && pointerX <= targetRight;
     }
 
-    // ===== 🎲 ระบบสุ่มตำแหน่ง Target Zone =====
     void RandomizeTargetPosition()
     {
-        if (targetZone == null)
-        {
-            Debug.LogWarning("⚠️ ไม่มี Target Zone ให้สุ่ม!");
-            return;
-        }
+        if (targetZone == null) return;
 
-        // 🎲 สุ่มขนาด Target (ถ้าเปิดใช้งาน)
-        float currentTargetWidth = targetZone.rect.width; // อ่านขนาดปัจจุบัน
+        float currentTargetWidth = targetZone.rect.width;
 
+        // 🎲 สุ่มขนาด Target
         if (randomizeSize && originalTargetWidth > 0)
         {
             float randomScale = UnityEngine.Random.Range(minSizeScale, 1f);
             currentTargetWidth = originalTargetWidth * randomScale;
-
-            // เปลี่ยนขนาด Target Zone ด้วย SetSizeWithCurrentAnchors (รองรับทุก Anchor)
             targetZone.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, currentTargetWidth);
-
-            Debug.Log($"📏 สุ่มขนาด Target: {randomScale:P0} ({currentTargetWidth:F1}px จากเดิม {originalTargetWidth:F1}px)");
+            Debug.Log($"📏 สุ่มขนาด Target: {randomScale:P0} ({currentTargetWidth:F1}px)");
         }
         else if (originalTargetWidth > 0)
         {
-            // รีเซ็ตกลับเป็นขนาดเดิม (ถ้าไม่สุ่ม)
             targetZone.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, originalTargetWidth);
             currentTargetWidth = originalTargetWidth;
         }
 
-        // อ่านขนาดจริงหลังจากแก้ไข
         currentTargetWidth = targetZone.rect.width;
 
         RectTransform bar = barBackground != null ? barBackground : (RectTransform)transform;
@@ -237,29 +220,18 @@ public class TimingBar : MonoBehaviour
 
         if (randomMode == RandomMode.Discrete)
         {
-            // แบบจุดเฉพาะ: ซ้าย (-), กลาง (0), ขวา (+)
             int randomChoice = UnityEngine.Random.Range(0, 3);
             float maxOffset = (barWidth / 2f) - targetEdgePadding - targetHalfWidth;
 
             switch (randomChoice)
             {
-                case 0: // ซ้าย
-                    newX = -maxOffset;
-                    Debug.Log("🎲 สุ่มได้: ซ้าย ←");
-                    break;
-                case 1: // กลาง
-                    newX = 0f;
-                    Debug.Log("🎲 สุ่มได้: กลาง ■");
-                    break;
-                case 2: // ขวา
-                    newX = maxOffset;
-                    Debug.Log("🎲 สุ่มได้: ขวา →");
-                    break;
+                case 0: newX = -maxOffset; Debug.Log("🎲 สุ่มได้: ซ้าย ←"); break;
+                case 1: newX = 0f; Debug.Log("🎲 สุ่มได้: กลาง ■"); break;
+                case 2: newX = maxOffset; Debug.Log("🎲 สุ่มได้: ขวา →"); break;
             }
         }
         else
         {
-            // แบบต่อเนื่อง: สุ่มตำแหน่งไหนก็ได้ภายใน Bar
             float minX = -(barWidth / 2f) + targetEdgePadding + targetHalfWidth;
             float maxX = (barWidth / 2f) - targetEdgePadding - targetHalfWidth;
             newX = UnityEngine.Random.Range(minX, maxX);
@@ -267,10 +239,9 @@ public class TimingBar : MonoBehaviour
         }
 
         targetZone.anchoredPosition = new Vector2(newX, targetZone.anchoredPosition.y);
-        Debug.Log($"🎯 Target Zone: Width={currentTargetWidth:F1}, Pos={newX:F2}, BarWidth={barWidth:F1}");
+        Debug.Log($"🎯 Target Zone: Width={currentTargetWidth:F1}, Pos={newX:F2}");
     }
 
-    // ===== ฟังก์ชันเสริม =====
     public void StopTiming()
     {
         isActive = false;
@@ -292,10 +263,9 @@ public class TimingBar : MonoBehaviour
     {
         pointer.anchoredPosition = Vector2.zero;
         direction = 1f;
-        Debug.Log("🔄 รีเซ็ตตำแหน่งเข็ม (เรียกจาก ResetPointer())");
+        Debug.Log("🔄 รีเซ็ตตำแหน่งเข็ม");
     }
 
-    // ฟังก์ชันเสริม: เรียกสุ่มตำแหน่ง Target จากภายนอก
     public void ManualRandomizeTarget()
     {
         RandomizeTargetPosition();

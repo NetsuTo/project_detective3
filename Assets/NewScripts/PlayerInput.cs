@@ -22,27 +22,27 @@ public class PlayerInput : MonoBehaviour
         selectNextAction?.Enable();
         confirmSkillAction?.Enable();
 
-        Debug.Log("? PlayerInput Started - Keyboard + Gamepad Ready!");
+        Debug.Log("?? PlayerInput Started - Keyboard + Gamepad Ready!");
     }
 
     private void SetupInputActions()
     {
-        // ===== เลือก Skill ก่อนหน้า - Z และ Right Stick Up =====
+        // ===== เลือก Skill ก่อนหน้า - Z และ Right Stick Left =====
         selectPrevAction = new InputAction("SelectPrev", type: InputActionType.Button);
         selectPrevAction.AddBinding("<Keyboard>/z");
-        selectPrevAction.AddBinding("<Gamepad>/rightStick/left");  // ? เปลี่ยนเป็น Right Stick
+        selectPrevAction.AddBinding("<Gamepad>/rightStick/left");
         selectPrevAction.performed += OnSelectPrevPerformed;
 
-        // ===== เลือก Skill ถัดไป - C และ Right Stick Down =====
+        // ===== เลือก Skill ถัดไป - C และ Right Stick Right =====
         selectNextAction = new InputAction("SelectNext", type: InputActionType.Button);
         selectNextAction.AddBinding("<Keyboard>/c");
-        selectNextAction.AddBinding("<Gamepad>/rightStick/right");  // ? เปลี่ยนเป็น Right Stick
+        selectNextAction.AddBinding("<Gamepad>/rightStick/right");
         selectNextAction.performed += OnSelectNextPerformed;
 
-        // ===== ยืนยัน Skill - T และ Button East (B/Circle) =====
+        // ===== ? ยืนยัน Skill - F และ Button East (B/Circle) =====
         confirmSkillAction = new InputAction("ConfirmSkill", type: InputActionType.Button);
-        confirmSkillAction.AddBinding("<Keyboard>/t");
-        confirmSkillAction.AddBinding("<Gamepad>/buttonEast");  // B/Circle (เหมือนเดิม)
+        confirmSkillAction.AddBinding("<Keyboard>/f");  // เปลี่ยนจาก T เป็น F
+        confirmSkillAction.AddBinding("<Gamepad>/buttonEast");  // Xbox: B, PS: Circle
         confirmSkillAction.performed += OnConfirmSkillPerformed;
     }
 
@@ -52,19 +52,19 @@ public class PlayerInput : MonoBehaviour
         // ?? Fallback: ตรวจสอบ Gamepad โดยตรง
         if (Gamepad.current != null)
         {
-            // Right Stick Up (เลือกก่อนหน้า)
-            if (Gamepad.current.rightStick.up.wasPressedThisFrame)
+            // Right Stick Left (เลือกก่อนหน้า)
+            if (Gamepad.current.rightStick.left.wasPressedThisFrame)
             {
                 OnSelectPrevPerformed(default);
             }
 
-            // Right Stick Down (เลือกถัดไป)
-            if (Gamepad.current.rightStick.down.wasPressedThisFrame)
+            // Right Stick Right (เลือกถัดไป)
+            if (Gamepad.current.rightStick.right.wasPressedThisFrame)
             {
                 OnSelectNextPerformed(default);
             }
 
-            // Button East (ยืนยัน)
+            // Button East - B/Circle (ยืนยัน)
             if (Gamepad.current.buttonEast.wasPressedThisFrame)
             {
                 OnConfirmSkillPerformed(default);
@@ -74,7 +74,7 @@ public class PlayerInput : MonoBehaviour
         // ?? Fallback: ตรวจสอบ Keyboard โดยตรง
         if (Keyboard.current != null)
         {
-            if (Keyboard.current.tKey.wasPressedThisFrame)
+            if (Keyboard.current.fKey.wasPressedThisFrame)  // เปลี่ยนจาก T เป็น F
             {
                 OnConfirmSkillPerformed(default);
             }
@@ -110,7 +110,7 @@ public class PlayerInput : MonoBehaviour
     {
         if (manager != null)
         {
-            Debug.Log("?? เลือก Skill ก่อนหน้า (Z / D-Pad Up)");
+            Debug.Log("?? เลือก Skill ก่อนหน้า (Z / Right Stick Left)");
             manager.SelectPrev();
         }
     }
@@ -119,7 +119,7 @@ public class PlayerInput : MonoBehaviour
     {
         if (manager != null)
         {
-            Debug.Log("?? เลือก Skill ถัดไป (C / D-Pad Down)");
+            Debug.Log("?? เลือก Skill ถัดไป (C / Right Stick Right)");
             manager.SelectNext();
         }
     }
@@ -130,7 +130,7 @@ public class PlayerInput : MonoBehaviour
         TutorialBook tutorialBook = FindObjectOfType<TutorialBook>();
         if (tutorialBook != null && tutorialBook.IsBookOpen())
         {
-            Debug.Log("?? ไม่สามารถกด T ได้ - Tutorial Book เปิดอยู่!");
+            Debug.Log("?? ไม่สามารถกด F ได้ - Tutorial Book เปิดอยู่!");
             return;
         }
 
@@ -138,22 +138,22 @@ public class PlayerInput : MonoBehaviour
         PauseMenuWithVolume pauseMenu = FindObjectOfType<PauseMenuWithVolume>();
         if (pauseMenu != null && pauseMenu.IsPaused())
         {
-            Debug.Log("?? ไม่สามารถกด T ได้ - Pause Menu เปิดอยู่!");
+            Debug.Log("?? ไม่สามารถกด F ได้ - Pause Menu เปิดอยู่!");
             return;
         }
 
         // ?? เช็คว่ามินิเกมลูกศร (ElementMiniGame) กำลังทำงานอยู่หรือไม่
         if (ElementMiniGameManager.activeMiniGame != null)
         {
-            Debug.Log("?? ไม่สามารถกด T ได้ - มินิเกมลูกศรกำลังทำงานอยู่!");
+            Debug.Log("?? ไม่สามารถกด F ได้ - มินิเกมลูกศรกำลังทำงานอยู่!");
             return;
         }
 
-        // ?? เช็คว่า QTE กำลังทำงานหรือไม่ - ล็อคปุ่ม T
+        // ?? เช็คว่า QTE กำลังทำงานหรือไม่ - ล็อคปุ่ม F
         SkillLetterSelector selector = GetComponent<SkillLetterSelector>();
         if (selector != null && !selector.CanPressT)
         {
-            Debug.Log("?? ไม่สามารถกด T ได้ - QTE กำลังทำงานอยู่หรือตัวอักษรยังอยู่บนหัว!");
+            Debug.Log("?? ไม่สามารถกด F ได้ - QTE กำลังทำงานอยู่หรือตัวอักษรยังอยู่บนหัว!");
             return;
         }
 
@@ -161,14 +161,14 @@ public class PlayerInput : MonoBehaviour
         SkillInventory inv = FindObjectOfType<SkillInventory>();
         if (inv != null && inv.HasAnyBottle())
         {
-            Debug.Log("? ไม่สามารถเริ่ม Mix ได้ เพราะยังมีขวดใน Inventory อยู่แล้ว");
-            return; // หยุดการทำงาน ไม่ให้แสดงตัวอักษรบนหัว
+            Debug.Log("?? ไม่สามารถเริ่ม Mix ได้ เพราะยังมีขวดใน Inventory อยู่แล้ว");
+            return;
         }
 
         // ? ถ้าไม่มีขวดและไม่มี QTE ให้ Confirm Skill ได้
         if (manager != null && manager.GetSkills().Count > 0)
         {
-            Debug.Log("? เริ่ม Mix Skill (T / B/Circle)");
+            Debug.Log("? เริ่ม Mix Skill (F / B/Circle)");
             manager.ConfirmSkill();
         }
         else

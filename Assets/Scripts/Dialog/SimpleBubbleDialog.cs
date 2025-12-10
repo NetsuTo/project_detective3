@@ -102,28 +102,22 @@ public class SimpleBubbleDialog : MonoBehaviour
     private bool hasDialogCompleted = false;
 
     private InputAction interactAction;
-    private InputAction continueAction;
 
     void Awake()
     {
         SetupInputActions();
         interactAction?.Enable();
-        continueAction?.Enable();
 
         Debug.Log("✅ SimpleBubbleDialog - Input System Ready (Keyboard + Gamepad)!");
     }
 
     private void SetupInputActions()
     {
+        // ⭐ ใช้ Input Action เดียว สำหรับทั้งเริ่มบทสนทนาและข้ามข้อความ
         interactAction = new InputAction("Interact", type: InputActionType.Button);
         interactAction.AddBinding("<Keyboard>/e");
-        interactAction.AddBinding("<Gamepad>/buttonNorth");
+        interactAction.AddBinding("<Gamepad>/buttonWest");
         interactAction.performed += OnInteractPerformed;
-
-        continueAction = new InputAction("Continue", type: InputActionType.Button);
-        continueAction.AddBinding("<Keyboard>/space");
-        continueAction.AddBinding("<Gamepad>/buttonSouth");
-        continueAction.performed += OnContinuePerformed;
     }
 
     void Start()
@@ -191,13 +185,13 @@ public class SimpleBubbleDialog : MonoBehaviour
             {
                 if (dialogOnlyOnce && hasDialogCompleted)
                 {
-                    Debug.Log("⏭️ บทสนทนานี้เล่นไปแล้ว (ตั้งค่าให้เล่นแค่ครั้งเดียว)");
+                    Debug.Log("⏭️ บทสนทนานี้เล่นไปแล้ว");
                     return;
                 }
                 StartDialog();
             }
 
-            if (isShowingDialog && Input.GetKeyDown(KeyCode.Space))
+            if (isShowingDialog && Input.GetKeyDown(KeyCode.E))
             {
                 if (isTyping)
                 {
@@ -261,44 +255,45 @@ public class SimpleBubbleDialog : MonoBehaviour
     private void OnEnable()
     {
         interactAction?.Enable();
-        continueAction?.Enable();
     }
 
     private void OnDisable()
     {
         interactAction?.Disable();
-        continueAction?.Disable();
     }
 
     private void OnInteractPerformed(InputAction.CallbackContext ctx)
     {
-        if (!playerInRange || isShowingDialog) return;
-
-        if (dialogOnlyOnce && hasDialogCompleted)
+        // ⭐ แก้ไข: เช็คว่ากำลังแสดงบทสนทนาอยู่หรือไม่
+        if (isShowingDialog)
         {
-            Debug.Log("⏭️ บทสนทนานี้เล่นไปแล้ว (ตั้งค่าให้เล่นแค่ครั้งเดียว)");
+            // ถ้ากำลังพิมพ์อยู่ → แสดงข้อความเต็ม
+            if (isTyping)
+            {
+                Debug.Log("⏩ กด E/X - แสดงข้อความเต็ม");
+                StopAllCoroutines();
+                CompleteCurrentText();
+            }
+            // ถ้าพิมพ์เสร็จแล้ว → ไปประโยคถัดไป
+            else
+            {
+                Debug.Log("⏩ กด E/X - ไปประโยคถัดไป");
+                NextLine();
+            }
             return;
         }
 
-        Debug.Log("🎯 กด Interact (E / Y/Triangle) - เริ่มบทสนทนา");
+        // ถ้ายังไม่ได้เริ่มบทสนทนา
+        if (!playerInRange) return;
+
+        if (dialogOnlyOnce && hasDialogCompleted)
+        {
+            Debug.Log("⏭️ บทสนทนานี้เล่นไปแล้ว");
+            return;
+        }
+
+        Debug.Log("🎯 กด E/X - เริ่มบทสนทนา");
         StartDialog();
-    }
-
-    private void OnContinuePerformed(InputAction.CallbackContext ctx)
-    {
-        if (!isShowingDialog) return;
-
-        Debug.Log("⏩ กด Continue (Space / A/Cross)");
-
-        if (isTyping)
-        {
-            StopAllCoroutines();
-            CompleteCurrentText();
-        }
-        else
-        {
-            NextLine();
-        }
     }
 
     void UnlockDialog()
@@ -558,7 +553,6 @@ public class SimpleBubbleDialog : MonoBehaviour
         RectTransform rectTransform = skipButtonInstance.AddComponent<RectTransform>();
         rectTransform.sizeDelta = skipButtonSize;
 
-        // วางไว้มุมขวาของ Bubble
         rectTransform.anchorMin = new Vector2(1, 0.5f);
         rectTransform.anchorMax = new Vector2(1, 0.5f);
         rectTransform.pivot = new Vector2(1, 0.5f);
@@ -593,17 +587,12 @@ public class SimpleBubbleDialog : MonoBehaviour
         }
 
         string currentText = "";
-        int visibleCharCount = 0;
 
         for (int i = 0; i < highlightedText.Length; i++)
         {
             currentText += highlightedText[i];
 
-            if (highlightedText[i] != '<')
-            {
-                visibleCharCount++;
-            }
-            else
+            if (highlightedText[i] == '<')
             {
                 while (i < highlightedText.Length && highlightedText[i] != '>')
                 {
@@ -629,6 +618,9 @@ public class SimpleBubbleDialog : MonoBehaviour
         }
 
         isTyping = false;
+        Debug.Log("✅ พิมพ์ข้อความเสร็จแล้ว - รอ " + displayDuration + " วินาทีก่อนไปต่ออัตโนมัติ");
+
+        // ⭐ รอ displayDuration วินาที แล้วไปประโยคถัดไปอัตโนมัติ
         yield return new WaitForSeconds(displayDuration);
 
         if (isShowingDialog)
@@ -653,11 +645,14 @@ public class SimpleBubbleDialog : MonoBehaviour
             }
 
             isTyping = false;
-            StartCoroutine(WaitAfterComplete());
+            Debug.Log("✅ แสดงข้อความเต็มแล้ว - รอ " + displayDuration + " วินาทีก่อนไปต่ออัตโนมัติ");
+
+            // ⭐ รอ displayDuration วินาที แล้วไปประโยคถัดไป
+            StartCoroutine(WaitThenNextLine());
         }
     }
 
-    IEnumerator WaitAfterComplete()
+    IEnumerator WaitThenNextLine()
     {
         yield return new WaitForSeconds(displayDuration);
 
@@ -783,7 +778,7 @@ public class SimpleBubbleDialog : MonoBehaviour
             }
 
             Debug.Log("👋 Player เข้ามาในระยะ Dialog");
-            Debug.Log("💡 กด E / Y(Triangle) เพื่อคุย | Space / A(Cross) เพื่อข้าม");
+            Debug.Log("💡 กด E / X(Square) เพื่อคุยและข้าม");
         }
     }
 
@@ -811,11 +806,6 @@ public class SimpleBubbleDialog : MonoBehaviour
         {
             interactAction.performed -= OnInteractPerformed;
             interactAction.Dispose();
-        }
-        if (continueAction != null)
-        {
-            continueAction.performed -= OnContinuePerformed;
-            continueAction.Dispose();
         }
     }
 
