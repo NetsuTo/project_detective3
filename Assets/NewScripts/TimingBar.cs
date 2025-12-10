@@ -48,12 +48,12 @@ public class TimingBar : MonoBehaviour
     private bool isInitialized = false;
     private float originalTargetWidth = 0f;
 
-    // ===== ⭐ ใช้ปุ่มเดียวกับ PlayerInput - F และ B =====
+    // ===== ⭐ ปุ่มเดียว: F (Keyboard) และ B (Gamepad) =====
     private InputAction confirmAction;
 
     void Start()
     {
-        // ===== สร้าง Input Action สำหรับปุ่ม F และ Gamepad B =====
+        // ===== ⭐ สร้าง Input Action สำหรับ F และ B =====
         confirmAction = new InputAction("Confirm", type: InputActionType.Button);
         confirmAction.AddBinding("<Keyboard>/f");
         confirmAction.AddBinding("<Gamepad>/buttonEast");  // Xbox: B, PS: Circle
@@ -75,7 +75,7 @@ public class TimingBar : MonoBehaviour
             Debug.Log("🎬 TimingBar เริ่มต้น - เข็มอยู่ตรงกลาง");
         }
 
-        Debug.Log("✅ TimingBar Started - F (Keyboard) / B/Circle (Gamepad) Ready!");
+        Debug.Log("✅ TimingBar Started - กด F (Keyboard) หรือ B/Circle (Gamepad) ครั้งเดียว!");
     }
 
     private void OnEnable()
@@ -158,7 +158,7 @@ public class TimingBar : MonoBehaviour
             }
         }
 
-        // ===== ⭐ ตรวจสอบปุ่ม F หรือ B =====
+        // ===== ⭐ ตรวจสอบปุ่ม F (Keyboard) หรือ B (Gamepad) - ครั้งเดียวเท่านั้น! =====
         if (confirmAction.WasPressedThisFrame())
         {
             bool success = IsPointerInTarget();

@@ -47,30 +47,32 @@ public class SkillLetterSelector : MonoBehaviour
     public float letterSpacing = 100f;
 
     private InputAction mixAction;
-    private InputAction cancelAction; // ⭐ Input Action สำหรับ Esc
+    private InputAction cancelAction;
 
     // ⭐ Property สำหรับเช็คจากภายนอก
     public bool CanPressT => !isActive && !isQTERunning;
-    public bool CanOpenBook => !isActive && !isQTERunning; // ⭐ ห้ามเปิด Book เมื่อมีสกิลอยู่
-    public bool CanOpenPause => !isActive && !isQTERunning; // ⭐ ห้ามเปิด Pause เมื่อมีสกิลอยู่
+    public bool CanOpenBook => !isActive && !isQTERunning;
+    public bool CanOpenPause => !isActive && !isQTERunning;
 
     void Start()
     {
         manager = GetComponent<PlayerSkillManager>();
 
-        // สร้าง Input Action สำหรับปุ่ม F และ Gamepad
+        // ===== ⭐ ปุ่มเดียว: F (Keyboard) และ B (Gamepad) =====
         mixAction = new InputAction("Mix", type: InputActionType.Button);
         mixAction.AddBinding("<Keyboard>/f");
-        mixAction.AddBinding("<Gamepad>/buttonWest");
+        mixAction.AddBinding("<Gamepad>/buttonEast");  // Xbox: B, PS: Circle
         mixAction.Enable();
 
-        // ⭐ สร้าง Input Action สำหรับปุ่ม Esc (ยกเลิกสกิล)
+        // ===== ⭐ ปุ่มยกเลิก: Esc (Keyboard) และ Start (Gamepad) =====
         cancelAction = new InputAction("Cancel", type: InputActionType.Button);
-        cancelAction.AddBinding("<Keyboard>/escape");
-        cancelAction.AddBinding("<Gamepad>/start"); // ปุ่ม B/Circle บน Gamepad
+        cancelAction.AddBinding("<Keyboard>/escape")
+            .WithInteraction("press");
+        cancelAction.AddBinding("<Gamepad>/start")  // ปุ่ม Start/Options
+            .WithInteraction("press");
         cancelAction.Enable();
 
-        Debug.Log("✅ SkillLetterSelector Started!");
+        Debug.Log("✅ SkillLetterSelector Started! (F/B = Mix, Esc/Start = Cancel)");
     }
 
     private void OnEnable()
@@ -93,16 +95,15 @@ public class SkillLetterSelector : MonoBehaviour
 
     void Update()
     {
-        // ⭐ เช็คปุ่ม Esc เพื่อยกเลิกสกิล
+        // ⭐ เช็คปุ่ม Esc/Start เพื่อยกเลิกสกิล
         if (cancelAction.WasPressedThisFrame())
         {
             if (isActive || isQTERunning)
             {
-                Debug.Log("🚫 กด Esc → ยกเลิกสกิล");
+                Debug.Log("🚫 กด Esc/Start → ยกเลิกสกิล");
                 CancelSkill();
-                return; // หยุดการทำงานที่เหลือใน Update
+                return;
             }
-            // ถ้าไม่มีสกิลอยู่ → ให้ระบบอื่น (เช่น PauseManager) จัดการเปิด Pause Menu ต่อ
         }
 
         if (!isActive) return;
@@ -120,7 +121,7 @@ public class SkillLetterSelector : MonoBehaviour
             }
         }
 
-        // เช็คว่ากด F/X และยังไม่มี QTE ทำงานอยู่
+        // ⭐ เช็คว่ากด F/B และยังไม่มี QTE ทำงานอยู่
         if (mixAction.WasPressedThisFrame() && remaining.Count > 0)
         {
             if (!isQTERunning)
@@ -128,7 +129,7 @@ public class SkillLetterSelector : MonoBehaviour
                 qteStarted = true;
                 isQTERunning = true;
                 StartQTE();
-                Debug.Log("🎯 กดปุ่ม F/X → เริ่ม QTE! (🔒 ล็อคปุ่ม T, Tab, Esc แล้ว)");
+                Debug.Log("🎯 กด F/B → เริ่ม QTE! (🔒 ล็อคปุ่ม T, Tab, Esc แล้ว)");
             }
             else
             {
@@ -175,7 +176,7 @@ public class SkillLetterSelector : MonoBehaviour
         // 🔒 ถ้ายังมีตัวอักษรอยู่บนหัว → บล็อคไม่ให้กด T ซ้ำ
         if (isActive)
         {
-            Debug.Log("⚠️ ตัวอักษรยังอยู่บนหัว - ต้องกด F/X เพื่อเริ่ม QTE หรือกด Esc เพื่อยกเลิก!");
+            Debug.Log("⚠️ ตัวอักษรยังอยู่บนหัว - ต้องกด F/B เพื่อเริ่ม QTE หรือกด Esc/Start เพื่อยกเลิก!");
             return;
         }
 
@@ -198,7 +199,7 @@ public class SkillLetterSelector : MonoBehaviour
         qteStarted = false;
         isQTERunning = false;
 
-        Debug.Log("🔤 เริ่ม Selection สำหรับ Skill: " + skillID + " (กด F/X เพื่อเริ่ม QTE หรือกด Esc เพื่อยกเลิก)");
+        Debug.Log("🔤 เริ่ม Selection สำหรับ Skill: " + skillID + " (กด F/B เพื่อเริ่ม QTE หรือกด Esc/Start เพื่อยกเลิก)");
     }
 
     private IEnumerator SpawnLettersWithAnimation()
@@ -208,7 +209,6 @@ public class SkillLetterSelector : MonoBehaviour
             GameObject go = Instantiate(letterPrefab, mainCanvas.transform);
             go.transform.localScale = Vector3.one;
 
-            // ตั้งตำแหน่งทันทีก่อนแสดงผล
             Vector3 offset;
             if (customOffsets != null && i < customOffsets.Length)
             {
@@ -368,15 +368,12 @@ public class SkillLetterSelector : MonoBehaviour
         }
     }
 
-    // ⚠️ ถูกเรียกเมื่อกดผิด → ลบตัวอักษรบนหัว + ปลดล็อคปุ่ม T
     public void OnQTEFailed()
     {
         Debug.Log("🔴 OnQTEFailed() ถูกเรียก!");
 
-        // 🛑 หยุด Coroutine ทั้งหมด
         StopAllCoroutines();
 
-        // ❌ ลบตัวอักษรทั้งหมดบนหัวทันที
         foreach (var ui in letterUIs)
         {
             if (ui != null)
@@ -388,12 +385,10 @@ public class SkillLetterSelector : MonoBehaviour
         letterUIs.Clear();
         letterImages.Clear();
 
-        // 🔄 รีเซ็ตข้อมูล
         remaining.Clear();
         letters.Clear();
         originalLetters.Clear();
 
-        // 🔓 ปลดล็อคปุ่ม T ให้กดใหม่ได้
         isQTERunning = false;
         qteStarted = false;
         isActive = false;
@@ -403,15 +398,12 @@ public class SkillLetterSelector : MonoBehaviour
         Debug.Log("❌ QTE ล้มเหลว - ลบตัวอักษรและหยุดกระพริบแล้ว (🔓 กด T, Tab, Esc ได้แล้ว)");
     }
 
-    // ⭐ ฟังก์ชันสำหรับยกเลิกสกิล (กด Esc)
     public void CancelSkill()
     {
-        Debug.Log("🚫 CancelSkill() ถูกเรียก - ยกเลิกสกิลด้วยปุ่ม Esc");
+        Debug.Log("🚫 CancelSkill() ถูกเรียก - ยกเลิกสกิลด้วยปุ่ม Esc/Start");
 
-        // 🛑 หยุด Coroutine ทั้งหมด
         StopAllCoroutines();
 
-        // ❌ ลบตัวอักษรทั้งหมดบนหัวทันที
         foreach (var ui in letterUIs)
         {
             if (ui != null)
@@ -422,12 +414,10 @@ public class SkillLetterSelector : MonoBehaviour
         letterUIs.Clear();
         letterImages.Clear();
 
-        // 🔄 รีเซ็ตข้อมูล
         remaining.Clear();
         letters.Clear();
         originalLetters.Clear();
 
-        // ⭐ ยกเลิก QTE ใน QTEManager (ถ้ากำลังทำงานอยู่)
         QTEManager qte = FindObjectOfType<QTEManager>();
         if (qte != null && qte.IsQTEActive)
         {
@@ -435,17 +425,12 @@ public class SkillLetterSelector : MonoBehaviour
             Debug.Log("🛑 ยกเลิก QTE แล้ว");
         }
 
-        // ⭐ ไม่ต้องซ่อน SkillBar - ให้แสดงอยู่ตามปกติ
-        // (SkillBar ควรแสดงให้ผู้เล่นเลือกสกิลใหม่ได้ทันที)
-
-        // ⭐ ปลดล็อค Skill ใน PlayerSkillManager (สำคัญมาก!)
         if (manager != null)
         {
             manager.UnlockSelectedSkill();
             Debug.Log("🔓 ปลดล็อค Skill ใน PlayerSkillManager แล้ว");
         }
 
-        // 🔓 ปลดล็อคปุ่มทั้งหมด
         isQTERunning = false;
         qteStarted = false;
         isActive = false;
